@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f1efe8">
+  <meta name="description" content="Sign in to THE VAULT.">
+  <title>Enter THE VAULT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+  <script defer src="supabase-config.js"></script>
+  <script defer src="supabase-client.js"></script>
+  <script defer src="auth.js"></script>
+</head>
+<body class="auth-page">
+  <div class="announcement"><span>THE VAULT — AN INDEPENDENT AUCTION HOUSE</span><span>PRIVATE ACCESS / DEMONSTRATION <i>↗</i></span></div>
+  <header class="site-header auth-header">
+    <a class="wordmark" href="index.html" aria-label="The Vault home">THE VAULT<span>.</span></a>
+    <a class="underlined-link" href="index.html">Return to the house ↗</a>
+  </header>
+
+  <main class="auth-main page-gutter">
+    <div class="auth-breadcrumb"><a href="index.html">HOME</a><span>/</span><span>PRIVATE ACCESS</span></div>
+    <section class="auth-layout">
+      <div class="auth-introduction">
+        <p class="eyebrow">THE VAULT / PRIVATE ACCESS</p>
+        <h1>Enter the<br><em>room.</em></h1>
+        <p>Save considered objects, follow the auction room and keep your place in the edit.</p>
+        <span class="auth-demo-note">Authentication is optional. The collection remains open to every visitor.</span>
+      </div>
+
+      <section class="auth-panel" aria-labelledby="auth-panel-title">
+        <div class="auth-panel-heading">
+          <p class="eyebrow">ACCOUNT / <span id="auth-mode-label">SIGN IN</span></p>
+          <h2 id="auth-panel-title">Welcome <em>back.</em></h2>
+        </div>
+        <div class="auth-modes" role="tablist" aria-label="Authentication options">
+          <button type="button" class="active" data-auth-mode="login" role="tab">Sign in</button>
+          <button type="button" data-auth-mode="register" role="tab">Create account</button>
+        </div>
+        <p id="auth-status" class="auth-status" role="status" hidden></p>
+
+        <form id="auth-login-form" class="auth-form" novalidate>
+          <label for="login-email">Email address</label>
+          <input id="login-email" type="email" autocomplete="email" required>
+          <label for="login-password">Password</label>
+          <input id="login-password" type="password" autocomplete="current-password" required>
+          <button class="button button-dark auth-submit" type="submit">Enter the house <span>↗</span></button>
+          <button class="auth-google" type="button" id="google-login">Continue with Google <span>↗</span></button>
+          <button class="auth-text-button" type="button" data-auth-mode="recovery">Forgot your password?</button>
+        </form>
+
+        <form id="auth-register-form" class="auth-form" hidden novalidate>
+          <label for="register-email">Email address</label>
+          <input id="register-email" type="email" autocomplete="email" required>
+          <label for="register-password">Password</label>
+          <input id="register-password" type="password" autocomplete="new-password" required>
+          <label for="register-confirm">Confirm password</label>
+          <input id="register-confirm" type="password" autocomplete="new-password" required>
+          <small class="auth-hint">Use at least 8 characters, including one letter and one number.</small>
+          <button class="button button-dark auth-submit" type="submit">Create account <span>↗</span></button>
+          <button class="auth-google" type="button" id="google-register">Continue with Google <span>↗</span></button>
+        </form>
+
+        <form id="auth-recovery-form" class="auth-form" hidden novalidate>
+          <p class="auth-form-intro">Enter your email and Supabase will send a password recovery link.</p>
+          <label for="recovery-email">Email address</label>
+          <input id="recovery-email" type="email" autocomplete="email" required>
+          <button class="button button-dark auth-submit" type="submit">Send recovery link <span>↗</span></button>
+          <button class="auth-text-button" type="button" data-auth-mode="login">Return to sign in</button>
+        </form>
+
+        <form id="auth-reset-form" class="auth-form" hidden novalidate>
+          <p class="auth-form-intro">Choose a new password for your account.</p>
+          <label for="reset-password">New password</label>
+          <input id="reset-password" type="password" autocomplete="new-password" required>
+          <label for="reset-confirm">Confirm new password</label>
+          <input id="reset-confirm" type="password" autocomplete="new-password" required>
+          <button class="button button-dark auth-submit" type="submit">Update password <span>↗</span></button>
+        </form>
+
+        <div id="auth-account" class="auth-account" hidden>
+          <p class="auth-form-intro">Your session is active on this browser.</p>
+          <button class="button button-dark auth-submit" id="auth-logout" type="button">Sign out <span>↗</span></button>
+        </div>
+        <p class="auth-disclosure">THE VAULT is a demonstration platform. Authentication enables account features only; it does not create bidding or payment access.</p>
+      </section>
+    </section>
+  </main>
+
+  <footer class="site-footer page-gutter">
+    <div class="footer-top"><a class="wordmark footer-wordmark" href="index.html">THE VAULT<span>.</span></a><p>An independent digital auction house<br>for objects with a story to tell.</p><a class="back-top" href="index.html">Back to the house ↗</a></div>
+    <div class="footer-bottom"><span>© 2026 THE VAULT — STUDENT PROJECT / DEMO</span><span>PRIVATE ACCESS / DEMONSTRATION ONLY</span><span>NO SOCIAL ACCOUNTS</span></div>
+  </footer>
+</body>
+</html>

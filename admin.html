@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#191a18">
+  <title>Overview — THE VAULT Private Room</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+  <script defer src="supabase-config.js"></script>
+  <script defer src="supabase-client.js"></script>
+  <script defer src="admin.js?v=10b"></script>
+</head>
+<body class="admin-page">
+  <div id="admin-access-state" class="admin-access-state" role="status">
+    <span class="admin-loading-mark">✳</span>
+    <p>PRIVATE ROOM / ACCESS CHECK</p>
+    <h1>Verifying authority.</h1>
+    <span>Checking your session and database role…</span>
+  </div>
+
+  <div id="admin-dashboard" class="admin-shell" hidden>
+    <aside id="admin-sidebar" class="admin-sidebar" aria-label="Administration navigation">
+      <div>
+        <a class="admin-wordmark" href="index.html">THE VAULT<span>.</span></a>
+        <p class="admin-sidebar-label">PRIVATE ADMINISTRATION</p>
+      </div>
+
+      <nav class="admin-nav" aria-label="Admin sections">
+        <a class="active" href="#overview" data-admin-section="overview" data-section-label="Overview"><span>01</span>Overview</a>
+        <a href="#lots" data-admin-section="lots" data-section-label="Lots"><span>02</span>Lots</a>
+        <a href="#live-auctions" data-admin-section="live-auctions" data-section-label="Live auctions"><span>03</span>Live Auctions</a>
+        <a href="#bids" data-admin-section="bids" data-section-label="Bids"><span>04</span>Bids</a>
+        <a href="#members" data-admin-section="members" data-section-label="Members"><span>05</span>Members</a>
+        <a href="#journal" data-admin-section="journal" data-section-label="Journal"><span>06</span>Journal</a>
+        <a href="#enquiries" data-admin-section="enquiries" data-section-label="Enquiries"><span>07</span>Enquiries</a>
+        <a href="#settings" data-admin-section="settings" data-section-label="Settings"><span>08</span>Settings</a>
+      </nav>
+
+      <div class="admin-sidebar-bottom">
+        <p class="admin-sidebar-label">CURRENT ACCOUNT</p>
+        <p id="admin-sidebar-email" class="admin-sidebar-email">Verified super-admin</p>
+        <button id="admin-sidebar-logout" class="admin-logout-link" type="button">Log out <span>↗</span></button>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button id="admin-menu-toggle" class="admin-menu-toggle" type="button" aria-controls="admin-sidebar" aria-expanded="false">
+          <span>☰</span><span>Menu</span>
+        </button>
+        <div class="admin-topbar-title">
+          <p class="admin-kicker">THE VAULT / PRIVATE ROOM</p>
+          <h1 id="admin-section-title">Overview</h1>
+        </div>
+        <div class="admin-topbar-meta">
+          <span id="admin-connection" class="admin-connection is-loading"><i></i>Checking connection</span>
+          <span id="admin-account-email" class="admin-account-email">Super-admin</span>
+          <button id="admin-top-logout" class="admin-top-logout" type="button">Log out ↗</button>
+        </div>
+      </header>
+
+      <main class="admin-content">
+        <section id="admin-overview" class="admin-section" aria-labelledby="overview-heading">
+          <div class="admin-section-intro">
+            <div>
+              <p class="admin-kicker">01 / CURRENT PICTURE</p>
+              <h2 id="overview-heading">The house, <em>at a glance.</em></h2>
+            </div>
+            <p class="admin-section-note">Read-only figures from the connected Supabase project. Demonstration data remains separate from this private room.</p>
+          </div>
+
+          <div class="admin-stat-grid" aria-live="polite">
+            <article class="admin-stat-card admin-stat-feature">
+              <span class="admin-stat-label">Total auction lots</span>
+              <strong id="stat-total-lots">—</strong>
+              <small>All records visible to the super-admin</small>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Published lots</span>
+              <strong id="stat-published-lots">—</strong>
+              <small>Records with a publication date</small>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Live auctions</span>
+              <strong id="stat-live-auctions">—</strong>
+              <small>Status: live</small>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Closed auctions</span>
+              <strong id="stat-closed-auctions">—</strong>
+              <small>Status: closed</small>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Recorded bids</span>
+              <strong id="stat-total-bids">—</strong>
+              <small>Permanent bid records</small>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Registered members</span>
+              <strong id="stat-members">—</strong>
+              <small>Profiles created by Auth</small>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Unread enquiries</span>
+              <strong id="stat-unread-enquiries">Unavailable</strong>
+              <small>No unread field exists in the current schema</small>
+            </article>
+          </div>
+
+          <div class="admin-activity-grid">
+            <section class="admin-activity-panel" aria-labelledby="recent-lots-heading">
+              <div class="admin-panel-heading">
+                <div>
+                  <p class="admin-kicker">RECENTLY ADDED</p>
+                  <h3 id="recent-lots-heading">Lots</h3>
+                </div>
+                <a href="#lots" data-admin-section="lots" data-section-label="Lots">View all ↗</a>
+              </div>
+              <div id="recent-lots" class="admin-activity-list"><p class="admin-list-status">Loading recent lots…</p></div>
+            </section>
+
+            <section class="admin-activity-panel" aria-labelledby="recent-bids-heading">
+              <div class="admin-panel-heading">
+                <div>
+                  <p class="admin-kicker">RECENTLY RECORDED</p>
+                  <h3 id="recent-bids-heading">Bids</h3>
+                </div>
+                <a href="#bids" data-admin-section="bids" data-section-label="Bids">Review ↗</a>
+              </div>
+              <div id="recent-bids" class="admin-activity-list"><p class="admin-list-status">Loading recent bids…</p></div>
+            </section>
+
+            <section class="admin-activity-panel" aria-labelledby="recent-enquiries-heading">
+              <div class="admin-panel-heading">
+                <div>
+                  <p class="admin-kicker">INCOMING CORRESPONDENCE</p>
+                  <h3 id="recent-enquiries-heading">Enquiries</h3>
+                </div>
+                <a href="#enquiries" data-admin-section="enquiries" data-section-label="Enquiries">Review ↗</a>
+              </div>
+              <div id="recent-enquiries" class="admin-activity-list"><p class="admin-list-status">Loading recent enquiries…</p></div>
+            </section>
+          </div>
+
+          <section class="admin-quick-actions" aria-labelledby="quick-actions-heading">
+            <div>
+              <p class="admin-kicker">NEXT MOVES</p>
+              <h3 id="quick-actions-heading">Continue the edit.</h3>
+            </div>
+            <div class="admin-action-links">
+              <a href="#lots" data-admin-section="lots" data-section-label="Lots"><span>01</span>Add a lot <b>Coming later ↗</b></a>
+              <a href="#live-auctions" data-admin-section="live-auctions" data-section-label="Live auctions"><span>02</span>View live auctions <b>Coming later ↗</b></a>
+              <a href="#enquiries" data-admin-section="enquiries" data-section-label="Enquiries"><span>03</span>Review enquiries <b>Coming later ↗</b></a>
+            </div>
+          </section>
+
+          <section id="admin-diagnostics" class="admin-diagnostics" aria-labelledby="diagnostics-heading" hidden>
+            <div class="admin-panel-heading">
+              <div>
+                <p class="admin-kicker">DATABASE RESPONSE</p>
+                <h3 id="diagnostics-heading">Read diagnostics</h3>
+              </div>
+              <span>NO CREDENTIALS SHOWN</span>
+            </div>
+            <div id="admin-diagnostics-list"></div>
+          </section>
+        </section>
+
+        <section id="admin-placeholder" class="admin-placeholder" aria-live="polite" hidden>
+          <p class="admin-kicker">PRIVATE ROOM / LATER PHASE</p>
+          <h2 id="admin-placeholder-title">This room is being prepared.</h2>
+          <p id="admin-placeholder-copy">This administration module has not been implemented yet. No simulated management actions are available from this screen.</p>
+          <a class="admin-return-overview" href="#overview" data-admin-section="overview" data-section-label="Overview">Return to overview ↗</a>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
