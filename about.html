@@ -16,7 +16,11 @@
   <script defer src="app.js"></script>
 </head>
 <body data-page="about">
-  <div class="announcement"><span>THE VAULT — AN INDEPENDENT AUCTION HOUSE</span><span>WHERE RARITY MEETS COMPETITION <i>↗</i></span></div>
+  <div class="announcement">
+    <span>THE VAULT — AN INDEPENDENT AUCTION HOUSE</span>
+    <span>WHERE RARITY MEETS COMPETITION <i>↗</i></span>
+  </div>
+
   <header class="site-header">
     <a class="wordmark" href="index.html" aria-label="The Vault home">THE VAULT<span>.</span></a>
     <button class="mobile-menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
@@ -36,7 +40,11 @@
   </header>
 
   <main class="about-main">
-    <div class="about-breadcrumb page-gutter"><a href="index.html">HOME</a><span>/</span><span>THE HOUSE</span></div>
+    <nav class="about-breadcrumb page-gutter" aria-label="Breadcrumb">
+      <a href="index.html">HOME</a>
+      <span>/</span>
+      <span>THE HOUSE</span>
+    </nav>
 
     <section class="about-introduction page-gutter">
       <div class="about-intro-copy">
@@ -47,7 +55,10 @@
       </div>
       <figure class="about-intro-figure">
         <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1400&q=88" alt="Mechanical watch resting on a warm surface">
-        <figcaption><span>FIG. 001 / AN OBJECT OF ATTENTION</span><span>THE VAULT / 2026</span></figcaption>
+        <figcaption>
+          <span>FIG. 001 / AN OBJECT OF ATTENTION</span>
+          <span>THE VAULT / 2026</span>
+        </figcaption>
       </figure>
     </section>
 
@@ -56,31 +67,101 @@
         <p class="eyebrow light-eyebrow">01 / OUR PHILOSOPHY</p>
         <h2>Rarity deserves<br>a different kind of <em>room.</em></h2>
         <div class="about-principles">
-          <article><span>01</span><h3>Curation</h3><p>Objects are presented with attention to their significance, character and the details that reward a second look.</p></article>
-          <article><span>02</span><h3>Transparency</h3><p>Auction information, estimates and available object details should be easy to find and clear to understand.</p></article>
-          <article><span>03</span><h3>Competition</h3><p>Bidding should feel focused, engaging and respectful of the object at the centre of the room.</p></article>
+          <article>
+            <span>01</span>
+            <h3>Curation</h3>
+            <p>Objects are presented with attention to their significance, character and the details that reward a second look.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Transparency</h3>
+            <p>Auction information, estimates and available object details should be easy to find and clear to understand.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Competition</h3>
+            <p>Bidding should feel focused, engaging and respectful of the object at the centre of the room.</p>
+          </article>
         </div>
       </div>
     </section>
 
     <section class="about-categories page-gutter">
-      <div class="about-section-heading"><div><p class="eyebrow">02 / WHAT BELONGS IN THE VAULT</p><h2>Five ways of<br><em>looking closer.</em></h2></div><p>Different objects ask for different kinds of attention. The edit is broad; the standard is considered.</p></div>
+      <div class="about-section-heading">
+        <div>
+          <p class="eyebrow">02 / WHAT BELONGS IN THE VAULT</p>
+          <h2>Five ways of<br><em>looking closer.</em></h2>
+        </div>
+        <p>Different objects ask for different kinds of attention. The edit is broad; the standard is considered.</p>
+      </div>
       <div class="about-category-grid">
-        <a class="about-category about-category-watch" href="explore.html?category=Timepieces"><img src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=1100&q=86" alt="Close detail of a fine watch"><span>01 / TIMEPIECES</span><strong>Fine Watches <b>↗</b></strong></a>
-        <a class="about-category about-category-jewel" href="explore.html?category=Jewellery"><img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=900&q=86" alt="Fine jewellery arranged in warm light"><span>02 / JEWELLERY</span><strong>Jewellery <b>↗</b></strong></a>
-        <a class="about-category about-category-art" href="explore.html?category=Fine%20Art"><img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1100&q=86" alt="Framed fine art painting"><span>03 / FINE ART</span><strong>Fine Art <b>↗</b></strong></a>
-        <a class="about-category about-category-car" href="explore.html?category=Automotive"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=86" alt="Classic sports car on the road"><span>04 / AUTOMOTIVE</span><strong>Classic Automobiles <b>↗</b></strong></a>
-        <a class="about-category about-category-collectibles" href="explore.html"><img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=86" alt="Vintage camera as a rare collectible"><span>05 / OBJECTS</span><strong>Rare Collectibles <b>↗</b></strong></a>
+        <a class="about-category about-category-watch" href="explore.html?category=Timepieces">
+          <img src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=1100&q=86" alt="Close detail of a fine watch">
+          <span>01 / TIMEPIECES</span>
+          <strong>Fine Watches <b>↗</b></strong>
+        </a>
+        <a class="about-category about-category-jewel" href="explore.html?category=Jewellery">
+          <img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=900&q=86" alt="Fine jewellery arranged in warm light">
+          <span>02 / JEWELLERY</span>
+          <strong>Jewellery <b>↗</b></strong>
+        </a>
+        <a class="about-category about-category-art" href="explore.html?category=Fine%20Art">
+          <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1100&q=86" alt="Framed fine art painting">
+          <span>03 / FINE ART</span>
+          <strong>Fine Art <b>↗</b></strong>
+        </a>
+        <a class="about-category about-category-car" href="explore.html?category=Automotive">
+          <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=86" alt="Classic sports car on the road">
+          <span>04 / AUTOMOTIVE</span>
+          <strong>Classic Automobiles <b>↗</b></strong>
+        </a>
+        <a class="about-category about-category-collectibles" href="explore.html">
+          <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=86" alt="Vintage camera as a rare collectible">
+          <span>05 / OBJECTS</span>
+          <strong>Rare Collectibles <b>↗</b></strong>
+        </a>
       </div>
     </section>
 
     <section class="about-experience page-gutter">
-      <div class="about-experience-intro"><p class="eyebrow">03 / THE AUCTION EXPERIENCE</p><h2>Look carefully.<br><em>Then step in.</em></h2><p>The route through THE VAULT is intentionally simple: find an object, understand its place in the edit, then decide whether to enter the room.</p><div class="about-experience-links"><a class="button button-dark" href="explore.html">Explore auctions <span>↗</span></a><a class="underlined-link" href="arena.html">Enter The Arena ↗</a></div></div>
+      <div class="about-experience-intro">
+        <p class="eyebrow">03 / THE AUCTION EXPERIENCE</p>
+        <h2>Look carefully.<br><em>Then step in.</em></h2>
+        <p>The route through THE VAULT is intentionally simple: find an object, understand its place in the edit, then decide whether to enter the room.</p>
+        <div class="about-experience-links">
+          <a class="button button-dark" href="explore.html">Explore auctions <span>↗</span></a>
+          <a class="underlined-link" href="arena.html">Enter The Arena ↗</a>
+        </div>
+      </div>
       <div class="about-steps">
-        <article><span>01</span><div><h3>Discover</h3><p>Browse a changing edit of objects selected for character, craft and story.</p></div></article>
-        <article><span>02</span><div><h3>Look closer</h3><p>Open each lot to explore its images, available details, estimate and auction context.</p></div></article>
-        <article><span>03</span><div><h3>Follow the room</h3><p>Watch selected lots move through the Arena and see how a focused auction unfolds.</p></div></article>
-        <article><span>04</span><div><h3>Participate</h3><p>Place a demonstration bid when an object feels worth competing for. No payment or real transaction occurs here.</p></div></article>
+        <article>
+          <span>01</span>
+          <div>
+            <h3>Discover</h3>
+            <p>Browse a changing edit of objects selected for character, craft and story.</p>
+          </div>
+        </article>
+        <article>
+          <span>02</span>
+          <div>
+            <h3>Look closer</h3>
+            <p>Open each lot to explore its images, available details, estimate and auction context.</p>
+          </div>
+        </article>
+        <article>
+          <span>03</span>
+          <div>
+            <h3>Follow the room</h3>
+            <p>Watch selected lots move through the Arena and see how a focused auction unfolds.</p>
+          </div>
+        </article>
+        <article>
+          <span>04</span>
+          <div>
+            <h3>Participate</h3>
+            <p>Place a demonstration bid when an object feels worth competing for. No payment or real transaction occurs here.</p>
+          </div>
+        </article>
       </div>
     </section>
 
@@ -92,9 +173,24 @@
   </main>
 
   <footer class="site-footer page-gutter">
-    <div class="footer-top"><a class="wordmark footer-wordmark" href="index.html">THE VAULT<span>.</span></a><p>An independent digital auction house<br>for objects with a story to tell.</p><a class="back-top" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Back to top ↑</a></div>
-    <div class="footer-links"><a href="explore.html">AUCTIONS</a><a href="about.html">THE HOUSE</a><a href="explore.html?category=Timepieces">COLLECTIONS</a><a href="journal.html">JOURNAL</a><a href="contact.html">CONTACT</a><a href="#">LEGAL</a></div>
-    <div class="footer-bottom"><span>© 2026 THE VAULT — STUDENT PROJECT / DEMO</span><span>MADE WITH INTENTION, NOT IN A HURRY.</span><span>NO SOCIAL ACCOUNTS / DEMONSTRATION ONLY</span></div>
+    <div class="footer-top">
+      <a class="wordmark footer-wordmark" href="index.html">THE VAULT<span>.</span></a>
+      <p>An independent digital auction house<br>for objects with a story to tell.</p>
+      <a class="back-top" href="#top">Back to top ↑</a>
+    </div>
+    <div class="footer-links">
+      <a href="explore.html">AUCTIONS</a>
+      <a href="about.html">THE HOUSE</a>
+      <a href="explore.html?category=Timepieces">COLLECTIONS</a>
+      <a href="journal.html">JOURNAL</a>
+      <a href="contact.html">CONTACT</a>
+      <a href="#">LEGAL</a>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 THE VAULT — STUDENT PROJECT / DEMO</span>
+      <span>MADE WITH INTENTION, NOT IN A HURRY.</span>
+      <span>NO SOCIAL ACCOUNTS / DEMONSTRATION ONLY</span>
+    </div>
   </footer>
 </body>
 </html>

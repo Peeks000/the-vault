@@ -1,55 +1,87 @@
+/**
+ * THE VAULT — Administration Controller
+ *
+ * Secures the private room via database-level super-admin verification.
+ * Provides read-only operational telemetry, metrics, and activity streams
+ * through Supabase Row Level Security policies.
+ */
+
 (function () {
   'use strict';
 
-  document.addEventListener('DOMContentLoaded', async function () {
+  async function initAdmin() {
     const auth = window.vaultAuth;
+
+    // DOM Elements
     const accessState = document.querySelector('#admin-access-state');
     const dashboard = document.querySelector('#admin-dashboard');
     const sidebar = document.querySelector('#admin-sidebar');
     const menuToggle = document.querySelector('#admin-menu-toggle');
-    const connection = document.querySelector('#admin-connection');
+    const connectionIndicator = document.querySelector('#admin-connection');
     const sectionTitle = document.querySelector('#admin-section-title');
-    const overview = document.querySelector('#admin-overview');
-    const placeholder = document.querySelector('#admin-placeholder');
+    const overviewSection = document.querySelector('#admin-overview');
+    const placeholderSection = document.querySelector('#admin-placeholder');
     const placeholderTitle = document.querySelector('#admin-placeholder-title');
     const placeholderCopy = document.querySelector('#admin-placeholder-copy');
     const accountEmail = document.querySelector('#admin-account-email');
     const sidebarEmail = document.querySelector('#admin-sidebar-email');
-    const diagnostics = document.querySelector('#admin-diagnostics');
+    const diagnosticsSection = document.querySelector('#admin-diagnostics');
     const diagnosticsList = document.querySelector('#admin-diagnostics-list');
+
     const queryErrors = [];
     let verifiedUserId = '';
 
+    // -------------------------------------------------------------------------
+    // UI Helpers
+    // -------------------------------------------------------------------------
+
     function showAccessError(message) {
+      if (!accessState) return;
+
       accessState.replaceChildren();
+
       const label = document.createElement('p');
       label.className = 'admin-kicker';
       label.textContent = 'PRIVATE ROOM / ACCESS ISSUE';
+
       const heading = document.createElement('h1');
       heading.textContent = 'Entry could not be verified.';
+
       const detail = document.createElement('span');
       detail.textContent = message;
-      const link = document.createElement('a');
-      link.className = 'admin-return-overview';
-      link.href = 'index.html';
-      link.textContent = 'Return to the house ↗';
-      accessState.append(label, heading, detail, link);
+
+      const returnLink = document.createElement('a');
+      returnLink.className = 'admin-return-overview';
+      returnLink.href = 'index.html';
+      returnLink.textContent = 'Return to the house ↗';
+
+      accessState.append(label, heading, detail, returnLink);
     }
 
-    function setConnection(text, state) {
-      connection.className = `admin-connection ${state}`;
-      connection.replaceChildren();
-      const indicator = document.createElement('i');
-      connection.append(indicator, document.createTextNode(text));
+    function setConnectionStatus(text, statusClass) {
+      if (!connectionIndicator) return;
+      connectionIndicator.className = `admin-connection ${statusClass}`;
+      connectionIndicator.replaceChildren();
+
+      const dot = document.createElement('i');
+      connectionIndicator.append(dot, document.createTextNode(text));
     }
 
     function setMetric(id, value) {
-      document.querySelector(`#${id}`).textContent = value === null ? 'Unavailable' : Number(value).toLocaleString('en-IN');
+      const element = document.querySelector(`#${id}`);
+      if (!element) return;
+      element.textContent = value === null
+        ? 'Unavailable'
+        : Number(value).toLocaleString('en-IN');
     }
 
     function formatDate(value) {
       if (!value) return 'Date unavailable';
-      return new Intl.DateTimeFormat('en-IN', {day: '2-digit', month: 'short', year: 'numeric'}).format(new Date(value));
+      return new Intl.DateTimeFormat('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      }).format(new Date(value));
     }
 
     function formatAmount(value) {
@@ -57,183 +89,275 @@
       return `₹${Number(value).toLocaleString('en-IN')}`;
     }
 
-    function setListMessage(id, message, isError) {
+    function setListStatusMessage(id, message, isError = false) {
       const target = document.querySelector(`#${id}`);
+      if (!target) return;
+
       target.replaceChildren();
-      const item = document.createElement('p');
-      item.className = `admin-list-status${isError ? ' is-error' : ''}`;
-      item.textContent = message;
-      target.append(item);
+      const paragraph = document.createElement('p');
+      paragraph.className = `admin-list-status${isError ? ' is-error' : ''}`;
+      paragraph.textContent = message;
+      target.append(paragraph);
     }
 
-    function appendActivity(id, rows, renderRow, emptyMessage) {
-      const target = document.querySelector(`#${id}`);
-      target.replaceChildren();
-      if (!rows.length) {
-        setListMessage(id, emptyMessage, false);
-        return;
-      }
-      rows.forEach(function (row) {
-        target.append(renderRow(row));
-      });
-    }
-
-    function activityRow(kicker, title, detail) {
+    function createActivityRow(kickerText, titleText, detailText) {
       const row = document.createElement('div');
       row.className = 'admin-activity-row';
+
       const copy = document.createElement('div');
-      const label = document.createElement('span');
-      label.className = 'admin-row-kicker';
-      label.textContent = kicker;
+
+      const kicker = document.createElement('span');
+      kicker.className = 'admin-row-kicker';
+      kicker.textContent = kickerText;
+
       const heading = document.createElement('strong');
-      heading.textContent = title;
+      heading.textContent = titleText;
+
       const meta = document.createElement('small');
-      meta.textContent = detail;
-      copy.append(label, heading, meta);
+      meta.textContent = detailText;
+
+      copy.append(kicker, heading, meta);
       row.append(copy);
       return row;
     }
 
+    function renderActivityList(containerId, rows, rowRenderer, emptyMessage) {
+      const container = document.querySelector(`#${containerId}`);
+      if (!container) return;
+
+      container.replaceChildren();
+
+      if (!rows.length) {
+        setListStatusMessage(containerId, emptyMessage, false);
+        return;
+      }
+
+      rows.forEach(item => {
+        container.append(rowRenderer(item));
+      });
+    }
+
     function recordQueryError(table, query, error) {
       queryErrors.push({
-        table: table,
-        query: query,
-        code: error && error.code ? error.code : 'CLIENT_ERROR',
-        message: error && error.message ? error.message : 'The request failed without a message.',
-        details: error && error.details ? error.details : '',
-        hint: error && error.hint ? error.hint : ''
+        table,
+        query,
+        code: error?.code || 'CLIENT_ERROR',
+        message: error?.message || 'The request failed without a message.',
+        details: error?.details || '',
+        hint: error?.hint || ''
       });
     }
 
     function renderDiagnostics() {
+      if (!diagnosticsList || !diagnosticsSection) return;
+
       diagnosticsList.replaceChildren();
+
       if (!queryErrors.length) {
-        diagnostics.hidden = true;
+        diagnosticsSection.hidden = true;
         return;
       }
-      diagnostics.hidden = false;
-      queryErrors.forEach(function (item) {
-        const row = document.createElement('article');
-        row.className = 'admin-diagnostic-row';
+
+      diagnosticsSection.hidden = false;
+
+      queryErrors.forEach(err => {
+        const article = document.createElement('article');
+        article.className = 'admin-diagnostic-row';
+
         const heading = document.createElement('strong');
-        heading.textContent = `${item.table} / ${item.query}`;
-        const code = document.createElement('span');
-        code.textContent = item.code;
-        const message = document.createElement('p');
-        message.textContent = item.message;
-        row.append(heading, code, message);
-        if (item.details) {
-          const details = document.createElement('small');
-          details.textContent = `Details: ${item.details}`;
-          row.append(details);
+        heading.textContent = `${err.table} / ${err.query}`;
+
+        const codeBadge = document.createElement('span');
+        codeBadge.textContent = err.code;
+
+        const errorMsg = document.createElement('p');
+        errorMsg.textContent = err.message;
+
+        article.append(heading, codeBadge, errorMsg);
+
+        if (err.details) {
+          const detailNote = document.createElement('small');
+          detailNote.textContent = `Details: ${err.details}`;
+          article.append(detailNote);
         }
-        if (item.hint) {
-          const hint = document.createElement('small');
-          hint.textContent = `Hint: ${item.hint}`;
-          row.append(hint);
+
+        if (err.hint) {
+          const hintNote = document.createElement('small');
+          hintNote.textContent = `Hint: ${err.hint}`;
+          article.append(hintNote);
         }
-        diagnosticsList.append(row);
+
+        diagnosticsList.append(article);
       });
     }
 
-    async function countRows(table, queryLabel, configure) {
+    // -------------------------------------------------------------------------
+    // Data Loading
+    // -------------------------------------------------------------------------
+
+    async function countRows(tableName, queryLabel, configFn) {
       try {
-        let query = auth.client.from(table).select('*', {count: 'exact', head: true});
-        if (configure) query = configure(query);
-        const result = await query;
-        return {table: table, query: queryLabel, value: result.error ? null : result.count || 0, error: result.error};
-      } catch (error) {
-        return {table: table, query: queryLabel, value: null, error: error};
+        let query = auth.client.from(tableName).select('*', { count: 'exact', head: true });
+        if (configFn) query = configFn(query);
+
+        const { count, error } = await query;
+        return {
+          table: tableName,
+          query: queryLabel,
+          value: error ? null : (count || 0),
+          error
+        };
+      } catch (err) {
+        return { table: tableName, query: queryLabel, value: null, error: err };
       }
     }
 
-    async function readRows(table, queryLabel, configure) {
+    async function fetchRows(tableName, queryLabel, configFn) {
       try {
-        return await configure(auth.client.from(table));
-      } catch (error) {
-        return {data: null, error: error};
+        return await configFn(auth.client.from(tableName));
+      } catch (err) {
+        return { data: null, error: err };
       }
     }
 
-    async function loadOverview() {
+    async function loadOverviewData() {
       queryErrors.length = 0;
-      const metricResults = await Promise.all([
+
+      // 1. Telemetry Metric Counts
+      const metricQueries = await Promise.all([
         countRows('auction_lots', 'total count'),
-        countRows('auction_lots', 'published count', query => query.not('published_at', 'is', null)),
-        countRows('auction_lots', 'live count', query => query.eq('status', 'live')),
-        countRows('auction_lots', 'closed count', query => query.eq('status', 'closed')),
+        countRows('auction_lots', 'published count', q => q.not('published_at', 'is', null)),
+        countRows('auction_lots', 'live count', q => q.eq('status', 'live')),
+        countRows('auction_lots', 'closed count', q => q.eq('status', 'closed')),
         countRows('bids', 'total count'),
         countRows('profiles', 'member count')
       ]);
-      const metricIds = ['stat-total-lots', 'stat-published-lots', 'stat-live-auctions', 'stat-closed-auctions', 'stat-total-bids', 'stat-members'];
-      metricResults.forEach(function (result, index) {
-        setMetric(metricIds[index], result.value);
-        if (result.error) recordQueryError(result.table, result.query, result.error);
+
+      const metricElementIds = [
+        'stat-total-lots',
+        'stat-published-lots',
+        'stat-live-auctions',
+        'stat-closed-auctions',
+        'stat-total-bids',
+        'stat-members'
+      ];
+
+      metricQueries.forEach((res, index) => {
+        setMetric(metricElementIds[index], res.value);
+        if (res.error) recordQueryError(res.table, res.query, res.error);
       });
 
+      // 2. Recent Streams
       const [lotsResult, bidsResult, enquiriesResult] = await Promise.all([
-        readRows('auction_lots', 'recent lots', query => query.select('id, lot_number, title, status, created_at').order('created_at', {ascending: false}).limit(5)),
-        readRows('bids', 'recent bids', query => query.select('id, lot_id, amount, created_at').order('created_at', {ascending: false}).limit(5)),
-        readRows('contact_messages', 'recent enquiries', query => query.select('id, full_name, enquiry_type, subject, status, created_at').order('created_at', {ascending: false}).limit(5))
+        fetchRows('auction_lots', 'recent lots', q =>
+          q.select('id, lot_number, title, status, created_at')
+            .order('created_at', { ascending: false })
+            .limit(5)
+        ),
+        fetchRows('bids', 'recent bids', q =>
+          q.select('id, lot_id, amount, created_at')
+            .order('created_at', { ascending: false })
+            .limit(5)
+        ),
+        fetchRows('contact_messages', 'recent enquiries', q =>
+          q.select('id, full_name, enquiry_type, subject, status, created_at')
+            .order('created_at', { ascending: false })
+            .limit(5)
+        )
       ]);
 
+      // Handle Recent Lots
       if (lotsResult.error) {
         recordQueryError('auction_lots', 'recent lots', lotsResult.error);
-        setListMessage('recent-lots', 'Recent lots are unavailable from the current database connection.', true);
+        setListStatusMessage('recent-lots', 'Recent lots are unavailable from the current database connection.', true);
+      } else {
+        renderActivityList(
+          'recent-lots',
+          lotsResult.data || [],
+          lot => createActivityRow(lot.status.toUpperCase(), lot.title, `LOT ${lot.lot_number} / ${formatDate(lot.created_at)}`),
+          'No lots have been recorded yet.'
+        );
       }
-      else appendActivity('recent-lots', lotsResult.data || [], function (lot) {
-        return activityRow(lot.status.toUpperCase(), lot.title, `LOT ${lot.lot_number} / ${formatDate(lot.created_at)}`);
-      }, 'No lots have been recorded yet.');
 
+      // Handle Recent Bids
       if (bidsResult.error) {
         recordQueryError('bids', 'recent bids', bidsResult.error);
-        setListMessage('recent-bids', 'Recent bids are unavailable from the current database connection.', true);
+        setListStatusMessage('recent-bids', 'Recent bids are unavailable from the current database connection.', true);
+      } else {
+        renderActivityList(
+          'recent-bids',
+          bidsResult.data || [],
+          bid => createActivityRow('RECORDED BID', formatAmount(bid.amount), `LOT ${String(bid.lot_id).slice(0, 8)} / ${formatDate(bid.created_at)}`),
+          'No bids have been recorded yet.'
+        );
       }
-      else appendActivity('recent-bids', bidsResult.data || [], function (bid) {
-        return activityRow('RECORDED BID', formatAmount(bid.amount), `LOT ${String(bid.lot_id).slice(0, 8)} / ${formatDate(bid.created_at)}`);
-      }, 'No bids have been recorded yet.');
 
+      // Handle Recent Enquiries
       if (enquiriesResult.error) {
         recordQueryError('contact_messages', 'recent enquiries', enquiriesResult.error);
-        setListMessage('recent-enquiries', 'Recent enquiries are unavailable from the current database connection.', true);
+        setListStatusMessage('recent-enquiries', 'Recent enquiries are unavailable from the current database connection.', true);
+      } else {
+        renderActivityList(
+          'recent-enquiries',
+          enquiriesResult.data || [],
+          enquiry => createActivityRow(enquiry.status.toUpperCase(), enquiry.subject, `${enquiry.enquiry_type} / ${formatDate(enquiry.created_at)}`),
+          'No enquiries have been recorded yet.'
+        );
       }
-      else appendActivity('recent-enquiries', enquiriesResult.data || [], function (enquiry) {
-        return activityRow(enquiry.status.toUpperCase(), enquiry.subject, `${enquiry.enquiry_type} / ${formatDate(enquiry.created_at)}`);
-      }, 'No enquiries have been recorded yet.');
 
+      // 3. Diagnostics & Connection Badge
       renderDiagnostics();
       const hasErrors = queryErrors.length > 0;
-      setConnection(hasErrors ? 'Connected with limitations' : 'Supabase connected', hasErrors ? 'is-limited' : 'is-connected');
+      setConnectionStatus(
+        hasErrors ? 'Connected with limitations' : 'Supabase connected',
+        hasErrors ? 'is-limited' : 'is-connected'
+      );
     }
 
-    function closeMobileNavigation() {
+    // -------------------------------------------------------------------------
+    // Navigation & Layout
+    // -------------------------------------------------------------------------
+
+    function closeMobileSidebar() {
+      if (!sidebar) return;
       sidebar.classList.remove('is-open');
-      menuToggle.setAttribute('aria-expanded', 'false');
+      menuToggle?.setAttribute('aria-expanded', 'false');
     }
 
-    function selectSection(section, label) {
-      sectionTitle.textContent = label;
-      document.querySelectorAll('[data-admin-section]').forEach(function (link) {
-        link.classList.toggle('active', link.dataset.adminSection === section);
+    function switchSection(sectionKey, sectionLabel) {
+      if (sectionTitle) sectionTitle.textContent = sectionLabel;
+
+      document.querySelectorAll('[data-admin-section]').forEach(link => {
+        link.classList.toggle('active', link.dataset.adminSection === sectionKey);
       });
-      const isOverview = section === 'overview';
-      overview.hidden = !isOverview;
-      placeholder.hidden = isOverview;
+
+      const isOverview = sectionKey === 'overview';
+
+      if (overviewSection) overviewSection.hidden = !isOverview;
+      if (placeholderSection) placeholderSection.hidden = isOverview;
+
       if (!isOverview) {
-        placeholderTitle.textContent = `${label} is being prepared.`;
-        placeholderCopy.textContent = `${label} management has not been implemented yet. This read-only foundation does not provide simulated actions or controls.`;
+        if (placeholderTitle) placeholderTitle.textContent = `${sectionLabel} is being prepared.`;
+        if (placeholderCopy) {
+          placeholderCopy.textContent = `${sectionLabel} management has not been implemented yet. This read-only foundation does not provide simulated actions or controls.`;
+        }
       }
-      closeMobileNavigation();
+
+      closeMobileSidebar();
     }
 
-    async function logout() {
+    async function handleLogout() {
       const result = await auth.signOut();
       if (result.error) {
-        setConnection('Logout failed', 'is-limited');
+        setConnectionStatus('Logout failed', 'is-limited');
         return;
       }
       window.location.replace('auth.html');
     }
+
+    // -------------------------------------------------------------------------
+    // Authority & Session Verification
+    // -------------------------------------------------------------------------
 
     if (!auth || !auth.configured || !auth.client) {
       showAccessError('Supabase authentication is not configured for this environment.');
@@ -261,40 +385,64 @@
         return;
       }
 
+      // Authority verified
       verifiedUserId = sessionResult.session.user.id;
-      const email = sessionResult.session.user.email || 'Verified super-admin';
-      accountEmail.textContent = email;
-      sidebarEmail.textContent = email;
-      accessState.hidden = true;
-      dashboard.hidden = false;
+      const userEmail = sessionResult.session.user.email || 'Verified super-admin';
 
-      document.querySelectorAll('[data-admin-section]').forEach(function (link) {
-        link.addEventListener('click', function (event) {
+      if (accountEmail) accountEmail.textContent = userEmail;
+      if (sidebarEmail) sidebarEmail.textContent = userEmail;
+
+      if (accessState) accessState.hidden = true;
+      if (dashboard) dashboard.hidden = false;
+
+      // Bind Section Navigation
+      document.querySelectorAll('[data-admin-section]').forEach(link => {
+        link.addEventListener('click', event => {
           event.preventDefault();
-          selectSection(link.dataset.adminSection, link.dataset.sectionLabel);
+          switchSection(link.dataset.adminSection, link.dataset.sectionLabel);
           window.history.replaceState(null, '', `#${link.dataset.adminSection}`);
         });
       });
-      menuToggle.addEventListener('click', function () {
-        const open = sidebar.classList.toggle('is-open');
-        menuToggle.setAttribute('aria-expanded', String(open));
+
+      // Bind Mobile Menu Toggle
+      menuToggle?.addEventListener('click', () => {
+        const isOpen = sidebar?.classList.toggle('is-open');
+        menuToggle.setAttribute('aria-expanded', String(isOpen));
       });
-      document.querySelectorAll('#admin-top-logout, #admin-sidebar-logout').forEach(button => button.addEventListener('click', logout));
 
-      const requestedSection = window.location.hash.slice(1);
-      const requestedLink = document.querySelector(`[data-admin-section="${requestedSection}"]`);
-      selectSection(requestedLink ? requestedSection : 'overview', requestedLink ? requestedLink.dataset.sectionLabel : 'Overview');
-      await loadOverview();
+      // Bind Logout Actions
+      document.querySelectorAll('#admin-top-logout, #admin-sidebar-logout').forEach(button => {
+        button.addEventListener('click', handleLogout);
+      });
 
-      auth.onAuthStateChange(function (event, session) {
+      // Restore requested section or default to overview
+      const initialSectionKey = window.location.hash.slice(1);
+      const matchedLink = document.querySelector(`[data-admin-section="${initialSectionKey}"]`);
+      switchSection(
+        matchedLink ? initialSectionKey : 'overview',
+        matchedLink ? matchedLink.dataset.sectionLabel : 'Overview'
+      );
+
+      // Load initial overview data
+      await loadOverviewData();
+
+      // Monitor session invalidation
+      auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_OUT' || !session) {
           window.location.replace('auth.html');
         } else if (session.user.id !== verifiedUserId) {
           window.location.reload();
         }
       });
-    } catch (error) {
+    } catch (err) {
+      console.error('Administration entry error:', err);
       showAccessError('The administration room could not be loaded. Please try again.');
     }
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAdmin);
+  } else {
+    initAdmin();
+  }
 })();

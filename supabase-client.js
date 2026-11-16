@@ -1,104 +1,183 @@
+/**
+ * THE VAULT — Supabase Client Wrapper
+ *
+ * Provides a secure, browser-safe authentication and client interface.
+ * All administrative checks are validated via database RPCs on the backend;
+ * no elevated roles or credentials are ever handled on the client.
+ */
+
 (function () {
   'use strict';
 
   const config = window.VAULT_SUPABASE_CONFIG || {};
-  const hasConfig = Boolean(
+
+  const isConfigured = Boolean(
     window.supabase &&
     config.url &&
     config.publishableKey &&
     !config.url.includes('YOUR_PROJECT_REF') &&
     !config.publishableKey.includes('YOUR_SUPABASE_')
   );
-  const client = hasConfig ? window.supabase.createClient(config.url, config.publishableKey) : null;
-  const authListeners = new Set();
 
-  async function getSession() {
-    if (!client) return { session: null, error: new Error('Supabase authentication is not configured.') };
-    const result = await client.auth.getSession();
-    return { session: result.data.session, error: result.error };
+  const client = isConfigured
+    ? window.supabase.createClient(config.url, config.publishableKey)
+    : null;
+
+  function unconfiguredError() {
+    return { data: null, error: new Error('Supabase authentication is not configured.') };
   }
 
+  function getRedirectUrl() {
+    return new URL('auth.html', window.location.href).href;
+  }
+
+  /**
+   * Retrieves the current Supabase session.
+   */
+  async function getSession() {
+    if (!client) {
+      return { session: null, error: new Error('Supabase authentication is not configured.') };
+    }
+
+    try {
+      const { data, error } = await client.auth.getSession();
+      return { session: data?.session || null, error };
+    } catch (err) {
+      return { session: null, error: err };
+    }
+  }
+
+  /**
+   * Validates whether the active session belongs to the designated super-admin.
+   * Authority is verified strictly by the database RPC; client assertions are never trusted.
+   */
   async function isSuperAdmin() {
     const sessionResult = await getSession();
     if (sessionResult.error || !sessionResult.session) {
       return { authorized: false, error: sessionResult.error };
     }
 
-    const result = await client.rpc('is_super_admin');
-    return { authorized: result.error ? false : result.data === true, error: result.error };
+    try {
+      const { data, error } = await client.rpc('is_super_admin');
+      return {
+        authorized: error ? false : data === true,
+        error
+      };
+    } catch (err) {
+      return { authorized: false, error: err };
+    }
   }
 
-  function redirectUrl() {
-    return new URL('auth.html', window.location.href).href;
-  }
-
+  /**
+   * Registers a new user via email and password.
+   */
   async function signUp(email, password) {
-    if (!client) return { data: null, error: new Error('Supabase authentication is not configured.') };
-    return client.auth.signUp({email, password, options: {emailRedirectTo: redirectUrl()}});
+    if (!client) return unconfiguredError();
+
+    return client.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: getRedirectUrl() }
+    });
   }
 
+  /**
+   * Signs in an existing user with email and password.
+   */
   async function signIn(email, password) {
-    if (!client) return { data: null, error: new Error('Supabase authentication is not configured.') };
-    return client.auth.signInWithPassword({email, password});
+    if (!client) return unconfiguredError();
+
+    return client.auth.signInWithPassword({ email, password });
   }
 
+  /**
+   * Initiates Google OAuth authentication flow.
+   */
   async function signInWithGoogle() {
-    if (!client) return { data: null, error: new Error('Supabase authentication is not configured.') };
-    return client.auth.signInWithOAuth({provider: 'google', options: {redirectTo: redirectUrl()}});
+    if (!client) return unconfiguredError();
+
+    return client.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: getRedirectUrl() }
+    });
   }
 
+  /**
+   * Requests a password recovery email.
+   */
   async function requestPasswordReset(email) {
-    if (!client) return { data: null, error: new Error('Supabase authentication is not configured.') };
-    return client.auth.resetPasswordForEmail(email, {redirectTo: redirectUrl()});
+    if (!client) return unconfiguredError();
+
+    return client.auth.resetPasswordForEmail(email, {
+      redirectTo: getRedirectUrl()
+    });
   }
 
+  /**
+   * Updates the password for the active authenticated session.
+   */
   async function updatePassword(password) {
-    if (!client) return { data: null, error: new Error('Supabase authentication is not configured.') };
-    return client.auth.updateUser({password});
+    if (!client) return unconfiguredError();
+
+    return client.auth.updateUser({ password });
   }
 
+  /**
+   * Terminates the current authenticated session.
+   */
   async function signOut() {
     if (!client) return { error: null };
     return client.auth.signOut();
   }
 
+  /**
+   * Subscribes to Supabase authentication state transitions.
+   */
   function onAuthStateChange(callback) {
-    if (!client) return {unsubscribe: function () {}};
-    const subscription = client.auth.onAuthStateChange(function (event, session) {
-      authListeners.forEach(function (listener) { listener(event, session); });
+    if (!client) {
+      return { unsubscribe() {} };
+    }
+
+    const { data } = client.auth.onAuthStateChange((event, session) => {
       callback(event, session);
     });
-    return subscription.data.subscription;
+
+    return data.subscription;
   }
 
-  function setupNavigation() {
-    const links = document.querySelectorAll('[data-demo-account]');
-    if (!links.length) return;
-
-    links.forEach(function (link) {
-      link.href = 'auth.html';
-      link.removeAttribute('data-demo-account');
-    });
-
-    getSession().then(function (result) {
-      updateNavigation(result.session);
-    });
-
-    onAuthStateChange(function (event, session) {
-      updateNavigation(session);
-    });
-  }
-
+  /**
+   * Synchronizes navigation account links with the active authentication state.
+   */
   function updateNavigation(session) {
-    document.querySelectorAll('.account-link').forEach(function (link) {
+    const accountLinks = document.querySelectorAll('.account-link');
+    accountLinks.forEach(link => {
       link.innerHTML = session ? 'Account <span>↗</span>' : 'Enter <span>↗</span>';
       link.href = 'auth.html';
       link.setAttribute('aria-label', session ? 'Open account' : 'Sign in');
     });
   }
 
+  function setupNavigation() {
+    const demoLinks = document.querySelectorAll('[data-demo-account]');
+    if (!demoLinks.length) return;
+
+    demoLinks.forEach(link => {
+      link.href = 'auth.html';
+      link.removeAttribute('data-demo-account');
+    });
+
+    getSession().then(result => {
+      updateNavigation(result.session);
+    });
+
+    onAuthStateChange((event, session) => {
+      updateNavigation(session);
+    });
+  }
+
+  // Export public interface on window.vaultAuth
   window.vaultAuth = Object.freeze({
-    configured: hasConfig,
+    configured: isConfigured,
     client: client,
     getSession: getSession,
     isSuperAdmin: isSuperAdmin,
@@ -109,8 +188,12 @@
     updatePassword: updatePassword,
     signOut: signOut,
     onAuthStateChange: onAuthStateChange,
-    redirectUrl: redirectUrl
+    redirectUrl: getRedirectUrl
   });
 
-  document.addEventListener('DOMContentLoaded', setupNavigation);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupNavigation);
+  } else {
+    setupNavigation();
+  }
 })();
