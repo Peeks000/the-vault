@@ -1,0 +1,39 @@
+{
+  "projectId": "6fd2be6a-0f8d-4472-8855-3e90bedf40e5",
+  "type": "frontend",
+  "name": "02 Explore Catalogue — Filters, search, and count updates",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /explore.html and wait for the auction grid to render"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the results count text displays 'SHOWING 08 SELECTED LOTS'"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Timepieces' filter chip"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the results count text updates to 'SHOWING 02 SELECTED LOTS'"
+    },
+    {
+      "type": "action",
+      "description": "Type 'Chronograph' into the search input with id 'lot-search'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the results count text updates to 'SHOWING 01 SELECTED LOT'"
+    },
+    {
+      "type": "action",
+      "description": "Clear the search input '#lot-search' and click the 'All' filter chip"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the results count resets to 'SHOWING 08 SELECTED LOTS'"
+    }
+  ]
+}

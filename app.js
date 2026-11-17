@@ -675,7 +675,7 @@
 
     const params = new URLSearchParams(window.location.search);
     const requestedId = params.get('lot');
-    const lot = AUCTION_LOTS.find(item => item.id === requestedId) || (!requestedId ? AUCTION_LOTS[0] : null);
+    const lot = AUCTION_LOTS.find(item => item.id === requestedId || (requestedId && requestedId.startsWith(item.id))) || (!requestedId ? AUCTION_LOTS[0] : null);
 
     if (!lot) {
       document.title = 'Lot not found — THE VAULT';
@@ -1279,7 +1279,7 @@
     if (!articleRoot) return;
 
     const requestedStory = new URLSearchParams(window.location.search).get('story');
-    const article = JOURNAL_ARTICLES.find(item => item.id === requestedStory);
+    const article = JOURNAL_ARTICLES.find(item => item.id === requestedStory || (requestedStory && requestedStory.startsWith(item.id)));
 
     if (!article) {
       document.title = 'Story not found — THE VAULT';
@@ -1425,6 +1425,17 @@
     document.querySelectorAll('[data-contact-type]').forEach(button => {
       button.addEventListener('click', () => {
         fields.type.value = button.dataset.contactType;
+        Array.from(fields.type.options).forEach(opt => {
+          if (opt.value === button.dataset.contactType) {
+            opt.selected = true;
+            opt.setAttribute('selected', 'selected');
+          } else {
+            opt.selected = false;
+            opt.removeAttribute('selected');
+          }
+        });
+        fields.type.dispatchEvent(new Event('change', { bubbles: true }));
+        fields.type.dispatchEvent(new Event('input', { bubbles: true }));
         setFieldError('type', '');
         fields.type.focus();
       });

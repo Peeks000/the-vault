@@ -1,0 +1,43 @@
+{
+  "projectId": "6fd2be6a-0f8d-4472-8855-3e90bedf40e5",
+  "type": "frontend",
+  "name": "04 Simulated Bidding — Increment validation and bid acceptance",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /lot.html?lot=watch and wait for the bid panel to render"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify current highest bid is '₹2,40,000' and valid bids count is '07'"
+    },
+    {
+      "type": "action",
+      "description": "Clear the bid amount input with id 'bid-amount' and enter '243000'"
+    },
+    {
+      "type": "action",
+      "description": "Click the button with id 'place-bid'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the bid feedback element displays error message starting with 'Enter a bid of at least'"
+    },
+    {
+      "type": "action",
+      "description": "Clear the bid amount input with id 'bid-amount' and enter '250000'"
+    },
+    {
+      "type": "action",
+      "description": "Click the button with id 'place-bid'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify current highest bid updates to '₹2,50,000' and valid bids count updates to '08'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the bid feedback element displays 'Demo bid accepted in this browser. No real bid or payment has been submitted.'"
+    }
+  ]
+}

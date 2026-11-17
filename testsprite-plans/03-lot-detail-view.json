@@ -1,0 +1,35 @@
+{
+  "projectId": "6fd2be6a-0f8d-4472-8855-3e90bedf40e5",
+  "type": "frontend",
+  "name": "03 Lot Detail View — Details presentation and thumbnail switching",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /explore.html and wait for the auction grid to render"
+    },
+    {
+      "type": "action",
+      "description": "Click the lot card link for 'The Heritage Chronograph'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the breadcrumb shows LOT 024 and heading displays The Heritage Chronograph"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the estimate displays '₹2,00,000 – ₹3,00,000' and current highest bid is '₹2,40,000'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the gallery instruction text displays 'SELECT AN IMAGE TO VIEW'"
+    },
+    {
+      "type": "action",
+      "description": "Click the button with aria-label 'View image 2'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the lot story heading displays 'Timepieces, considered.'"
+    }
+  ]
+}

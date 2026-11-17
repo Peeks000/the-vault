@@ -1,0 +1,31 @@
+{
+  "projectId": "6fd2be6a-0f8d-4472-8855-3e90bedf40e5",
+  "type": "frontend",
+  "name": "10 Authentication — Mode switching between sign in, register, and recovery",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /auth.html and wait for the authentication panel to load"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the sign-in form is visible with email and password fields"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Create account' tab button"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the register form with confirm password field is visible"
+    },
+    {
+      "type": "action",
+      "description": "Click the 'Sign in' tab button, then click 'Forgot your password?'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the recovery form is visible with 'Send recovery link ↗' button"
+    }
+  ]
+}

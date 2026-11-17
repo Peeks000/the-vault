@@ -1,0 +1,23 @@
+{
+  "projectId": "6fd2be6a-0f8d-4472-8855-3e90bedf40e5",
+  "type": "frontend",
+  "name": "06 Arena — Live room session and active floor switching",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /arena.html and wait for the arena floor to load"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the arena entrance displays 'The room is open.' and status 'OPEN / SIMULATED'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the arena featured object displays a featured lot title and bid desk"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the active floor displays cards with 'Make featured ↗' links"
+    }
+  ]
+}

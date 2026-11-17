@@ -1,0 +1,35 @@
+{
+  "projectId": "6fd2be6a-0f8d-4472-8855-3e90bedf40e5",
+  "type": "frontend",
+  "name": "09 Correspondence — Contact form validation and submission",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /contact.html and wait for the correspondence form to load"
+    },
+    {
+      "type": "action",
+      "description": "Click the submit button 'Record enquiry ↗'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify error messages appear for required fields name, email, type, subject, and message"
+    },
+    {
+      "type": "action",
+      "description": "Click the direction shortcut button for 'Consign an Object'"
+    },
+    {
+      "type": "action",
+      "description": "Fill in '#contact-name' with 'Collector Test', '#contact-email' with 'test@example.com', '#contact-subject' with 'Timepiece Consignment', and '#contact-message' with 'Inquiry regarding vintage watch lot.'"
+    },
+    {
+      "type": "action",
+      "description": "Click the submit button 'Record enquiry ↗'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the confirmation message displays 'Your demonstration enquiry has been recorded in this session. No message has been transmitted.'"
+    }
+  ]
+}

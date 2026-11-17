@@ -1,0 +1,23 @@
+{
+  "projectId": "6fd2be6a-0f8d-4472-8855-3e90bedf40e5",
+  "type": "frontend",
+  "name": "01 Homepage — Brand identity, navigation, and featured lot",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /index.html and verify the page loads completely"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the header displays the wordmark THE VAULT and navigation links for Home, Auctions, Arena, Collections, Journal, and About"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the hero section displays the headline 'Not everything is meant to be ordinary.'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the featured auction section displays LOT 024 The Heritage Chronograph with estimate and current bid"
+    }
+  ]
+}

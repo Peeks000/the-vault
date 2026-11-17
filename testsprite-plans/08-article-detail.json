@@ -1,0 +1,27 @@
+{
+  "projectId": "6fd2be6a-0f8d-4472-8855-3e90bedf40e5",
+  "type": "frontend",
+  "name": "08 Article View — Full story reading and related articles",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /journal.html and wait for stories to load"
+    },
+    {
+      "type": "action",
+      "description": "Click the story link for 'The Art of Mechanical Watchmaking'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the article title displays 'The Art of Mechanical Watchmaking'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the article body displays 'A slower measure'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the related stories section displays continue reading suggestions"
+    }
+  ]
+}

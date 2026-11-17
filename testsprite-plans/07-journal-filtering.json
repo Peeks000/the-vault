@@ -1,0 +1,31 @@
+{
+  "projectId": "6fd2be6a-0f8d-4472-8855-3e90bedf40e5",
+  "type": "frontend",
+  "name": "07 Journal — Masthead, cover story, and category filtering",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /journal.html and wait for stories to load"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the masthead displays THE JOURNAL and the story count shows '05 STORIES'"
+    },
+    {
+      "type": "action",
+      "description": "Click the filter button for 'Watches'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the story count updates to '01 STORY'"
+    },
+    {
+      "type": "action",
+      "description": "Click the filter button for 'All stories'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the story count returns to '05 STORIES'"
+    }
+  ]
+}

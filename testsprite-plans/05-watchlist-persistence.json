@@ -1,0 +1,27 @@
+{
+  "projectId": "6fd2be6a-0f8d-4472-8855-3e90bedf40e5",
+  "type": "frontend",
+  "name": "05 Watchlist — Save lot toggle and filter persistence",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /explore.html and wait for lots to render"
+    },
+    {
+      "type": "action",
+      "description": "Click the save button on the first lot card"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the header watchlist count displays '1'"
+    },
+    {
+      "type": "action",
+      "description": "Click the filter button with id 'saved-filter'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the results count displays 'SHOWING 01 SAVED LOT'"
+    }
+  ]
+}
