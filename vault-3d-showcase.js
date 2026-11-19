@@ -116,6 +116,68 @@
       // Group holding the centered model
       this.modelGroup = new THREE.Group();
       this.scene.add(this.modelGroup);
+
+      // Render instant visual artifact so canvas is never blank
+      this.setupPlaceholderArtifact();
+    }
+
+    setupPlaceholderArtifact() {
+      this.placeholderGroup = new THREE.Group();
+
+      // 1. Vintage camera body chassis
+      const bodyMat = new THREE.MeshStandardMaterial({
+        color: 0x242621,
+        roughness: 0.45,
+        metalness: 0.65
+      });
+      const bodyMesh = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.56, 0.44), bodyMat);
+      bodyMesh.castShadow = true;
+      bodyMesh.receiveShadow = true;
+      this.placeholderGroup.add(bodyMesh);
+
+      // 2. Brass top plate
+      const brassMat = new THREE.MeshStandardMaterial({
+        color: 0xc4a672,
+        roughness: 0.32,
+        metalness: 0.85
+      });
+      const topPlate = new THREE.Mesh(new THREE.BoxGeometry(0.93, 0.12, 0.45), brassMat);
+      topPlate.position.y = 0.32;
+      this.placeholderGroup.add(topPlate);
+
+      // 3. Central mechanical lens barrel
+      const lensMat = new THREE.MeshStandardMaterial({
+        color: 0x181916,
+        roughness: 0.35,
+        metalness: 0.75
+      });
+      const lensMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.27, 0.32, 32), lensMat);
+      lensMesh.rotation.x = Math.PI / 2;
+      lensMesh.position.set(0, 0.02, 0.28);
+      this.placeholderGroup.add(lensMesh);
+
+      // 4. Brass lens aperture ring
+      const ringMesh = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.016, 16, 32), brassMat);
+      ringMesh.position.set(0, 0.02, 0.44);
+      this.placeholderGroup.add(ringMesh);
+
+      // 5. Dial knobs
+      const knob1 = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.08, 16), brassMat);
+      knob1.position.set(-0.3, 0.41, 0);
+      const knob2 = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.06, 16), brassMat);
+      knob2.position.set(0.32, 0.4, 0);
+      this.placeholderGroup.add(knob1);
+      this.placeholderGroup.add(knob2);
+
+      // 6. Orbital focus ring
+      const orbitRing = new THREE.Mesh(
+        new THREE.TorusGeometry(0.88, 0.005, 16, 64),
+        new THREE.MeshBasicMaterial({ color: 0xd4bc91, transparent: true, opacity: 0.45 })
+      );
+      orbitRing.rotation.x = Math.PI / 3;
+      this.placeholderGroup.add(orbitRing);
+
+      this.modelGroup.add(this.placeholderGroup);
     }
 
     setupLights() {
@@ -225,11 +287,11 @@
         if (progressBar) progressBar.textContent = `${simProgress}%`;
       }, 160);
 
-      // Maximum 1.8s timeout: guarantees the loader clears cleanly even on slow networks / headless test runners
+      // Fast 800ms timeout: guarantees the loader clears cleanly even on slow networks / headless test runners
       const safetyTimeout = setTimeout(() => {
         clearInterval(progTimer);
         this.dismissLoader();
-      }, 1800);
+      }, 800);
 
       const loader = new THREE.GLTFLoader();
       const modelUrl = 'assets/3d_model_the_vault.glb';
@@ -271,6 +333,11 @@
               }
             }
           });
+
+          if (this.placeholderGroup) {
+            this.modelGroup.remove(this.placeholderGroup);
+            this.placeholderGroup = null;
+          }
 
           this.modelGroup.add(rawModel);
 
