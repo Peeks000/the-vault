@@ -443,26 +443,61 @@
   function setupSaveButtons() { Watchlist.bindButtons(); }
 
   // ---------------------------------------------------------------------------
-  // 4. Shared Simulated Bidding Utility
+  // 4. Shared Simulated Bidding Utility & Session Persistence
   // ---------------------------------------------------------------------------
 
+  const SESSION_BIDS_STORAGE_KEY = 'vault-demo-bids';
+
+  function getSessionBids() {
+    try {
+      const data = sessionStorage.getItem(SESSION_BIDS_STORAGE_KEY);
+      return data ? JSON.parse(data) : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function setSessionBid(lotId, price, bidCount) {
+    try {
+      const map = getSessionBids();
+      map[lotId] = { price, bidCount, timestamp: Date.now() };
+      sessionStorage.setItem(SESSION_BIDS_STORAGE_KEY, JSON.stringify(map));
+    } catch (_) {}
+  }
+
   function createBidDesk({
+    lotId,
     initialPrice,
     initialBids,
     increment = 5000,
     onBidAccepted
   }) {
-    let currentPrice = initialPrice;
-    let bidCount = initialBids;
+    // Check if session bid already exists
+    const sessionBids = getSessionBids();
+    const stored = lotId && sessionBids[lotId] ? sessionBids[lotId] : null;
+
+    let currentPrice = stored ? stored.price : initialPrice;
+    let bidCount = stored ? stored.bidCount : initialBids;
 
     function getMinimumBid() {
       return currentPrice + increment;
     }
 
+    function getValidationError(amount) {
+      if (!Number.isFinite(amount) || amount <= 0) {
+        return `Enter a bid of at least ${Formatters.currency(getMinimumBid())}.`;
+      }
+      if (amount < getMinimumBid()) {
+        return `Enter a bid of at least ${Formatters.currency(getMinimumBid())} in increments of ${Formatters.currency(increment)}.`;
+      }
+      if ((amount - currentPrice) % increment !== 0) {
+        return `Enter a bid of at least ${Formatters.currency(getMinimumBid())} in increments of ${Formatters.currency(increment)}.`;
+      }
+      return '';
+    }
+
     function isValid(amount) {
-      if (!Number.isFinite(amount)) return false;
-      if (amount < getMinimumBid()) return false;
-      return (amount - currentPrice) % increment === 0;
+      return getValidationError(amount) === '';
     }
 
     function recordBid(amount) {
@@ -470,6 +505,10 @@
 
       currentPrice = amount;
       bidCount += 1;
+
+      if (lotId) {
+        setSessionBid(lotId, currentPrice, bidCount);
+      }
 
       if (typeof onBidAccepted === 'function') {
         onBidAccepted(currentPrice, bidCount);
@@ -491,16 +530,158 @@
       getMinimumBid,
       getIncrement: () => increment,
       isValid,
+      getValidationError,
       recordBid,
       getSimulatedHistory
     };
   }
 
   // ---------------------------------------------------------------------------
-  // 5. Explore Catalog View
+  // 5. Catalogue Service (Supabase Integration with Resilient Fallback)
   // ---------------------------------------------------------------------------
 
-  function renderExplore() {
+  const SAMPLE_AUCTION_LOTS = AUCTION_LOTS;
+
+  function mapDatabaseLotToLot(row) {
+    const images = Array.isArray(row.lot_images) ? [...row.lot_images] : [];
+    images.sort((a, b) => {
+      if (a.is_primary && !b.is_primary) return -1;
+      if (!a.is_primary && b.is_primary) return 1;
+      return (a.sort_order || 0) - (b.sort_order || 0);
+    });
+
+    const primaryImage = images[0]?.image_url || 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85';
+    const gallery = images.length > 0 ? images.map(img => img.image_url) : [primaryImage];
+
+    let endsInSeconds = 86400;
+    if (row.ends_at) {
+      const diff = Math.floor((new Date(row.ends_at).getTime() - Date.now()) / 1000);
+      endsInSeconds = diff > 0 ? diff : 0;
+    }
+
+    const lotId = row.legacy_id || row.id;
+    const numOnly = (row.lot_number || '').replace(/^LOT\s*/i, '').trim();
+
+    let estimateStr = 'Estimate upon request';
+    if (row.estimate_low && row.estimate_high) {
+      estimateStr = `${Formatters.currency(row.estimate_low)} – ${Formatters.currency(row.estimate_high)}`;
+    } else if (row.estimate_low) {
+      estimateStr = `From ${Formatters.currency(row.estimate_low)}`;
+    }
+
+    const sessionBids = getSessionBids();
+    const stored = sessionBids[lotId];
+    const livePrice = stored ? stored.price : (Number(row.current_bid) || 0);
+    const liveCount = stored ? stored.bidCount : (Number(row.bid_count) || 0);
+
+    return {
+      id: lotId,
+      dbId: row.id,
+      key: `lot-${lotId}`,
+      number: numOnly || '001',
+      category: row.category || 'Objects',
+      period: row.period || 'Contemporary',
+      title: row.title,
+      subtitle: row.subtitle || '',
+      price: livePrice,
+      bids: liveCount,
+      estimate: estimateStr,
+      ends: endsInSeconds,
+      image: primaryImage,
+      gallery: gallery,
+      story: row.description || '',
+      status: row.status,
+      isDatabase: true
+    };
+  }
+
+  const CatalogueService = {
+    cachedLots: null,
+    fetchPromise: null,
+
+    async getLots() {
+      if (this.cachedLots) return this.cachedLots;
+      if (this.fetchPromise) return this.fetchPromise;
+
+      this.fetchPromise = (async () => {
+        const auth = window.vaultAuth;
+        if (!auth || !auth.client) {
+          this.cachedLots = SAMPLE_AUCTION_LOTS;
+          return this.cachedLots;
+        }
+
+        try {
+          const { data, error } = await auth.client
+            .from('auction_lots')
+            .select(`
+              id,
+              legacy_id,
+              lot_number,
+              category,
+              period,
+              title,
+              subtitle,
+              description,
+              estimate_low,
+              estimate_high,
+              current_bid,
+              bid_count,
+              ends_at,
+              status,
+              published_at,
+              lot_images (
+                image_url,
+                alt_text,
+                is_primary,
+                sort_order
+              )
+            `)
+            .in('status', ['scheduled', 'live', 'closed'])
+            .not('published_at', 'is', null)
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            console.warn('Supabase catalogue query error, preserving demonstration archive:', error);
+            this.cachedLots = SAMPLE_AUCTION_LOTS;
+            return this.cachedLots;
+          }
+
+          if (!data || data.length === 0) {
+            this.cachedLots = SAMPLE_AUCTION_LOTS;
+            return this.cachedLots;
+          }
+
+          this.cachedLots = data.map(mapDatabaseLotToLot);
+          return this.cachedLots;
+        } catch (err) {
+          console.warn('Network error loading catalogue, falling back to demonstration archive:', err);
+          this.cachedLots = SAMPLE_AUCTION_LOTS;
+          return this.cachedLots;
+        } finally {
+          this.fetchPromise = null;
+        }
+      })();
+
+      return this.fetchPromise;
+    },
+
+    async getLotById(requestedId) {
+      const all = await this.getLots();
+      let match = all.find(item => item.id === requestedId || (requestedId && (requestedId.startsWith(item.id) || item.id.startsWith(requestedId))));
+      if (match) return match;
+
+      match = SAMPLE_AUCTION_LOTS.find(item => item.id === requestedId || (requestedId && requestedId.startsWith(item.id)));
+      if (match) return match;
+
+      return !requestedId ? all[0] || SAMPLE_AUCTION_LOTS[0] : null;
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // 6. Explore Catalog View
+  // ---------------------------------------------------------------------------
+
+  async function renderExplore() {
     const grid = document.querySelector('#auction-grid');
     if (!grid) return;
 
@@ -519,6 +700,7 @@
     const resultsCount = document.querySelector('#results-count');
     const emptyState = document.querySelector('#empty-state');
     const emptyNotice = emptyState?.querySelector('p');
+    const editCountEl = document.querySelector('#explore-edit-count');
 
     if (savedOnly && savedFilter) {
       savedFilter.scrollIntoView({ block: 'center' });
@@ -565,11 +747,13 @@
       `.trim();
     }
 
+    let activeCatalogue = SAMPLE_AUCTION_LOTS;
+
     function renderList() {
       const savedKeys = Watchlist.getAll();
 
-      let visibleLots = AUCTION_LOTS.filter(lot => {
-        const matchesCategory = activeCategory === 'All' || lot.category === activeCategory;
+      let visibleLots = activeCatalogue.filter(lot => {
+        const matchesCategory = activeCategory === 'All' || lot.category.toLowerCase() === activeCategory.toLowerCase();
         const matchesSaved = !savedOnly || savedKeys.includes(lot.key);
         const searchable = `${lot.title} ${lot.category} ${lot.period} ${lot.number}`.toLowerCase();
         const matchesSearch = searchable.includes(searchQuery.toLowerCase());
@@ -596,12 +780,16 @@
         resultsCount.textContent = `SHOWING ${countText} ${scopeText}${nounText}`;
       }
 
+      if (editCountEl) {
+        editCountEl.textContent = String(activeCatalogue.length).padStart(2, '0');
+      }
+
       if (emptyState) {
         emptyState.hidden = visibleLots.length > 0;
       }
       if (emptyNotice) {
         emptyNotice.textContent = savedOnly
-          ? 'Save a lot to begin building your edit.'
+          ? 'Save a lot from the collection to begin building your edit.'
           : 'Try another category or search term.';
       }
       if (savedCount) {
@@ -657,25 +845,33 @@
       renderList();
     });
 
-    // Initial category button active state
     filterButtons.forEach(button => {
       button.classList.toggle('active', button.dataset.filter === activeCategory);
     });
 
+    // Render initial list immediately
     renderList();
+
+    // Fetch dynamic database lots asynchronously and re-render if database records exist
+    CatalogueService.getLots().then(lots => {
+      if (lots && lots.length > 0) {
+        activeCatalogue = lots;
+        renderList();
+      }
+    });
   }
 
   // ---------------------------------------------------------------------------
-  // 6. Lot Detail View
+  // 7. Lot Detail View
   // ---------------------------------------------------------------------------
 
-  function renderLot() {
+  async function renderLot() {
     const titleElement = document.querySelector('#lot-title');
     if (!titleElement) return;
 
     const params = new URLSearchParams(window.location.search);
     const requestedId = params.get('lot');
-    const lot = AUCTION_LOTS.find(item => item.id === requestedId || (requestedId && requestedId.startsWith(item.id))) || (!requestedId ? AUCTION_LOTS[0] : null);
+    const lot = await CatalogueService.getLotById(requestedId);
 
     if (!lot) {
       document.title = 'Lot not found — THE VAULT';
@@ -691,13 +887,13 @@
       return;
     }
 
-    const gallery = lot.id === 'watch'
+    const gallery = lot.gallery && lot.gallery.length > 0 ? lot.gallery : (lot.id === 'watch'
       ? [
           lot.image,
           'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=1400&q=90',
           'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=1400&q=90'
         ]
-      : [lot.image];
+      : [lot.image]);
 
     const statusLabel = Formatters.status(lot.ends);
 
@@ -790,6 +986,7 @@
     const historyList = document.querySelector('#bid-history-list');
 
     const desk = createBidDesk({
+      lotId: lot.id,
       initialPrice: lot.price,
       initialBids: lot.bids,
       increment: 5000,
@@ -833,10 +1030,11 @@
 
     bidButton?.addEventListener('click', () => {
       const enteredAmount = Number(bidInput?.value);
+      const validationError = desk.getValidationError(enteredAmount);
 
-      if (!desk.isValid(enteredAmount)) {
+      if (validationError) {
         if (bidFeedback) {
-          bidFeedback.textContent = `Enter a bid of at least ${Formatters.currency(desk.getMinimumBid())} in increments of ${Formatters.currency(desk.getIncrement())}.`;
+          bidFeedback.textContent = validationError;
           bidFeedback.className = 'bid-feedback error';
         }
         return;
@@ -849,8 +1047,8 @@
         userRow.className = 'history-row';
         userRow.innerHTML = `
           <span>
-            <b>You (demo bidder)</b>
-            <small>Just now · simulated</small>
+            <b>You (session bidder)</b>
+            <small>Just now · demonstration</small>
           </span>
           <strong>${Formatters.currency(enteredAmount)}</strong>
         `.trim();
@@ -887,20 +1085,22 @@
     // Similar Lots Section
     const similarGrid = document.querySelector('#similar-lots-grid');
     if (similarGrid) {
-      const similarLots = AUCTION_LOTS
-        .filter(item => item.id !== lot.id && item.category === lot.category)
-        .slice(0, 3);
+      CatalogueService.getLots().then(allLots => {
+        const similarLots = allLots
+          .filter(item => item.id !== lot.id && item.category.toLowerCase() === lot.category.toLowerCase())
+          .slice(0, 3);
 
-      similarGrid.innerHTML = similarLots.map(item => `
-        <article class="similar-lot">
-          <a href="lot.html?lot=${encodeURIComponent(item.id)}">
-            <img src="${item.image}" alt="${item.title}" loading="lazy">
-            <span>LOT ${item.number} / ${item.category.toUpperCase()}</span>
-          </a>
-          <h3><a href="lot.html?lot=${encodeURIComponent(item.id)}">${item.title}</a></h3>
-          <p>${Formatters.currency(item.price)} / ${item.bids} bids</p>
-        </article>
-      `.trim()).join('');
+        similarGrid.innerHTML = similarLots.map(item => `
+          <article class="similar-lot">
+            <a href="lot.html?lot=${encodeURIComponent(item.id)}">
+              <img src="${item.image}" alt="${item.title}" loading="lazy">
+              <span>LOT ${item.number} / ${item.category.toUpperCase()}</span>
+            </a>
+            <h3><a href="lot.html?lot=${encodeURIComponent(item.id)}">${item.title}</a></h3>
+            <p>${Formatters.currency(item.price)} / ${item.bids} bids</p>
+          </article>
+        `.trim()).join('');
+      });
     }
 
     // Countdown Timer (illustrative prototype)
@@ -1052,6 +1252,7 @@
     const bidButton = document.querySelector('#arena-place-bid');
 
     const desk = createBidDesk({
+      lotId: featured.id,
       initialPrice: featured.price,
       initialBids: featured.bids,
       increment: 5000,
@@ -1092,10 +1293,11 @@
 
     bidButton?.addEventListener('click', () => {
       const enteredAmount = Number(bidAmountInput?.value);
+      const validationError = desk.getValidationError(enteredAmount);
 
-      if (!desk.isValid(enteredAmount)) {
+      if (validationError) {
         if (bidFeedback) {
-          bidFeedback.textContent = `Enter a bid of at least ${Formatters.currency(desk.getMinimumBid())} in increments of ${Formatters.currency(desk.getIncrement())}.`;
+          bidFeedback.textContent = validationError;
           bidFeedback.className = 'arena-feedback error';
         }
         return;
@@ -1106,7 +1308,7 @@
       if (bidHistory) {
         const row = document.createElement('div');
         row.innerHTML = `
-          <span>You / demo bidder<small>Just now · simulated</small></span>
+          <span>You / demo bidder<small>Just now · session active</small></span>
           <strong>${Formatters.currency(enteredAmount)}</strong>
         `.trim();
         bidHistory.prepend(row);
@@ -1521,11 +1723,11 @@
   // 12. Application Bootstrap
   // ---------------------------------------------------------------------------
 
-  function bootstrap() {
+  async function bootstrap() {
     setupMobileNavigation();
     setupSmoothScroll();
-    renderExplore();
-    renderLot();
+    await renderExplore();
+    await renderLot();
     renderHome();
     renderArena();
     renderJournal();
@@ -1544,6 +1746,8 @@
   // Export safe, immutable application namespace for testing and extension
   window.VaultApp = Object.freeze({
     lots: AUCTION_LOTS,
+    sampleLots: SAMPLE_AUCTION_LOTS,
+    catalogue: CatalogueService,
     articles: JOURNAL_ARTICLES,
     formatters: Formatters,
     watchlist: Watchlist,

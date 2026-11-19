@@ -179,6 +179,192 @@
           </section>
         </section>
 
+        <!-- 02 / LOTS SECTION (ADMIN CRUD) -->
+        <section id="admin-lots" class="admin-section" aria-labelledby="lots-heading" hidden>
+          <div class="admin-section-intro">
+            <div>
+              <p class="admin-kicker">02 / CATALOGUE MANAGEMENT</p>
+              <h2 id="lots-heading">Auction listings, <em>curated.</em></h2>
+            </div>
+            <div class="admin-lots-controls">
+              <button id="admin-add-lot-btn" class="button button-dark admin-btn-action" type="button">Add new lot <span>+</span></button>
+              <button id="admin-refresh-lots-btn" class="admin-btn-outline" type="button" title="Refresh lots from Supabase">↻ Refresh</button>
+              <button id="admin-seed-lots-btn" class="admin-btn-outline" type="button" title="Import demonstration lots to Supabase">Seed demo lots ↗</button>
+            </div>
+          </div>
+
+          <div class="admin-table-filters">
+            <div class="admin-search-wrap">
+              <span>⌕</span>
+              <input id="admin-lots-search" type="search" placeholder="Search by title, lot number, or category…" aria-label="Search listings">
+            </div>
+            <div class="admin-filter-group">
+              <label for="admin-status-filter">Status:</label>
+              <select id="admin-status-filter" aria-label="Filter by status">
+                <option value="all">All statuses</option>
+                <option value="draft">Draft</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="live">Live</option>
+                <option value="closed">Closed</option>
+                <option value="withdrawn">Withdrawn</option>
+              </select>
+            </div>
+            <div class="admin-filter-group">
+              <label for="admin-category-filter">Category:</label>
+              <select id="admin-category-filter" aria-label="Filter by category">
+                <option value="all">All categories</option>
+                <option value="Timepieces">Timepieces</option>
+                <option value="Fine Art">Fine Art</option>
+                <option value="Automotive">Automotive</option>
+                <option value="Jewellery">Jewellery</option>
+                <option value="Collectibles">Collectibles</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="admin-table-wrap">
+            <table class="admin-table" id="admin-lots-table">
+              <thead>
+                <tr>
+                  <th>LOT #</th>
+                  <th>ITEM & DETAILS</th>
+                  <th>CATEGORY</th>
+                  <th>CURRENT BID</th>
+                  <th>ESTIMATE</th>
+                  <th>STATUS</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="admin-lots-tbody">
+              </tbody>
+            </table>
+            <div id="admin-lots-status" class="admin-list-status">Loading auction lots…</div>
+          </div>
+        </section>
+
+        <!-- ADD / EDIT LOT MODAL -->
+        <div id="admin-lot-modal" class="admin-modal-backdrop" hidden>
+          <div class="admin-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-lot-title">
+            <div class="admin-modal-header">
+              <div>
+                <p class="admin-kicker">02 / CATALOGUE MANAGEMENT</p>
+                <h3 id="modal-lot-title">Add auction listing</h3>
+              </div>
+              <button id="admin-lot-modal-close" class="admin-modal-close" type="button" aria-label="Close modal">×</button>
+            </div>
+
+            <form id="admin-lot-form" class="admin-modal-form" novalidate>
+              <input type="hidden" id="lot-form-id">
+              <input type="hidden" id="lot-form-mode" value="add">
+
+              <div id="modal-lot-feedback" class="admin-modal-feedback" hidden></div>
+
+              <div class="admin-form-grid">
+                <div class="admin-form-field">
+                  <label for="lot-form-title">Product title <b>*</b></label>
+                  <input id="lot-form-title" type="text" placeholder="e.g. The Heritage Chronograph" required>
+                </div>
+
+                <div class="admin-form-field">
+                  <label for="lot-form-number">Lot number <b>*</b></label>
+                  <input id="lot-form-number" type="text" placeholder="e.g. 024" required>
+                </div>
+
+                <div class="admin-form-field">
+                  <label for="lot-form-category">Category <b>*</b></label>
+                  <select id="lot-form-category" required>
+                    <option value="Timepieces">Timepieces</option>
+                    <option value="Fine Art">Fine Art</option>
+                    <option value="Automotive">Automotive</option>
+                    <option value="Jewellery">Jewellery</option>
+                    <option value="Collectibles">Collectibles</option>
+                  </select>
+                </div>
+
+                <div class="admin-form-field">
+                  <label for="lot-form-status">Auction status <b>*</b></label>
+                  <select id="lot-form-status" required>
+                    <option value="draft">Draft</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="live" selected>Live</option>
+                    <option value="closed">Closed</option>
+                    <option value="withdrawn">Withdrawn</option>
+                  </select>
+                </div>
+
+                <div class="admin-form-field full-width">
+                  <label for="lot-form-subtitle">Subtitle</label>
+                  <input id="lot-form-subtitle" type="text" placeholder="A considered study in mechanical craft...">
+                </div>
+
+                <div class="admin-form-field full-width">
+                  <label for="lot-form-description">Description / story</label>
+                  <textarea id="lot-form-description" rows="3" placeholder="Editorial story and details about the lot..."></textarea>
+                </div>
+
+                <div class="admin-form-field">
+                  <label for="lot-form-period">Period / year</label>
+                  <input id="lot-form-period" type="text" placeholder="e.g. 1960s–70s">
+                </div>
+
+                <div class="admin-form-field">
+                  <label for="lot-form-price">Starting / current bid (INR) <b>*</b></label>
+                  <input id="lot-form-price" type="number" min="0" step="1000" placeholder="240000" required>
+                </div>
+
+                <div class="admin-form-field">
+                  <label for="lot-form-est-low">Estimate minimum (INR)</label>
+                  <input id="lot-form-est-low" type="number" min="0" step="1000" placeholder="200000">
+                </div>
+
+                <div class="admin-form-field">
+                  <label for="lot-form-est-high">Estimate maximum (INR)</label>
+                  <input id="lot-form-est-high" type="number" min="0" step="1000" placeholder="300000">
+                </div>
+
+                <div class="admin-form-field full-width">
+                  <label for="lot-form-image">Primary image URL</label>
+                  <input id="lot-form-image" type="url" placeholder="https://images.unsplash.com/...">
+                </div>
+
+                <div class="admin-form-field full-width">
+                  <label class="admin-checkbox-label">
+                    <input id="lot-form-published" type="checkbox" checked>
+                    <span>Publish immediately (visible to public catalogue)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="admin-modal-actions">
+                <button id="lot-form-submit" class="button button-dark" type="submit">Save listing <span>↗</span></button>
+                <button id="lot-form-cancel" class="admin-btn-outline" type="button">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- CONFIRM DELETE MODAL -->
+        <div id="admin-delete-modal" class="admin-modal-backdrop" hidden>
+          <div class="admin-modal-dialog admin-dialog-sm" role="dialog" aria-modal="true" aria-labelledby="modal-delete-title">
+            <div class="admin-modal-header">
+              <div>
+                <p class="admin-kicker">CONFIRM REMOVAL</p>
+                <h3 id="modal-delete-title">Delete auction lot?</h3>
+              </div>
+              <button id="admin-delete-modal-close" class="admin-modal-close" type="button" aria-label="Close">×</button>
+            </div>
+            <div class="admin-modal-body">
+              <p id="delete-modal-copy">Are you sure you want to permanently remove this auction lot? This action cannot be reversed.</p>
+              <div id="delete-modal-feedback" class="admin-modal-feedback error" hidden></div>
+            </div>
+            <div class="admin-modal-actions">
+              <button id="confirm-delete-btn" class="button admin-btn-danger" type="button">Delete lot permanently</button>
+              <button id="withdraw-instead-btn" class="button button-dark" type="button" hidden>Withdraw lot instead ↗</button>
+              <button id="cancel-delete-btn" class="admin-btn-outline" type="button">Cancel</button>
+            </div>
+          </div>
+        </div>
+
         <section id="admin-placeholder" class="admin-placeholder" aria-live="polite" hidden>
           <p class="admin-kicker">PRIVATE ROOM / LATER PHASE</p>
           <h2 id="admin-placeholder-title">This room is being prepared.</h2>
