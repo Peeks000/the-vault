@@ -33,7 +33,7 @@ body.vault-cursor-active [contenteditable="true"] {
   cursor: auto !important;
 }
 
-/* Ambient Firefly Canvas (Behind content, above background) */
+/* Ambient Firefly Canvas (Above content, below cursor and liquid trail) */
 .vault-firefly-canvas {
   position: fixed;
   top: 0;
@@ -41,8 +41,8 @@ body.vault-cursor-active [contenteditable="true"] {
   width: 100vw;
   height: 100vh;
   pointer-events: none !important;
-  z-index: 2;
-  display: block;
+  z-index: 99990;
+  display: block !important;
   will-change: transform;
 }
 
@@ -55,7 +55,7 @@ body.vault-cursor-active [contenteditable="true"] {
   height: 100vh;
   pointer-events: none !important;
   z-index: 99998;
-  display: block;
+  display: block !important;
   will-change: transform;
 }
 
@@ -297,25 +297,18 @@ body.vault-cursor-active [contenteditable="true"] {
 }
 
 /* ==========================================================================
-   3. Small Screen & Reduced Motion Optimization
+   3. Small Screen Optimization
    ========================================================================== */
 
 @media (max-width: 600px) and (hover: none) {
-  /* Only hide custom cursor elements on narrow mobile touch phones */
+  /* Hide custom pointer dot and ring on small touchscreen phones */
   .vault-cursor-dot,
-  .vault-cursor-ring,
-  .vault-trail-canvas {
+  .vault-cursor-ring {
     display: none !important;
   }
 
   body.vault-cursor-active,
   body.vault-cursor-active * {
     cursor: auto !important;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .vault-firefly-canvas {
-    display: none !important;
   }
 }

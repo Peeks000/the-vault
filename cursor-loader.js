@@ -13,11 +13,6 @@
 (function () {
   'use strict';
 
-  // ---------------------------------------------------------------------------
-  // Accessibility & Motion Checks
-  // ---------------------------------------------------------------------------
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
   // ===========================================================================
   // 1. ACTIVE THEORY INSPIRED CINEMATIC LOADING SCREEN
   // ===========================================================================
@@ -150,8 +145,8 @@
 
       // Fluid Trail History & Dynamics
       this.points = [];
-      this.maxTrailPoints = 38;
-      this.trailLifespan = 680; // ms for rich, visible molten liquid flow
+      this.maxTrailPoints = 40;
+      this.trailLifespan = 750; // ms for rich, visible molten liquid flow
 
       this.canvas = null;
       this.ctx = null;
@@ -370,14 +365,17 @@
     }
 
     addTrailPoint(x, y, vx, vy, speed, now) {
-      const normalizedSpeed = Math.min(speed / 30, 1);
-      const radius = 6.5 + (1 - normalizedSpeed) * 6.5;
+      // Dynamic molten droplet sizing:
+      // High velocity stretches ribbon thinner (7px - 10px radius)
+      // Slow movement pools fluid into a rich molten droplet (10px - 16px radius)
+      const normalizedSpeed = Math.min(speed / 28, 1);
+      const radius = 8 + (1 - normalizedSpeed) * 7.5;
 
       this.points.unshift({
         x: x,
         y: y,
-        vx: vx * 0.25,
-        vy: vy * 0.25,
+        vx: vx * 0.28,
+        vy: vy * 0.28,
         radius: radius,
         birth: now,
         lifespan: this.trailLifespan
@@ -412,7 +410,7 @@
         this.renderTrail(now);
 
         const idleDuration = now - this.lastMoveTime;
-        if (idleDuration > 300 && this.points.length === 0) {
+        if (idleDuration > 320 && this.points.length === 0) {
           this.rafId = null;
           return;
         }
@@ -447,8 +445,8 @@
 
         if (i > 0) {
           const newer = pts[i - 1];
-          pt.x += (newer.x - pt.x) * 0.11;
-          pt.y += (newer.y - pt.y) * 0.11;
+          pt.x += (newer.x - pt.x) * 0.12;
+          pt.y += (newer.y - pt.y) * 0.12;
         }
       }
     }
@@ -484,14 +482,14 @@
         const progress1 = Math.min(1, Math.max(0, age1 / p1.lifespan));
         const progress2 = Math.min(1, Math.max(0, age2 / p2.lifespan));
 
-        const alpha1 = Math.pow(1 - progress1, 1.25);
-        const alpha2 = Math.pow(1 - progress2, 1.25);
+        const alpha1 = Math.pow(1 - progress1, 1.2);
+        const alpha2 = Math.pow(1 - progress2, 1.2);
         const avgAlpha = (alpha1 + alpha2) / 2;
 
         if (avgAlpha <= 0.01) continue;
 
-        const r1 = Math.max(1.8, p1.radius * (1 - progress1 * 0.82));
-        const r2 = Math.max(1.2, p2.radius * (1 - progress2 * 0.82));
+        const r1 = Math.max(2.2, p1.radius * (1 - progress1 * 0.8));
+        const r2 = Math.max(1.6, p2.radius * (1 - progress2 * 0.8));
 
         const dx = p2.x - p1.x;
         const dy = p2.y - p1.y;
@@ -517,9 +515,10 @@
         ctx.lineTo(x1R, y1R);
         ctx.closePath();
 
-        ctx.fillStyle = `rgba(214, 185, 126, ${avgAlpha * 0.72})`;
-        ctx.shadowColor = 'rgba(214, 185, 126, 0.55)';
-        ctx.shadowBlur = 8;
+        // High contrast molten champagne gold: warm amber-brass with rich luminescence
+        ctx.fillStyle = `rgba(202, 162, 94, ${avgAlpha * 0.82})`;
+        ctx.shadowColor = 'rgba(164, 122, 54, 0.65)';
+        ctx.shadowBlur = 10;
         ctx.fill();
       }
 
@@ -528,27 +527,27 @@
         const pt = pts[i];
         const age = now - pt.birth;
         const progress = Math.min(1, Math.max(0, age / pt.lifespan));
-        const alpha = Math.pow(1 - progress, 1.3);
+        const alpha = Math.pow(1 - progress, 1.25);
 
         if (alpha <= 0.01) continue;
 
-        const r = Math.max(1.8, pt.radius * (1 - progress * 0.82));
+        const r = Math.max(2.2, pt.radius * (1 - progress * 0.8));
 
         const grad = ctx.createRadialGradient(
           pt.x, pt.y, 0,
           pt.x, pt.y, r
         );
 
-        grad.addColorStop(0, `rgba(252, 248, 238, ${alpha * 0.95})`);
-        grad.addColorStop(0.45, `rgba(224, 196, 140, ${alpha * 0.85})`);
-        grad.addColorStop(0.85, `rgba(186, 153, 98, ${alpha * 0.45})`);
-        grad.addColorStop(1, `rgba(186, 153, 98, 0)`);
+        grad.addColorStop(0, `rgba(255, 252, 244, ${alpha * 0.98})`);
+        grad.addColorStop(0.4, `rgba(238, 206, 138, ${alpha * 0.92})`);
+        grad.addColorStop(0.8, `rgba(186, 142, 66, ${alpha * 0.65})`);
+        grad.addColorStop(1, `rgba(164, 122, 54, 0)`);
 
         ctx.beginPath();
         ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
         ctx.fillStyle = grad;
-        ctx.shadowColor = 'rgba(214, 185, 126, 0.65)';
-        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(202, 162, 94, 0.75)';
+        ctx.shadowBlur = 12;
         ctx.fill();
       }
 
@@ -556,16 +555,16 @@
       if (pts.length > 2) {
         ctx.beginPath();
         ctx.moveTo(pts[0].x, pts[0].y);
-        for (let i = 0; i < Math.min(pts.length - 1, 14); i++) {
+        for (let i = 0; i < Math.min(pts.length - 1, 15); i++) {
           const xc = (pts[i].x + pts[i + 1].x) / 2;
           const yc = (pts[i].y + pts[i + 1].y) / 2;
           ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
         }
-        ctx.strokeStyle = 'rgba(255, 250, 240, 0.65)';
-        ctx.lineWidth = 1.8;
+        ctx.strokeStyle = 'rgba(255, 255, 250, 0.85)';
+        ctx.lineWidth = 2.2;
         ctx.lineCap = 'round';
-        ctx.shadowColor = 'rgba(255, 250, 240, 0.8)';
-        ctx.shadowBlur = 6;
+        ctx.shadowColor = 'rgba(255, 250, 236, 0.95)';
+        ctx.shadowBlur = 8;
         ctx.stroke();
       }
 
@@ -579,7 +578,7 @@
   class VaultFireflyParticle {
     constructor(emitterX, canvasWidth, canvasHeight, isInitial) {
       this.trail = [];
-      this.maxTrail = 5;
+      this.maxTrail = 6;
       this.reset(emitterX, canvasWidth, canvasHeight, isInitial);
     }
 
@@ -588,50 +587,50 @@
       this.h = canvasHeight;
       this.trail = [];
 
-      // Optical depth layers: 0.45 (distant/dimmer) to 1.0 (near/luminous)
-      this.depth = 0.45 + Math.random() * 0.55;
-      this.baseRadius = 1.3 + this.depth * 1.35; // 1.9px to 2.65px core radius
+      // Optical depth layers: 0.5 (distant) to 1.0 (near/radiant)
+      this.depth = 0.5 + Math.random() * 0.5;
+      this.baseRadius = 2.0 + this.depth * 1.6; // 2.8px to 3.6px core radius (unmistakably visible)
 
       // Spawn location:
-      // If isInitial, gracefully scatter across upper & mid gallery so room is immediately alive
+      // If isInitial, distribute across the visible viewport so room is immediately alive on load
       // If re-emerging during normal life-cycle, originate from the upper-edge colony cluster
       if (isInitial) {
-        this.x = emitterX + (Math.random() - 0.5) * (canvasWidth * 0.65);
-        this.y = 40 + Math.random() * (canvasHeight * 0.55);
+        this.x = emitterX + (Math.random() - 0.5) * (canvasWidth * 0.8);
+        this.y = 30 + Math.random() * (canvasHeight * 0.65);
         this.alpha = 0;
-        this.targetAlpha = 0.45 + this.depth * 0.45;
-        this.born = performance.now() - Math.random() * 8000;
+        this.targetAlpha = 0.65 + this.depth * 0.35; // 0.65 to 1.0 opacity
+        this.born = performance.now() - Math.random() * 9000;
       } else {
-        // Upper edge colony emergence point (subtle golden cluster)
-        this.x = emitterX + (Math.random() - 0.5) * 56;
-        this.y = Math.random() * 8; // gently beneath top edge
+        // Upper edge colony emergence point (subtle golden cluster near header)
+        this.x = emitterX + (Math.random() - 0.5) * 70;
+        this.y = Math.random() * 12 + 2;
         this.alpha = 0;
-        this.targetAlpha = 0.45 + this.depth * 0.45;
+        this.targetAlpha = 0.65 + this.depth * 0.35;
         this.born = performance.now();
       }
 
-      // Weightless drift velocities: slow, elegant downward/diagonal floating
-      const angle = (0.2 + Math.random() * 0.6) * Math.PI; // biased diagonally downwards
-      const speed = (0.22 + Math.random() * 0.32) * this.depth;
+      // Weightless drift velocities: slow, elegant downward & diagonal floating
+      const angle = (0.2 + Math.random() * 0.6) * Math.PI;
+      const speed = (0.28 + Math.random() * 0.36) * this.depth;
       this.vx = Math.cos(angle) * speed;
       this.vy = Math.abs(Math.sin(angle) * speed);
 
       // Wander forces: gentle harmonic sways
       this.wanderAngle = Math.random() * Math.PI * 2;
-      this.wanderSpeed = 0.006 + Math.random() * 0.008;
-      this.wanderRadius = 0.06 + Math.random() * 0.1;
+      this.wanderSpeed = 0.007 + Math.random() * 0.01;
+      this.wanderRadius = 0.07 + Math.random() * 0.12;
 
       // Bioluminescence: periodic flash pulse
       this.pulsePhase = Math.random() * Math.PI * 2;
-      this.pulseSpeed = 0.0016 + Math.random() * 0.0024;
+      this.pulseSpeed = 0.0018 + Math.random() * 0.0028;
 
       // Natural hovering states: pauses occasionally to inspect the gallery
       this.isHovering = false;
       this.hoverUntil = 0;
-      this.nextHover = performance.now() + 5000 + Math.random() * 9000;
+      this.nextHover = performance.now() + 4500 + Math.random() * 8000;
 
-      // Lifespan: 20s to 35s of atmospheric wandering before quiet re-emergence
-      this.lifespan = 20000 + Math.random() * 15000;
+      // Lifespan: 22s to 38s of atmospheric wandering before quiet re-emergence
+      this.lifespan = 22000 + Math.random() * 16000;
       this.isDying = false;
     }
 
@@ -639,20 +638,20 @@
       const age = now - this.born;
 
       // Fade-in during emergence
-      if (age < 2400) {
-        this.alpha = (age / 2400) * this.targetAlpha;
+      if (age < 2200) {
+        this.alpha = (age / 2200) * this.targetAlpha;
       } else if (!this.isDying) {
         this.alpha = this.targetAlpha;
       }
 
       // Check life completion or viewport exit
-      if (age >= this.lifespan || this.y > this.h + 20 || this.x < -40 || this.x > this.w + 40) {
+      if (age >= this.lifespan || this.y > this.h + 30 || this.x < -50 || this.x > this.w + 50) {
         this.isDying = true;
       }
 
       // Fade out before rebirth
       if (this.isDying) {
-        this.alpha -= 0.012;
+        this.alpha -= 0.014;
         if (this.alpha <= 0) {
           this.reset(emitterX, this.w, this.h, false);
           return;
@@ -662,34 +661,33 @@
       // Hover behavior: momentarily pausing with subtle wing-lift bobbing
       if (now > this.nextHover && !this.isHovering && !this.isDying) {
         this.isHovering = true;
-        this.hoverUntil = now + 1200 + Math.random() * 1600;
+        this.hoverUntil = now + 1200 + Math.random() * 1800;
         this.nextHover = now + 8000 + Math.random() * 12000;
       }
 
       if (this.isHovering) {
         if (now < this.hoverUntil) {
-          this.vx *= 0.92;
-          this.vy *= 0.92;
-          this.y += Math.sin(now * 0.004) * 0.16;
+          this.vx *= 0.91;
+          this.vy *= 0.91;
+          this.y += Math.sin(now * 0.004) * 0.18;
         } else {
           this.isHovering = false;
-          // Resume gentle forward wander
-          this.wanderAngle += (Math.random() - 0.5) * 0.8;
-          this.vx = Math.cos(this.wanderAngle) * 0.3 * this.depth;
-          this.vy = (0.2 + Math.random() * 0.25) * this.depth;
+          this.wanderAngle += (Math.random() - 0.5) * 0.9;
+          this.vx = Math.cos(this.wanderAngle) * 0.35 * this.depth;
+          this.vy = (0.22 + Math.random() * 0.28) * this.depth;
         }
       } else {
         // Organic wander forces: slow, flowing changes in direction
-        this.wanderAngle += (Math.random() - 0.5) * 0.06;
-        const ax = Math.cos(this.wanderAngle) * this.wanderRadius * 0.05;
-        const ay = (Math.sin(this.wanderAngle) * this.wanderRadius * 0.035) + 0.012 * this.depth;
+        this.wanderAngle += (Math.random() - 0.5) * 0.07;
+        const ax = Math.cos(this.wanderAngle) * this.wanderRadius * 0.06;
+        const ay = (Math.sin(this.wanderAngle) * this.wanderRadius * 0.04) + 0.015 * this.depth;
 
         this.vx += ax;
         this.vy += ay;
 
         // Terminal drift speed limit (never falls like rain)
         const currentSpeed = Math.hypot(this.vx, this.vy);
-        const maxSpeed = 0.75 * this.depth;
+        const maxSpeed = 0.85 * this.depth;
         if (currentSpeed > maxSpeed) {
           this.vx = (this.vx / currentSpeed) * maxSpeed;
           this.vy = (this.vy / currentSpeed) * maxSpeed;
@@ -701,8 +699,8 @@
         const dmx = this.x - mouseX;
         const dmy = this.y - mouseY;
         const dist = Math.hypot(dmx, dmy);
-        if (dist < 100 && dist > 1) {
-          const push = (1 - dist / 100) * 0.18;
+        if (dist < 110 && dist > 1) {
+          const push = (1 - dist / 110) * 0.22;
           this.vx += (dmx / dist) * push;
           this.vy += (dmy / dist) * push;
         }
@@ -724,55 +722,55 @@
     draw(ctx, now) {
       if (this.alpha <= 0.01) return;
 
-      // Bioluminescent pulse curve (sharp organic flash, smooth resting ember)
+      // Bioluminescent pulse curve (sharp organic flash, rich warm resting ember)
       const rawPulse = Math.sin(now * this.pulseSpeed + this.pulsePhase);
-      const flash = Math.pow(Math.max(0, rawPulse), 2.8);
-      const lum = this.alpha * (0.42 + 0.58 * flash);
+      const flash = Math.pow(Math.max(0, rawPulse), 2.6);
+      const lum = this.alpha * (0.52 + 0.48 * flash);
 
-      // 1. Subtle Phosphorescent Vapor Trail
+      // 1. Phosphorescent Vapor Trail
       if (this.trail.length > 1) {
         ctx.beginPath();
         ctx.moveTo(this.trail[0].x, this.trail[0].y);
         for (let i = 1; i < this.trail.length; i++) {
           ctx.lineTo(this.trail[i].x, this.trail[i].y);
         }
-        ctx.strokeStyle = `rgba(224, 196, 140, ${lum * 0.14})`;
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = `rgba(202, 158, 88, ${lum * 0.22})`;
+        ctx.lineWidth = 1.2;
         ctx.stroke();
       }
 
-      // 2. Delicate Soft Diffused Halo
-      const haloRadius = this.baseRadius * (4.2 + flash * 1.8);
+      // 2. High-Contrast Diffused Warm Halo (Visible on ivory & dark backgrounds)
+      const haloRadius = this.baseRadius * (4.8 + flash * 2.2);
       const halo = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, haloRadius);
-      halo.addColorStop(0, `rgba(248, 235, 196, ${lum * 0.45})`);
-      halo.addColorStop(0.42, `rgba(224, 196, 140, ${lum * 0.22})`);
-      halo.addColorStop(1, 'rgba(186, 153, 98, 0)');
+      halo.addColorStop(0, `rgba(255, 245, 215, ${lum * 0.65})`);
+      halo.addColorStop(0.35, `rgba(235, 195, 118, ${lum * 0.42})`);
+      halo.addColorStop(0.75, `rgba(182, 138, 64, ${lum * 0.18})`);
+      halo.addColorStop(1, 'rgba(164, 122, 54, 0)');
 
       ctx.beginPath();
       ctx.arc(this.x, this.y, haloRadius, 0, Math.PI * 2);
       ctx.fillStyle = halo;
       ctx.fill();
 
-      // 3. Tiny Luminous Champagne-Gold Core
-      const coreRadius = this.baseRadius * (0.85 + flash * 0.35);
+      // 3. Sharp, Luminous White-Gold Core
+      const coreRadius = this.baseRadius * (0.9 + flash * 0.4);
       const core = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, coreRadius);
-      core.addColorStop(0, `rgba(255, 252, 245, ${lum * 0.98})`);
-      core.addColorStop(0.55, `rgba(235, 208, 152, ${lum * 0.88})`);
-      core.addColorStop(1, `rgba(200, 168, 110, ${lum * 0.38})`);
+      core.addColorStop(0, `rgba(255, 255, 255, ${lum})`);
+      core.addColorStop(0.55, `rgba(255, 246, 212, ${lum * 0.95})`);
+      core.addColorStop(0.85, `rgba(228, 186, 102, ${lum * 0.8})`);
+      core.addColorStop(1, `rgba(178, 134, 58, ${lum * 0.45})`);
 
       ctx.beginPath();
       ctx.arc(this.x, this.y, coreRadius, 0, Math.PI * 2);
       ctx.fillStyle = core;
-      ctx.shadowColor = `rgba(224, 196, 140, ${lum * 0.75})`;
-      ctx.shadowBlur = 6;
+      ctx.shadowColor = `rgba(214, 168, 82, ${lum * 0.85})`;
+      ctx.shadowBlur = 8;
       ctx.fill();
     }
   }
 
   class VaultFireflySystem {
     constructor() {
-      if (prefersReducedMotion) return;
-
       this.canvas = null;
       this.ctx = null;
       this.dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -808,8 +806,7 @@
       this.ctx = this.canvas.getContext('2d', { alpha: true });
 
       const mount = () => {
-        // Prepend canvas so it stays behind website content in body stacking
-        document.body.prepend(this.canvas);
+        document.body.appendChild(this.canvas);
         this.resizeCanvas();
       };
 
@@ -838,8 +835,7 @@
       }
       this.ctx.scale(this.dpr, this.dpr);
 
-      // Refresh particle dimensions
-      const emitterX = width * 0.48;
+      const emitterX = width * 0.5;
       for (const p of this.particles) {
         p.w = width;
         p.h = height;
@@ -849,10 +845,10 @@
     initParticles() {
       const width = window.innerWidth;
       const height = window.innerHeight;
-      const emitterX = width * 0.48;
+      const emitterX = width * 0.5;
 
-      // 11 active fireflies on desktop, 6 on mobile viewports
-      const count = width < 680 ? 6 : 11;
+      // 12 active fireflies on desktop, 7 on mobile viewports
+      const count = width < 680 ? 7 : 12;
       this.particles = [];
 
       for (let i = 0; i < count; i++) {
@@ -861,7 +857,6 @@
     }
 
     bindEvents() {
-      // Passive mouse coordinate tracking for gentle air displacement
       const onMove = (e) => {
         this.mouseX = e.clientX;
         this.mouseY = e.clientY;
@@ -869,12 +864,10 @@
       window.addEventListener('pointermove', onMove, { passive: true });
       window.addEventListener('mousemove', onMove, { passive: true });
 
-      // Window resize
       window.addEventListener('resize', () => {
         this.resizeCanvas();
       }, { passive: true });
 
-      // Tab visibility: pause loop when tab is hidden, resume on active
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
           this.isPaused = true;
@@ -909,19 +902,19 @@
 
       ctx.clearRect(0, 0, width, height);
 
-      const emitterX = width * 0.48;
+      const emitterX = width * 0.5;
 
       // 1. Discreet Upper-Edge Gathering Aura (Emergence Colony Cluster)
       ctx.save();
-      const auraPulse = (Math.sin(now * 0.0012) + 1) / 2;
-      const auraRadius = 78 + auraPulse * 16;
-      const auraAlpha = 0.07 + auraPulse * 0.045;
+      const auraPulse = (Math.sin(now * 0.0014) + 1) / 2;
+      const auraRadius = 88 + auraPulse * 22;
+      const auraAlpha = 0.12 + auraPulse * 0.08;
 
       const auraGrad = ctx.createRadialGradient(emitterX, 0, 0, emitterX, 0, auraRadius);
-      auraGrad.addColorStop(0, `rgba(228, 202, 146, ${auraAlpha * 1.5})`);
-      auraGrad.addColorStop(0.38, `rgba(214, 185, 126, ${auraAlpha})`);
-      auraGrad.addColorStop(0.72, `rgba(186, 153, 98, ${auraAlpha * 0.3})`);
-      auraGrad.addColorStop(1, 'rgba(186, 153, 98, 0)');
+      auraGrad.addColorStop(0, `rgba(245, 218, 156, ${auraAlpha * 1.6})`);
+      auraGrad.addColorStop(0.35, `rgba(224, 188, 120, ${auraAlpha})`);
+      auraGrad.addColorStop(0.72, `rgba(182, 138, 64, ${auraAlpha * 0.35})`);
+      auraGrad.addColorStop(1, 'rgba(164, 122, 54, 0)');
 
       ctx.beginPath();
       ctx.arc(emitterX, 0, auraRadius, 0, Math.PI * 2);
@@ -956,6 +949,9 @@
     if (!fireflyInstance) {
       fireflyInstance = new VaultFireflySystem();
     }
+    try {
+      console.log('[THE VAULT] ✨ Ambient Firefly Colony & Liquid Cursor Active');
+    } catch (e) {}
   }
 
   if (document.readyState === 'loading') {
