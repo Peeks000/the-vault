@@ -143,10 +143,10 @@
       this.lastMoveTime = 0;
       this.rafId = null;
 
-      // Fluid Trail History & Dynamics
+      // Professional Luxury Filament Trail History & Dynamics
       this.points = [];
-      this.maxTrailPoints = 40;
-      this.trailLifespan = 750; // ms for rich, visible molten liquid flow
+      this.maxTrailPoints = 20;
+      this.trailLifespan = 320; // ms for sleek, silky luxury filament that dissolves crisply
 
       this.canvas = null;
       this.ctx = null;
@@ -365,18 +365,11 @@
     }
 
     addTrailPoint(x, y, vx, vy, speed, now) {
-      // Dynamic molten droplet sizing:
-      // High velocity stretches ribbon thinner (7px - 10px radius)
-      // Slow movement pools fluid into a rich molten droplet (10px - 16px radius)
-      const normalizedSpeed = Math.min(speed / 28, 1);
-      const radius = 8 + (1 - normalizedSpeed) * 7.5;
-
       this.points.unshift({
         x: x,
         y: y,
-        vx: vx * 0.28,
-        vy: vy * 0.28,
-        radius: radius,
+        vx: vx * 0.16,
+        vy: vy * 0.16,
         birth: now,
         lifespan: this.trailLifespan
       });
@@ -410,7 +403,7 @@
         this.renderTrail(now);
 
         const idleDuration = now - this.lastMoveTime;
-        if (idleDuration > 320 && this.points.length === 0) {
+        if (idleDuration > 220 && this.points.length === 0) {
           this.rafId = null;
           return;
         }
@@ -438,15 +431,15 @@
           continue;
         }
 
-        pt.vx *= 0.88;
-        pt.vy *= 0.88;
+        pt.vx *= 0.84;
+        pt.vy *= 0.84;
         pt.x += pt.vx;
         pt.y += pt.vy;
 
         if (i > 0) {
           const newer = pts[i - 1];
-          pt.x += (newer.x - pt.x) * 0.12;
-          pt.y += (newer.y - pt.y) * 0.12;
+          pt.x += (newer.x - pt.x) * 0.16;
+          pt.y += (newer.y - pt.y) * 0.16;
         }
       }
     }
@@ -472,100 +465,48 @@
 
       ctx.save();
 
-      // 1. Draw Continuous Molten Liquid Ribbons between consecutive points
+      // Draw silky, continuous champagne filament with graceful tapering
       for (let i = 0; i < pts.length - 1; i++) {
         const p1 = pts[i];
         const p2 = pts[i + 1];
 
-        const age1 = now - p1.birth;
-        const age2 = now - p2.birth;
-        const progress1 = Math.min(1, Math.max(0, age1 / p1.lifespan));
-        const progress2 = Math.min(1, Math.max(0, age2 / p2.lifespan));
-
-        const alpha1 = Math.pow(1 - progress1, 1.2);
-        const alpha2 = Math.pow(1 - progress2, 1.2);
-        const avgAlpha = (alpha1 + alpha2) / 2;
-
-        if (avgAlpha <= 0.01) continue;
-
-        const r1 = Math.max(2.2, p1.radius * (1 - progress1 * 0.8));
-        const r2 = Math.max(1.6, p2.radius * (1 - progress2 * 0.8));
-
-        const dx = p2.x - p1.x;
-        const dy = p2.y - p1.y;
-        const d = Math.hypot(dx, dy) || 1;
-
-        const nx = -dy / d;
-        const ny = dx / d;
-
-        const x1L = p1.x + nx * r1;
-        const y1L = p1.y + ny * r1;
-        const x1R = p1.x - nx * r1;
-        const y1R = p1.y - ny * r1;
-
-        const x2L = p2.x + nx * r2;
-        const y2L = p2.y + ny * r2;
-        const x2R = p2.x - nx * r2;
-        const y2R = p2.y - ny * r2;
-
-        ctx.beginPath();
-        ctx.moveTo(x1L, y1L);
-        ctx.lineTo(x2L, y2L);
-        ctx.lineTo(x2R, y2R);
-        ctx.lineTo(x1R, y1R);
-        ctx.closePath();
-
-        // High contrast molten champagne gold: warm amber-brass with rich luminescence
-        ctx.fillStyle = `rgba(202, 162, 94, ${avgAlpha * 0.82})`;
-        ctx.shadowColor = 'rgba(164, 122, 54, 0.65)';
-        ctx.shadowBlur = 10;
-        ctx.fill();
-      }
-
-      // 2. Draw Molten Liquid Droplets with Radial Gleam at Joints
-      for (let i = 0; i < pts.length; i++) {
-        const pt = pts[i];
-        const age = now - pt.birth;
-        const progress = Math.min(1, Math.max(0, age / pt.lifespan));
-        const alpha = Math.pow(1 - progress, 1.25);
+        const age = now - p1.birth;
+        const progress = Math.min(1, Math.max(0, age / p1.lifespan));
+        const alpha = Math.pow(1 - progress, 1.35);
 
         if (alpha <= 0.01) continue;
 
-        const r = Math.max(2.2, pt.radius * (1 - progress * 0.8));
-
-        const grad = ctx.createRadialGradient(
-          pt.x, pt.y, 0,
-          pt.x, pt.y, r
-        );
-
-        grad.addColorStop(0, `rgba(255, 252, 244, ${alpha * 0.98})`);
-        grad.addColorStop(0.4, `rgba(238, 206, 138, ${alpha * 0.92})`);
-        grad.addColorStop(0.8, `rgba(186, 142, 66, ${alpha * 0.65})`);
-        grad.addColorStop(1, `rgba(164, 122, 54, 0)`);
+        // Elegant tapered line width: 2.6px at head down to 0.4px at tail
+        const strokeWidth = Math.max(0.4, 0.4 + (1 - progress) * 2.2);
 
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = grad;
-        ctx.shadowColor = 'rgba(202, 162, 94, 0.75)';
-        ctx.shadowBlur = 12;
-        ctx.fill();
-      }
-
-      // 3. Subtle Inner Molten Core Streak
-      if (pts.length > 2) {
-        ctx.beginPath();
-        ctx.moveTo(pts[0].x, pts[0].y);
-        for (let i = 0; i < Math.min(pts.length - 1, 15); i++) {
-          const xc = (pts[i].x + pts[i + 1].x) / 2;
-          const yc = (pts[i].y + pts[i + 1].y) / 2;
-          ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
+        if (i === 0) {
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+        } else {
+          const prevMidX = (pts[i - 1].x + p1.x) / 2;
+          const prevMidY = (pts[i - 1].y + p1.y) / 2;
+          const nextMidX = (p1.x + p2.x) / 2;
+          const nextMidY = (p1.y + p2.y) / 2;
+          ctx.moveTo(prevMidX, prevMidY);
+          ctx.quadraticCurveTo(p1.x, p1.y, nextMidX, nextMidY);
         }
-        ctx.strokeStyle = 'rgba(255, 255, 250, 0.85)';
-        ctx.lineWidth = 2.2;
+
+        ctx.strokeStyle = `rgba(202, 162, 94, ${alpha * 0.75})`;
+        ctx.lineWidth = strokeWidth;
         ctx.lineCap = 'round';
-        ctx.shadowColor = 'rgba(255, 250, 236, 0.95)';
-        ctx.shadowBlur = 8;
+        ctx.lineJoin = 'round';
+        ctx.shadowColor = `rgba(186, 142, 66, ${alpha * 0.45})`;
+        ctx.shadowBlur = 4;
         ctx.stroke();
+
+        // Delicate luminous core on the leading segments
+        if (i < 4) {
+          ctx.strokeStyle = `rgba(255, 252, 245, ${alpha * 0.88})`;
+          ctx.lineWidth = Math.max(0.4, strokeWidth * 0.45);
+          ctx.shadowBlur = 0;
+          ctx.stroke();
+        }
       }
 
       ctx.restore();
