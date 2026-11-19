@@ -1,23 +1,16 @@
 /**
  * THE VAULT — Signature Liquid Cursor, Fluid Mouse Trail & Cinematic Loading Experience
  *
- * Designed to complement THE VAULT's luxury editorial identity.
- * Features:
- *  1. Custom precision champagne-brass cursor with dual-element inertia
- *  2. Viscous liquid mouse trail on Canvas 2D with elastic deformation & continuous ribbon meshing
- *  3. Active Theory inspired minimalist cinematic loading screen with sequential dot pulse
+ * Implements:
+ *  1. Active Theory inspired minimalist loading overlay with sequential dot pulse
+ *  2. Dual-element champagne-brass custom cursor with physical inertia & contextual hover states
+ *  3. Viscous molten champagne gold liquid trail on Canvas 2D with elastic deformation & continuous fluid hulls
  *
  * Strict constraint: Pure vanilla JavaScript, CSS3, Canvas 2D. Zero external libraries.
  */
 
 (function () {
   'use strict';
-
-  // ---------------------------------------------------------------------------
-  // Feature Support & Accessibility Checks
-  // ---------------------------------------------------------------------------
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
   // ===========================================================================
   // 1. ACTIVE THEORY INSPIRED CINEMATIC LOADING SCREEN
@@ -27,8 +20,8 @@
       this.loaderEl = null;
       this.startTime = performance.now();
       this.isSubsequentVisit = false;
-      this.minDisplayDuration = 850; // ms for initial luxury sequence
-      this.subsequentDuration = 180; // ms for snappy internal page transitions
+      this.minDisplayDuration = 800; // ms for initial luxury editorial sequence
+      this.subsequentDuration = 160; // ms for snappy internal navigation
       this.init();
     }
 
@@ -38,7 +31,6 @@
           this.isSubsequentVisit = true;
         }
       } catch (e) {
-        // Fallback for sandboxed or private browsing environments
         this.isSubsequentVisit = false;
       }
 
@@ -47,7 +39,6 @@
     }
 
     createLoaderDOM() {
-      // Check if loader element already exists in document
       let el = document.getElementById('vaultLoader');
       if (!el) {
         el = document.createElement('div');
@@ -114,10 +105,10 @@
         window.addEventListener('load', triggerDismiss, { once: true });
       }
 
-      // Hard safety timeout: ensure loader never blocks user interface (max 2200ms)
+      // Hard safety timeout: guarantee loader never locks interaction
       setTimeout(() => {
         this.dismiss();
-      }, 2200);
+      }, 2000);
     }
 
     dismiss() {
@@ -129,36 +120,32 @@
         sessionStorage.setItem('vault_visited', 'true');
       } catch (e) {}
 
-      // Fully remove or hide after transition finishes
       setTimeout(() => {
         if (this.loaderEl && this.loaderEl.parentNode) {
           this.loaderEl.style.display = 'none';
         }
-      }, 800);
+      }, 750);
     }
   }
 
   // ===========================================================================
-  // 2. SIGNATURE LUXURY CURSOR & LIQUID MOTION PHYSICS
+  // 2. SIGNATURE LUXURY CURSOR & MOLTEN LIQUID TRAIL PHYSICS
   // ===========================================================================
   class VaultCursorAndTrail {
     constructor() {
-      if (!isFinePointer) return; // Only activate on precision pointer desktop hardware
-
-      this.mouse = { x: -100, y: -100, prevX: -100, prevY: -100, vx: 0, vy: 0, speed: 0 };
+      this.mouse = { x: -100, y: -100, vx: 0, vy: 0, speed: 0 };
       this.dot = { x: -100, y: -100 };
-      this.ring = { x: -100, y: -100, scale: 1, angle: 0 };
+      this.ring = { x: -100, y: -100 };
 
       this.hasPointerMoved = false;
       this.isPointerInside = false;
-      this.isIdle = true;
       this.lastMoveTime = 0;
       this.rafId = null;
 
-      // Trail Points & Viscous Physics History
+      // Fluid Trail History & Dynamics
       this.points = [];
-      this.maxTrailPoints = 36;
-      this.trailLifespan = 420; // milliseconds
+      this.maxTrailPoints = 38;
+      this.trailLifespan = 680; // ms for rich, visible molten liquid flow
 
       this.canvas = null;
       this.ctx = null;
@@ -172,49 +159,77 @@
     }
 
     init() {
-      document.body.classList.add('vault-cursor-active');
-
       this.createCursorElements();
       this.createCanvas();
       this.bindEvents();
-      this.startLoop();
     }
 
     createCursorElements() {
-      // Precision Dot
+      if (document.getElementById('vaultCursorDot')) {
+        this.dotEl = document.getElementById('vaultCursorDot');
+        this.ringEl = document.getElementById('vaultCursorRing');
+        return;
+      }
+
+      // Precision Center Dot
       this.dotEl = document.createElement('div');
+      this.dotEl.id = 'vaultCursorDot';
       this.dotEl.className = 'vault-cursor-dot is-hidden';
       this.dotEl.setAttribute('aria-hidden', 'true');
 
       // Follower Ring
       this.ringEl = document.createElement('div');
+      this.ringEl.id = 'vaultCursorRing';
       this.ringEl.className = 'vault-cursor-ring is-hidden';
       this.ringEl.setAttribute('aria-hidden', 'true');
 
-      // Contextual Label inside ring (e.g. "VIEW")
+      // Contextual Label ("VIEW")
       this.labelEl = document.createElement('span');
       this.labelEl.className = 'vault-cursor-label';
       this.labelEl.textContent = 'VIEW';
       this.ringEl.appendChild(this.labelEl);
 
-      document.body.appendChild(this.dotEl);
-      document.body.appendChild(this.ringEl);
+      const mount = () => {
+        document.body.appendChild(this.dotEl);
+        document.body.appendChild(this.ringEl);
+      };
+
+      if (document.body) {
+        mount();
+      } else {
+        document.addEventListener('DOMContentLoaded', mount);
+      }
     }
 
     createCanvas() {
-      if (prefersReducedMotion) return;
+      if (document.getElementById('vaultTrailCanvas')) {
+        this.canvas = document.getElementById('vaultTrailCanvas');
+        this.ctx = this.canvas.getContext('2d', { alpha: true });
+        this.resizeCanvas();
+        return;
+      }
 
       this.canvas = document.createElement('canvas');
+      this.canvas.id = 'vaultTrailCanvas';
       this.canvas.className = 'vault-trail-canvas';
       this.canvas.setAttribute('aria-hidden', 'true');
       this.ctx = this.canvas.getContext('2d', { alpha: true });
 
-      document.body.appendChild(this.canvas);
-      this.resizeCanvas();
+      const mount = () => {
+        document.body.appendChild(this.canvas);
+        this.resizeCanvas();
+      };
+
+      if (document.body) {
+        mount();
+      } else {
+        document.addEventListener('DOMContentLoaded', mount);
+      }
     }
 
     resizeCanvas() {
       if (!this.canvas || !this.ctx) return;
+      this.dpr = Math.min(window.devicePixelRatio || 1, 2);
       const width = window.innerWidth;
       const height = window.innerHeight;
 
@@ -223,36 +238,39 @@
       this.canvas.style.width = width + 'px';
       this.canvas.style.height = height + 'px';
 
+      if (this.ctx.resetTransform) {
+        this.ctx.resetTransform();
+      } else {
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      }
       this.ctx.scale(this.dpr, this.dpr);
     }
 
     bindEvents() {
-      // Pointer move tracking
-      window.addEventListener('pointermove', (e) => this.onPointerMove(e), { passive: true });
+      // Universal pointer & mouse tracking
+      const onMove = (e) => this.onPointerMove(e);
+      window.addEventListener('pointermove', onMove, { passive: true });
+      window.addEventListener('mousemove', onMove, { passive: true });
+
       document.addEventListener('mouseleave', () => this.onMouseLeave(), { passive: true });
       document.addEventListener('mouseenter', (e) => this.onMouseEnter(e), { passive: true });
 
-      // Window resize
-      window.addEventListener('resize', () => {
-        this.dpr = Math.min(window.devicePixelRatio || 1, 2);
-        this.resizeCanvas();
-      }, { passive: true });
+      window.addEventListener('resize', () => this.resizeCanvas(), { passive: true });
 
-      // Contextual Hover States Delegation
       this.setupContextualHover();
     }
 
     setupContextualHover() {
       document.addEventListener('pointerover', (e) => {
         const target = e.target;
-        if (!target || !target.closest) return;
+        if (!target || !target.closest || !this.ringEl || !this.dotEl) return;
 
-        // 1. Text Inputs / Editable areas -> Native cursor restoration
+        // 1. Text Inputs / Textarea / Select -> Restore native cursor
         const isEditable = target.closest('input, textarea, select, [contenteditable="true"]');
         if (isEditable) {
           this.setHidden(true);
           return;
-        } else {
+        } else if (this.isPointerInside) {
           this.setHidden(false);
         }
 
@@ -278,7 +296,7 @@
           this.ringEl.classList.remove('is-button');
         }
 
-        // 4. Standard Links & Interactive anchors
+        // 4. Standard Links
         const isLink = target.closest('a');
         if (isLink) {
           this.ringEl.classList.add('is-hovering');
@@ -290,6 +308,7 @@
     }
 
     setHidden(hidden) {
+      if (!this.dotEl || !this.ringEl) return;
       if (hidden) {
         this.dotEl.classList.add('is-hidden');
         this.ringEl.classList.add('is-hidden');
@@ -300,9 +319,19 @@
     }
 
     onPointerMove(e) {
-      const now = performance.now();
+      // Ignore touch taps on phone viewports
+      if (e.pointerType === 'touch' && window.innerWidth < 680) {
+        return;
+      }
+
       const clientX = e.clientX;
       const clientY = e.clientY;
+      const now = performance.now();
+
+      // Ensure active custom cursor class on body
+      if (!document.body.classList.contains('vault-cursor-active')) {
+        document.body.classList.add('vault-cursor-active');
+      }
 
       if (!this.hasPointerMoved) {
         this.hasPointerMoved = true;
@@ -311,8 +340,8 @@
         this.dot.y = clientY;
         this.ring.x = clientX;
         this.ring.y = clientY;
-        this.mouse.prevX = clientX;
-        this.mouse.prevY = clientY;
+        this.mouse.x = clientX;
+        this.mouse.y = clientY;
         this.setHidden(false);
       }
 
@@ -326,32 +355,33 @@
       this.mouse.x = clientX;
       this.mouse.y = clientY;
       this.lastMoveTime = now;
-      this.isIdle = false;
 
-      // Add fluid point to trail if moved at least 2 pixels
-      if (!prefersReducedMotion && dist > 1.8) {
+      // Add molten fluid trail point if moved at least 1.5px
+      if (dist > 1.5) {
         this.addTrailPoint(clientX, clientY, dx, dy, dist, now);
       }
 
-      // If loop was stopped for idle power-saving, wake it up immediately
+      // Start animation loop if dormant
       if (!this.rafId) {
         this.startLoop();
       }
     }
 
     addTrailPoint(x, y, vx, vy, speed, now) {
-      // Dynamic stretching: high velocity narrows ribbon, slow movement pools molten droplet
-      const normalizedSpeed = Math.min(speed / 35, 1);
-      const initialWidth = 9 + (1 - normalizedSpeed) * 7; // 9px to 16px molten droplet width
+      // Dynamic molten droplet sizing:
+      // High velocity stretches ribbon thinner (6px - 8px radius)
+      // Slow movement pools fluid into a rich molten droplet (9px - 14px radius)
+      const normalizedSpeed = Math.min(speed / 30, 1);
+      const radius = 6.5 + (1 - normalizedSpeed) * 6.5;
 
       this.points.unshift({
         x: x,
         y: y,
-        vx: vx * 0.22, // subtle hydrodynamic inertia
-        vy: vy * 0.22,
+        vx: vx * 0.25, // fluid hydrodynamic inertia
+        vy: vy * 0.25,
+        radius: radius,
         birth: now,
-        lifespan: this.trailLifespan,
-        baseWidth: initialWidth
+        lifespan: this.trailLifespan
       });
 
       if (this.points.length > this.maxTrailPoints) {
@@ -369,6 +399,9 @@
       this.mouse.x = e.clientX;
       this.mouse.y = e.clientY;
       this.setHidden(false);
+      if (!this.rafId) {
+        this.startLoop();
+      }
     }
 
     startLoop() {
@@ -379,10 +412,9 @@
         this.renderCursor();
         this.renderTrail(now);
 
-        // Idle power-saving check:
-        // If mouse has stopped moving for > 200ms and all trail points have decayed, stop RAF loop.
+        // Power-saving sleep: if mouse paused and all points have decayed
         const idleDuration = now - this.lastMoveTime;
-        if (idleDuration > 220 && this.points.length === 0) {
+        if (idleDuration > 300 && this.points.length === 0) {
           this.rafId = null;
           return;
         }
@@ -394,50 +426,44 @@
     }
 
     updatePhysics(now) {
-      // Cursor Central Dot Lerp (Snappy, precision response: ~0.65)
-      const dotFactor = 0.65;
-      this.dot.x += (this.mouse.x - this.dot.x) * dotFactor;
-      this.dot.y += (this.mouse.y - this.dot.y) * dotFactor;
+      // Precision central dot tracking (instant, crisp: lerp 0.65)
+      this.dot.x += (this.mouse.x - this.dot.x) * 0.65;
+      this.dot.y += (this.mouse.y - this.dot.y) * 0.65;
 
-      // Follower Ring Lerp (Subtle physical inertia: ~0.16)
-      const ringFactor = 0.16;
-      this.ring.x += (this.mouse.x - this.ring.x) * ringFactor;
-      this.ring.y += (this.mouse.y - this.ring.y) * ringFactor;
+      // Outer follower ring tracking (refined physical inertia: lerp 0.18)
+      this.ring.x += (this.mouse.x - this.ring.x) * 0.18;
+      this.ring.y += (this.mouse.y - this.ring.y) * 0.18;
 
-      // Update liquid trail points with viscosity, elastic cohesion & fading
-      if (this.canvas && this.points.length > 0) {
-        for (let i = this.points.length - 1; i >= 0; i--) {
-          const pt = this.points[i];
-          const age = now - pt.birth;
+      // Liquid Trail Viscosity & Elastic Surface Tension
+      const pts = this.points;
+      for (let i = pts.length - 1; i >= 0; i--) {
+        const pt = pts[i];
+        const age = now - pt.birth;
 
-          if (age >= pt.lifespan) {
-            this.points.splice(i, 1);
-            continue;
-          }
+        if (age >= pt.lifespan) {
+          pts.splice(i, 1);
+          continue;
+        }
 
-          // Viscous damping
-          pt.vx *= 0.86;
-          pt.vy *= 0.86;
-          pt.x += pt.vx;
-          pt.y += pt.vy;
+        // Viscous damping
+        pt.vx *= 0.88;
+        pt.vy *= 0.88;
+        pt.x += pt.vx;
+        pt.y += pt.vy;
 
-          // Elastic cohesion: gently pull toward neighboring newer point for liquid tension
-          if (i > 0) {
-            const newer = this.points[i - 1];
-            pt.x += (newer.x - pt.x) * 0.08;
-            pt.y += (newer.y - pt.y) * 0.08;
-          }
+        // Elastic cohesion: pulls toward newer adjacent point like viscous liquid
+        if (i > 0) {
+          const newer = pts[i - 1];
+          pt.x += (newer.x - pt.x) * 0.11;
+          pt.y += (newer.y - pt.y) * 0.11;
         }
       }
     }
 
     renderCursor() {
-      if (!this.hasPointerMoved || !this.isPointerInside) return;
+      if (!this.hasPointerMoved || !this.isPointerInside || !this.dotEl || !this.ringEl) return;
 
-      // Update Dot position with 3D hardware acceleration
       this.dotEl.style.transform = `translate3d(${this.dot.x}px, ${this.dot.y}px, 0) translate(-50%, -50%)`;
-
-      // Update Follower Ring position
       this.ringEl.style.transform = `translate3d(${this.ring.x}px, ${this.ring.y}px, 0) translate(-50%, -50%)`;
     }
 
@@ -446,124 +472,111 @@
 
       const width = window.innerWidth;
       const height = window.innerHeight;
-      this.ctx.clearRect(0, 0, width, height);
+      const ctx = this.ctx;
+
+      ctx.clearRect(0, 0, width, height);
 
       const pts = this.points;
       if (pts.length < 2) return;
 
-      // Draw continuous viscous molten gold ribbon using Bezier normal extrusion
-      const normals = [];
-      const leftFlank = [];
-      const rightFlank = [];
-
-      // 1. Compute tangents and normal vectors along the spine
-      for (let i = 0; i < pts.length; i++) {
-        let dx, dy;
-        if (i === 0) {
-          dx = pts[0].x - pts[1].x;
-          dy = pts[0].y - pts[1].y;
-        } else if (i === pts.length - 1) {
-          dx = pts[i - 1].x - pts[i].x;
-          dy = pts[i - 1].y - pts[i].y;
-        } else {
-          dx = pts[i - 1].x - pts[i + 1].x;
-          dy = pts[i - 1].y - pts[i + 1].y;
-        }
-
-        const len = Math.hypot(dx, dy) || 1;
-        // Perpendicular normal: (-dy, dx)
-        const nx = -dy / len;
-        const ny = dx / len;
-        normals.push({ nx, ny });
-
-        // Calculate dynamic width based on point age and life curve
-        const pt = pts[i];
-        const age = now - pt.birth;
-        const progress = Math.min(Math.max(age / pt.lifespan, 0), 1);
-        // Liquid taper curve: wide molten head, smooth organic taper to tail
-        const taper = Math.pow(1 - progress, 1.4);
-        const halfWidth = (pt.baseWidth * taper) / 2;
-
-        leftFlank.push({
-          x: pt.x + nx * halfWidth,
-          y: pt.y + ny * halfWidth
-        });
-        rightFlank.push({
-          x: pt.x - nx * halfWidth,
-          y: pt.y - ny * halfWidth
-        });
-      }
-
-      // 2. Build continuous closed organic fluid ribbon path
-      const ctx = this.ctx;
       ctx.save();
 
-      ctx.beginPath();
-      // Start at head left flank
-      ctx.moveTo(leftFlank[0].x, leftFlank[0].y);
+      // 1. Draw Continuous Molten Liquid Ribbons between consecutive points
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
 
-      // Trace down left flank using midpoints quadratic curves
-      for (let i = 0; i < leftFlank.length - 1; i++) {
-        const xc = (leftFlank[i].x + leftFlank[i + 1].x) / 2;
-        const yc = (leftFlank[i].y + leftFlank[i + 1].y) / 2;
-        ctx.quadraticCurveTo(leftFlank[i].x, leftFlank[i].y, xc, yc);
+        const age1 = now - p1.birth;
+        const age2 = now - p2.birth;
+        const progress1 = Math.min(1, Math.max(0, age1 / p1.lifespan));
+        const progress2 = Math.min(1, Math.max(0, age2 / p2.lifespan));
+
+        const alpha1 = Math.pow(1 - progress1, 1.25);
+        const alpha2 = Math.pow(1 - progress2, 1.25);
+        const avgAlpha = (alpha1 + alpha2) / 2;
+
+        if (avgAlpha <= 0.01) continue;
+
+        const r1 = Math.max(1.8, p1.radius * (1 - progress1 * 0.82));
+        const r2 = Math.max(1.2, p2.radius * (1 - progress2 * 0.82));
+
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const d = Math.hypot(dx, dy) || 1;
+
+        // Normal vector
+        const nx = -dy / d;
+        const ny = dx / d;
+
+        // Hull boundary vertices
+        const x1L = p1.x + nx * r1;
+        const y1L = p1.y + ny * r1;
+        const x1R = p1.x - nx * r1;
+        const y1R = p1.y - ny * r1;
+
+        const x2L = p2.x + nx * r2;
+        const y2L = p2.y + ny * r2;
+        const x2R = p2.x - nx * r2;
+        const y2R = p2.y - ny * r2;
+
+        // Draw connecting fluid polygon
+        ctx.beginPath();
+        ctx.moveTo(x1L, y1L);
+        ctx.lineTo(x2L, y2L);
+        ctx.lineTo(x2R, y2R);
+        ctx.lineTo(x1R, y1R);
+        ctx.closePath();
+
+        // Molten Champagne Gold Hue
+        ctx.fillStyle = `rgba(214, 185, 126, ${avgAlpha * 0.72})`;
+        ctx.shadowColor = 'rgba(214, 185, 126, 0.55)';
+        ctx.shadowBlur = 8;
+        ctx.fill();
       }
 
-      // Smooth rounded cap at tail tip
-      const lastLeft = leftFlank[leftFlank.length - 1];
-      const lastRight = rightFlank[rightFlank.length - 1];
-      const tailCenter = pts[pts.length - 1];
-      ctx.quadraticCurveTo(lastLeft.x, lastLeft.y, tailCenter.x, tailCenter.y);
-      ctx.quadraticCurveTo(tailCenter.x, tailCenter.y, lastRight.x, lastRight.y);
+      // 2. Draw Molten Liquid Droplets with Radial Gleam at Joints
+      for (let i = 0; i < pts.length; i++) {
+        const pt = pts[i];
+        const age = now - pt.birth;
+        const progress = Math.min(1, Math.max(0, age / pt.lifespan));
+        const alpha = Math.pow(1 - progress, 1.3);
 
-      // Trace back up right flank to head
-      for (let i = rightFlank.length - 1; i > 0; i--) {
-        const xc = (rightFlank[i].x + rightFlank[i - 1].x) / 2;
-        const yc = (rightFlank[i].y + rightFlank[i - 1].y) / 2;
-        ctx.quadraticCurveTo(rightFlank[i].x, rightFlank[i].y, xc, yc);
+        if (alpha <= 0.01) continue;
+
+        const r = Math.max(1.8, pt.radius * (1 - progress * 0.82));
+
+        const grad = ctx.createRadialGradient(
+          pt.x, pt.y, 0,
+          pt.x, pt.y, r
+        );
+
+        // Core warm ivory -> molten champagne gold -> warm brass contour
+        grad.addColorStop(0, `rgba(252, 248, 238, ${alpha * 0.95})`);
+        grad.addColorStop(0.45, `rgba(224, 196, 140, ${alpha * 0.85})`);
+        grad.addColorStop(0.85, `rgba(186, 153, 98, ${alpha * 0.45})`);
+        grad.addColorStop(1, `rgba(186, 153, 98, 0)`);
+
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.shadowColor = 'rgba(214, 185, 126, 0.65)';
+        ctx.shadowBlur = 10;
+        ctx.fill();
       }
 
-      // Smooth rounded cap at head tip
-      const headCenter = pts[0];
-      ctx.quadraticCurveTo(rightFlank[0].x, rightFlank[0].y, headCenter.x, headCenter.y);
-      ctx.quadraticCurveTo(headCenter.x, headCenter.y, leftFlank[0].x, leftFlank[0].y);
-      ctx.closePath();
-
-      // 3. Molten Champagne Gold Gradient Fill
-      const grad = ctx.createLinearGradient(
-        pts[0].x,
-        pts[0].y,
-        pts[pts.length - 1].x,
-        pts[pts.length - 1].y
-      );
-
-      // Luxurious molten palette: Ivory highlight -> Champagne Gold -> Molten Brass -> Translucent Fade
-      grad.addColorStop(0, 'rgba(247, 243, 234, 0.88)');
-      grad.addColorStop(0.18, 'rgba(224, 203, 163, 0.72)');
-      grad.addColorStop(0.55, 'rgba(212, 188, 145, 0.38)');
-      grad.addColorStop(0.85, 'rgba(184, 155, 108, 0.14)');
-      grad.addColorStop(1, 'rgba(184, 155, 108, 0)');
-
-      ctx.fillStyle = grad;
-
-      // Soft champagne luminous glow
-      ctx.shadowColor = 'rgba(212, 188, 145, 0.45)';
-      ctx.shadowBlur = 10;
-      ctx.fill();
-
-      // 4. Subtle inner luminous core highlight for molten gleam
-      if (pts.length > 3) {
+      // 3. Subtle Inner Molten Core Streak
+      if (pts.length > 2) {
         ctx.beginPath();
         ctx.moveTo(pts[0].x, pts[0].y);
-        for (let i = 0; i < Math.min(pts.length - 1, 8); i++) {
+        for (let i = 0; i < Math.min(pts.length - 1, 14); i++) {
           const xc = (pts[i].x + pts[i + 1].x) / 2;
           const yc = (pts[i].y + pts[i + 1].y) / 2;
           ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
         }
-        ctx.strokeStyle = 'rgba(255, 250, 240, 0.35)';
-        ctx.lineWidth = 1.6;
+        ctx.strokeStyle = 'rgba(255, 250, 240, 0.65)';
+        ctx.lineWidth = 1.8;
         ctx.lineCap = 'round';
-        ctx.shadowColor = 'rgba(247, 243, 234, 0.6)';
+        ctx.shadowColor = 'rgba(255, 250, 240, 0.8)';
         ctx.shadowBlur = 6;
         ctx.stroke();
       }
@@ -573,7 +586,7 @@
   }
 
   // ===========================================================================
-  // DOM Bootstrapping
+  // DOM BOOTSTRAP
   // ===========================================================================
   let loaderInstance = null;
   let cursorInstance = null;
