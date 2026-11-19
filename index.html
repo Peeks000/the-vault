@@ -12,6 +12,10 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="cursor-loader.css?v=7">
   <script defer src="cursor-loader.js?v=7"></script>
+  <script defer src="vendor/three.min.js"></script>
+  <script defer src="vendor/GLTFLoader.js"></script>
+  <script defer src="vendor/OrbitControls.js"></script>
+  <script defer src="vault-3d-showcase.js?v=1"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
   <script defer src="supabase-config.js"></script>
   <script defer src="supabase-client.js"></script>
@@ -252,10 +256,97 @@
       </div>
     </section>
 
-    <section class="closing-cta page-gutter">
-      <p class="eyebrow">THE NEXT OBJECT IS OUT THERE</p>
-      <h2>Make room for<br><em>the exceptional.</em></h2>
-      <a class="button button-dark" href="explore.html">Enter the auctions <span>↗</span></a>
+    <section class="closing-cta page-gutter" id="closing-cta">
+      <div class="closing-cta-grid">
+        <!-- Left: Editorial Typography & Provenance Context -->
+        <div class="closing-cta-copy">
+          <div class="closing-cta-topline">
+            <p class="eyebrow"><span class="eyebrow-line"></span> THE NEXT OBJECT IS OUT THERE</p>
+            <span class="closing-badge"><i class="live-dot"></i> 3D ARTIFACT STUDY</span>
+          </div>
+
+          <h2>Make room for<br><em>the exceptional.</em></h2>
+          <p class="closing-description">
+            Step directly into the inspection gallery. Rotate, inspect, and experience curated objects preserved through mechanical precision and historical craft before they enter the auction floor.
+          </p>
+
+          <div class="closing-actions">
+            <a class="button button-dark" href="explore.html">Enter the auctions <span>↗</span></a>
+            <a class="underlined-link" href="explore.html">Discover all lots <span>↗</span></a>
+          </div>
+
+          <!-- Editorial Lot Metadata Specs -->
+          <div class="closing-lot-specs">
+            <div class="closing-spec-item">
+              <span class="spec-label">OBJECT NO.</span>
+              <strong class="spec-val">FIG. 008 / MECHANICAL ARTIFACT</strong>
+            </div>
+            <div class="closing-spec-item">
+              <span class="spec-label">ESTIMATE</span>
+              <strong class="spec-val">₹3,50,000 – ₹5,00,000</strong>
+            </div>
+            <div class="closing-spec-item">
+              <span class="spec-label">CHASSIS & OPTICS</span>
+              <strong class="spec-val">Hand-finished Brass & Steel</strong>
+            </div>
+            <div class="closing-spec-item">
+              <span class="spec-label">INSPECTION</span>
+              <strong class="spec-val">Interactive 360° Real-time Model</strong>
+            </div>
+          </div>
+
+          <div class="closing-note">
+            <span class="asterisk">✳</span>
+            <span>Rendered live in real-time WebGL. Touch or drag the object to examine the chassis and lens mechanics.</span>
+          </div>
+        </div>
+
+        <!-- Right: 3D Interactive Stage -->
+        <div class="closing-3d-stage-container" id="closingStageContainer">
+          <div class="closing-3d-frame">
+            <!-- Stage Top HUD -->
+            <div class="stage-hud-top">
+              <span class="stage-hud-badge">FIG. 008 / LOT INSPECTION</span>
+              <span class="stage-hud-hint">DRAG TO ROTATE · PINCH TO ZOOM</span>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="closing-3d-canvas-wrap" id="closing3dWrap">
+              <canvas id="vault3dCanvas" aria-label="Interactive 3D model of mechanical artifact"></canvas>
+
+              <!-- Loading State -->
+              <div class="stage-loading-overlay" id="stageLoadingOverlay">
+                <div class="stage-loader-spinner">
+                  <div class="spinner-ring"></div>
+                  <span class="spinner-icon">✳</span>
+                </div>
+                <p class="stage-loading-text">LOADING 3D SPECIMEN</p>
+                <span class="stage-loading-progress" id="stageLoadingProgress">0%</span>
+              </div>
+            </div>
+
+            <!-- Stage Bottom Controls Bar -->
+            <div class="stage-hud-bottom">
+              <div class="stage-hud-status">
+                <span class="status-pulse-dot"></span>
+                <span id="rotationStatusLabel">ROTATING (SLOW)</span>
+              </div>
+              <div class="stage-controls-group">
+                <button type="button" class="stage-ctrl-btn" id="btnToggleRotate" title="Toggle Auto-Rotation">
+                  <span class="ctrl-icon">↺</span>
+                  <span class="ctrl-label">Auto-Rotate</span>
+                </button>
+                <button type="button" class="stage-ctrl-btn" id="btnResetView" title="Reset Camera View">
+                  <span class="ctrl-icon">⛶</span>
+                  <span class="ctrl-label">Reset</span>
+                </button>
+                <button type="button" class="stage-ctrl-btn ctrl-btn-icon" id="btnZoomIn" title="Zoom In">+</button>
+                <button type="button" class="stage-ctrl-btn ctrl-btn-icon" id="btnZoomOut" title="Zoom Out">−</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
