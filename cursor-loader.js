@@ -1,16 +1,22 @@
 /**
- * THE VAULT — Signature Liquid Cursor, Fluid Mouse Trail & Cinematic Loading Experience
+ * THE VAULT — Signature Liquid Cursor, Ambient Firefly Colony & Cinematic Loading Experience
  *
  * Implements:
  *  1. Active Theory inspired minimalist loading overlay with sequential dot pulse
  *  2. Dual-element champagne-brass custom cursor with physical inertia & contextual hover states
  *  3. Viscous molten champagne gold liquid trail on Canvas 2D with elastic deformation & continuous fluid hulls
+ *  4. Ambient glowing firefly colony emerging from upper-edge gathering point and dispersing into the gallery
  *
  * Strict constraint: Pure vanilla JavaScript, CSS3, Canvas 2D. Zero external libraries.
  */
 
 (function () {
   'use strict';
+
+  // ---------------------------------------------------------------------------
+  // Accessibility & Motion Checks
+  // ---------------------------------------------------------------------------
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ===========================================================================
   // 1. ACTIVE THEORY INSPIRED CINEMATIC LOADING SCREEN
@@ -247,7 +253,6 @@
     }
 
     bindEvents() {
-      // Universal pointer & mouse tracking
       const onMove = (e) => this.onPointerMove(e);
       window.addEventListener('pointermove', onMove, { passive: true });
       window.addEventListener('mousemove', onMove, { passive: true });
@@ -319,7 +324,6 @@
     }
 
     onPointerMove(e) {
-      // Ignore touch taps on phone viewports
       if (e.pointerType === 'touch' && window.innerWidth < 680) {
         return;
       }
@@ -328,7 +332,6 @@
       const clientY = e.clientY;
       const now = performance.now();
 
-      // Ensure active custom cursor class on body
       if (!document.body.classList.contains('vault-cursor-active')) {
         document.body.classList.add('vault-cursor-active');
       }
@@ -361,23 +364,19 @@
         this.addTrailPoint(clientX, clientY, dx, dy, dist, now);
       }
 
-      // Start animation loop if dormant
       if (!this.rafId) {
         this.startLoop();
       }
     }
 
     addTrailPoint(x, y, vx, vy, speed, now) {
-      // Dynamic molten droplet sizing:
-      // High velocity stretches ribbon thinner (6px - 8px radius)
-      // Slow movement pools fluid into a rich molten droplet (9px - 14px radius)
       const normalizedSpeed = Math.min(speed / 30, 1);
       const radius = 6.5 + (1 - normalizedSpeed) * 6.5;
 
       this.points.unshift({
         x: x,
         y: y,
-        vx: vx * 0.25, // fluid hydrodynamic inertia
+        vx: vx * 0.25,
         vy: vy * 0.25,
         radius: radius,
         birth: now,
@@ -412,7 +411,6 @@
         this.renderCursor();
         this.renderTrail(now);
 
-        // Power-saving sleep: if mouse paused and all points have decayed
         const idleDuration = now - this.lastMoveTime;
         if (idleDuration > 300 && this.points.length === 0) {
           this.rafId = null;
@@ -426,15 +424,12 @@
     }
 
     updatePhysics(now) {
-      // Precision central dot tracking (instant, crisp: lerp 0.65)
       this.dot.x += (this.mouse.x - this.dot.x) * 0.65;
       this.dot.y += (this.mouse.y - this.dot.y) * 0.65;
 
-      // Outer follower ring tracking (refined physical inertia: lerp 0.18)
       this.ring.x += (this.mouse.x - this.ring.x) * 0.18;
       this.ring.y += (this.mouse.y - this.ring.y) * 0.18;
 
-      // Liquid Trail Viscosity & Elastic Surface Tension
       const pts = this.points;
       for (let i = pts.length - 1; i >= 0; i--) {
         const pt = pts[i];
@@ -445,13 +440,11 @@
           continue;
         }
 
-        // Viscous damping
         pt.vx *= 0.88;
         pt.vy *= 0.88;
         pt.x += pt.vx;
         pt.y += pt.vy;
 
-        // Elastic cohesion: pulls toward newer adjacent point like viscous liquid
         if (i > 0) {
           const newer = pts[i - 1];
           pt.x += (newer.x - pt.x) * 0.11;
@@ -504,11 +497,9 @@
         const dy = p2.y - p1.y;
         const d = Math.hypot(dx, dy) || 1;
 
-        // Normal vector
         const nx = -dy / d;
         const ny = dx / d;
 
-        // Hull boundary vertices
         const x1L = p1.x + nx * r1;
         const y1L = p1.y + ny * r1;
         const x1R = p1.x - nx * r1;
@@ -519,7 +510,6 @@
         const x2R = p2.x - nx * r2;
         const y2R = p2.y - ny * r2;
 
-        // Draw connecting fluid polygon
         ctx.beginPath();
         ctx.moveTo(x1L, y1L);
         ctx.lineTo(x2L, y2L);
@@ -527,7 +517,6 @@
         ctx.lineTo(x1R, y1R);
         ctx.closePath();
 
-        // Molten Champagne Gold Hue
         ctx.fillStyle = `rgba(214, 185, 126, ${avgAlpha * 0.72})`;
         ctx.shadowColor = 'rgba(214, 185, 126, 0.55)';
         ctx.shadowBlur = 8;
@@ -550,7 +539,6 @@
           pt.x, pt.y, r
         );
 
-        // Core warm ivory -> molten champagne gold -> warm brass contour
         grad.addColorStop(0, `rgba(252, 248, 238, ${alpha * 0.95})`);
         grad.addColorStop(0.45, `rgba(224, 196, 140, ${alpha * 0.85})`);
         grad.addColorStop(0.85, `rgba(186, 153, 98, ${alpha * 0.45})`);
@@ -586,10 +574,377 @@
   }
 
   // ===========================================================================
+  // 3. AMBIENT FIREFLY COLONY (UPPER-EDGE EMERGENCE & GALLERY DISPERSION)
+  // ===========================================================================
+  class VaultFireflyParticle {
+    constructor(emitterX, canvasWidth, canvasHeight, isInitial) {
+      this.trail = [];
+      this.maxTrail = 5;
+      this.reset(emitterX, canvasWidth, canvasHeight, isInitial);
+    }
+
+    reset(emitterX, canvasWidth, canvasHeight, isInitial = false) {
+      this.w = canvasWidth;
+      this.h = canvasHeight;
+      this.trail = [];
+
+      // Optical depth layers: 0.45 (distant/dimmer) to 1.0 (near/luminous)
+      this.depth = 0.45 + Math.random() * 0.55;
+      this.baseRadius = 1.3 + this.depth * 1.35; // 1.9px to 2.65px core radius
+
+      // Spawn location:
+      // If isInitial, gracefully scatter across upper & mid gallery so room is immediately alive
+      // If re-emerging during normal life-cycle, originate from the upper-edge colony cluster
+      if (isInitial) {
+        this.x = emitterX + (Math.random() - 0.5) * (canvasWidth * 0.65);
+        this.y = 40 + Math.random() * (canvasHeight * 0.55);
+        this.alpha = 0;
+        this.targetAlpha = 0.45 + this.depth * 0.45;
+        this.born = performance.now() - Math.random() * 8000;
+      } else {
+        // Upper edge colony emergence point (subtle golden cluster)
+        this.x = emitterX + (Math.random() - 0.5) * 56;
+        this.y = Math.random() * 8; // gently beneath top edge
+        this.alpha = 0;
+        this.targetAlpha = 0.45 + this.depth * 0.45;
+        this.born = performance.now();
+      }
+
+      // Weightless drift velocities: slow, elegant downward/diagonal floating
+      const angle = (0.2 + Math.random() * 0.6) * Math.PI; // biased diagonally downwards
+      const speed = (0.22 + Math.random() * 0.32) * this.depth;
+      this.vx = Math.cos(angle) * speed;
+      this.vy = Math.abs(Math.sin(angle) * speed);
+
+      // Wander forces: gentle harmonic sways
+      this.wanderAngle = Math.random() * Math.PI * 2;
+      this.wanderSpeed = 0.006 + Math.random() * 0.008;
+      this.wanderRadius = 0.06 + Math.random() * 0.1;
+
+      // Bioluminescence: periodic flash pulse
+      this.pulsePhase = Math.random() * Math.PI * 2;
+      this.pulseSpeed = 0.0016 + Math.random() * 0.0024;
+
+      // Natural hovering states: pauses occasionally to inspect the gallery
+      this.isHovering = false;
+      this.hoverUntil = 0;
+      this.nextHover = performance.now() + 5000 + Math.random() * 9000;
+
+      // Lifespan: 20s to 35s of atmospheric wandering before quiet re-emergence
+      this.lifespan = 20000 + Math.random() * 15000;
+      this.isDying = false;
+    }
+
+    update(now, mouseX, mouseY, emitterX) {
+      const age = now - this.born;
+
+      // Fade-in during emergence
+      if (age < 2400) {
+        this.alpha = (age / 2400) * this.targetAlpha;
+      } else if (!this.isDying) {
+        this.alpha = this.targetAlpha;
+      }
+
+      // Check life completion or viewport exit
+      if (age >= this.lifespan || this.y > this.h + 20 || this.x < -40 || this.x > this.w + 40) {
+        this.isDying = true;
+      }
+
+      // Fade out before rebirth
+      if (this.isDying) {
+        this.alpha -= 0.012;
+        if (this.alpha <= 0) {
+          this.reset(emitterX, this.w, this.h, false);
+          return;
+        }
+      }
+
+      // Hover behavior: momentarily pausing with subtle wing-lift bobbing
+      if (now > this.nextHover && !this.isHovering && !this.isDying) {
+        this.isHovering = true;
+        this.hoverUntil = now + 1200 + Math.random() * 1600;
+        this.nextHover = now + 8000 + Math.random() * 12000;
+      }
+
+      if (this.isHovering) {
+        if (now < this.hoverUntil) {
+          this.vx *= 0.92;
+          this.vy *= 0.92;
+          this.y += Math.sin(now * 0.004) * 0.16;
+        } else {
+          this.isHovering = false;
+          // Resume gentle forward wander
+          this.wanderAngle += (Math.random() - 0.5) * 0.8;
+          this.vx = Math.cos(this.wanderAngle) * 0.3 * this.depth;
+          this.vy = (0.2 + Math.random() * 0.25) * this.depth;
+        }
+      } else {
+        // Organic wander forces: slow, flowing changes in direction
+        this.wanderAngle += (Math.random() - 0.5) * 0.06;
+        const ax = Math.cos(this.wanderAngle) * this.wanderRadius * 0.05;
+        const ay = (Math.sin(this.wanderAngle) * this.wanderRadius * 0.035) + 0.012 * this.depth;
+
+        this.vx += ax;
+        this.vy += ay;
+
+        // Terminal drift speed limit (never falls like rain)
+        const currentSpeed = Math.hypot(this.vx, this.vy);
+        const maxSpeed = 0.75 * this.depth;
+        if (currentSpeed > maxSpeed) {
+          this.vx = (this.vx / currentSpeed) * maxSpeed;
+          this.vy = (this.vy / currentSpeed) * maxSpeed;
+        }
+      }
+
+      // Ambient cursor reactivity: gentle air displacement if mouse approaches
+      if (mouseX > 0 && mouseY > 0) {
+        const dmx = this.x - mouseX;
+        const dmy = this.y - mouseY;
+        const dist = Math.hypot(dmx, dmy);
+        if (dist < 100 && dist > 1) {
+          const push = (1 - dist / 100) * 0.18;
+          this.vx += (dmx / dist) * push;
+          this.vy += (dmy / dist) * push;
+        }
+      }
+
+      // Move particle
+      this.x += this.vx;
+      this.y += this.vy;
+
+      // Update trailing positions history
+      if (Math.hypot(this.vx, this.vy) > 0.08) {
+        this.trail.unshift({ x: this.x, y: this.y });
+        if (this.trail.length > this.maxTrail) {
+          this.trail.pop();
+        }
+      }
+    }
+
+    draw(ctx, now) {
+      if (this.alpha <= 0.01) return;
+
+      // Bioluminescent pulse curve (sharp organic flash, smooth resting ember)
+      const rawPulse = Math.sin(now * this.pulseSpeed + this.pulsePhase);
+      const flash = Math.pow(Math.max(0, rawPulse), 2.8);
+      const lum = this.alpha * (0.42 + 0.58 * flash);
+
+      // 1. Subtle Phosphorescent Vapor Trail
+      if (this.trail.length > 1) {
+        ctx.beginPath();
+        ctx.moveTo(this.trail[0].x, this.trail[0].y);
+        for (let i = 1; i < this.trail.length; i++) {
+          ctx.lineTo(this.trail[i].x, this.trail[i].y);
+        }
+        ctx.strokeStyle = `rgba(224, 196, 140, ${lum * 0.14})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // 2. Delicate Soft Diffused Halo
+      const haloRadius = this.baseRadius * (4.2 + flash * 1.8);
+      const halo = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, haloRadius);
+      halo.addColorStop(0, `rgba(248, 235, 196, ${lum * 0.45})`);
+      halo.addColorStop(0.42, `rgba(224, 196, 140, ${lum * 0.22})`);
+      halo.addColorStop(1, 'rgba(186, 153, 98, 0)');
+
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, haloRadius, 0, Math.PI * 2);
+      ctx.fillStyle = halo;
+      ctx.fill();
+
+      // 3. Tiny Luminous Champagne-Gold Core
+      const coreRadius = this.baseRadius * (0.85 + flash * 0.35);
+      const core = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, coreRadius);
+      core.addColorStop(0, `rgba(255, 252, 245, ${lum * 0.98})`);
+      core.addColorStop(0.55, `rgba(235, 208, 152, ${lum * 0.88})`);
+      core.addColorStop(1, `rgba(200, 168, 110, ${lum * 0.38})`);
+
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, coreRadius, 0, Math.PI * 2);
+      ctx.fillStyle = core;
+      ctx.shadowColor = `rgba(224, 196, 140, ${lum * 0.75})`;
+      ctx.shadowBlur = 6;
+      ctx.fill();
+    }
+  }
+
+  class VaultFireflySystem {
+    constructor() {
+      if (prefersReducedMotion) return;
+
+      this.canvas = null;
+      this.ctx = null;
+      this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      this.particles = [];
+      this.mouseX = -100;
+      this.mouseY = -100;
+      this.rafId = null;
+      this.isPaused = false;
+
+      this.init();
+    }
+
+    init() {
+      this.createCanvas();
+      this.initParticles();
+      this.bindEvents();
+      this.startLoop();
+    }
+
+    createCanvas() {
+      if (document.getElementById('vaultFireflyCanvas')) {
+        this.canvas = document.getElementById('vaultFireflyCanvas');
+        this.ctx = this.canvas.getContext('2d', { alpha: true });
+        this.resizeCanvas();
+        return;
+      }
+
+      this.canvas = document.createElement('canvas');
+      this.canvas.id = 'vaultFireflyCanvas';
+      this.canvas.className = 'vault-firefly-canvas';
+      this.canvas.setAttribute('aria-hidden', 'true');
+      this.ctx = this.canvas.getContext('2d', { alpha: true });
+
+      const mount = () => {
+        // Prepend canvas so it stays behind website content in body stacking
+        document.body.prepend(this.canvas);
+        this.resizeCanvas();
+      };
+
+      if (document.body) {
+        mount();
+      } else {
+        document.addEventListener('DOMContentLoaded', mount);
+      }
+    }
+
+    resizeCanvas() {
+      if (!this.canvas || !this.ctx) return;
+      this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      this.canvas.width = Math.floor(width * this.dpr);
+      this.canvas.height = Math.floor(height * this.dpr);
+      this.canvas.style.width = width + 'px';
+      this.canvas.style.height = height + 'px';
+
+      if (this.ctx.resetTransform) {
+        this.ctx.resetTransform();
+      } else {
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      }
+      this.ctx.scale(this.dpr, this.dpr);
+
+      // Refresh particle dimensions
+      const emitterX = width * 0.48;
+      for (const p of this.particles) {
+        p.w = width;
+        p.h = height;
+      }
+    }
+
+    initParticles() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const emitterX = width * 0.48;
+
+      // 11 active fireflies on desktop, 6 on mobile viewports
+      const count = width < 680 ? 6 : 11;
+      this.particles = [];
+
+      for (let i = 0; i < count; i++) {
+        this.particles.push(new VaultFireflyParticle(emitterX, width, height, true));
+      }
+    }
+
+    bindEvents() {
+      // Passive mouse coordinate tracking for gentle air displacement
+      const onMove = (e) => {
+        this.mouseX = e.clientX;
+        this.mouseY = e.clientY;
+      };
+      window.addEventListener('pointermove', onMove, { passive: true });
+      window.addEventListener('mousemove', onMove, { passive: true });
+
+      // Window resize
+      window.addEventListener('resize', () => {
+        this.resizeCanvas();
+      }, { passive: true });
+
+      // Tab visibility: pause loop when tab is hidden, resume on active
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          this.isPaused = true;
+          if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+            this.rafId = null;
+          }
+        } else {
+          this.isPaused = false;
+          this.startLoop();
+        }
+      });
+    }
+
+    startLoop() {
+      if (this.rafId || this.isPaused) return;
+
+      const loop = (now) => {
+        this.render(now);
+        this.rafId = requestAnimationFrame(loop);
+      };
+
+      this.rafId = requestAnimationFrame(loop);
+    }
+
+    render(now) {
+      if (!this.ctx || !this.canvas) return;
+
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const ctx = this.ctx;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const emitterX = width * 0.48;
+
+      // 1. Discreet Upper-Edge Gathering Aura (Emergence Colony Cluster)
+      ctx.save();
+      const auraPulse = (Math.sin(now * 0.0012) + 1) / 2;
+      const auraRadius = 78 + auraPulse * 16;
+      const auraAlpha = 0.07 + auraPulse * 0.045;
+
+      const auraGrad = ctx.createRadialGradient(emitterX, 0, 0, emitterX, 0, auraRadius);
+      auraGrad.addColorStop(0, `rgba(228, 202, 146, ${auraAlpha * 1.5})`);
+      auraGrad.addColorStop(0.38, `rgba(214, 185, 126, ${auraAlpha})`);
+      auraGrad.addColorStop(0.72, `rgba(186, 153, 98, ${auraAlpha * 0.3})`);
+      auraGrad.addColorStop(1, 'rgba(186, 153, 98, 0)');
+
+      ctx.beginPath();
+      ctx.arc(emitterX, 0, auraRadius, 0, Math.PI * 2);
+      ctx.fillStyle = auraGrad;
+      ctx.fill();
+      ctx.restore();
+
+      // 2. Update & Draw Active Fireflies
+      ctx.save();
+      for (const p of this.particles) {
+        p.update(now, this.mouseX, this.mouseY, emitterX);
+        p.draw(ctx, now);
+      }
+      ctx.restore();
+    }
+  }
+
+  // ===========================================================================
   // DOM BOOTSTRAP
   // ===========================================================================
   let loaderInstance = null;
   let cursorInstance = null;
+  let fireflyInstance = null;
 
   function boot() {
     if (!loaderInstance) {
@@ -597,6 +952,9 @@
     }
     if (!cursorInstance) {
       cursorInstance = new VaultCursorAndTrail();
+    }
+    if (!fireflyInstance) {
+      fireflyInstance = new VaultFireflySystem();
     }
   }
 

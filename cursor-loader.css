@@ -1,8 +1,10 @@
 /**
- * THE VAULT — Signature Liquid Cursor & Cinematic Loading Experience
+ * THE VAULT — Signature Liquid Cursor, Ambient Firefly Colony & Cinematic Loading Experience
  *
- * Implements a bespoke precision cursor, organic liquid trail physics,
- * and an Active Theory inspired editorial loading sequence.
+ * Implements:
+ *  1. Custom precision cursor & fluid liquid mouse trail
+ *  2. Ambient glowing firefly colony emerging from upper-edge gathering point
+ *  3. Active Theory inspired editorial loading sequence
  */
 
 /* ==========================================================================
@@ -31,6 +33,19 @@ body.vault-cursor-active [contenteditable="true"] {
   cursor: auto !important;
 }
 
+/* Ambient Firefly Canvas (Behind content, above background) */
+.vault-firefly-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none !important;
+  z-index: 2;
+  display: block;
+  will-change: transform;
+}
+
 /* Fluid Liquid Mouse Trail Canvas */
 .vault-trail-canvas {
   position: fixed;
@@ -38,7 +53,7 @@ body.vault-cursor-active [contenteditable="true"] {
   left: 0;
   width: 100vw;
   height: 100vh;
-  pointer-events: none;
+  pointer-events: none !important;
   z-index: 99998;
   display: block;
   will-change: transform;
@@ -282,11 +297,11 @@ body.vault-cursor-active [contenteditable="true"] {
 }
 
 /* ==========================================================================
-   3. Small Screen Touch Optimization
+   3. Small Screen & Reduced Motion Optimization
    ========================================================================== */
 
 @media (max-width: 600px) and (hover: none) {
-  /* Only hide custom cursor elements on narrow mobile phones */
+  /* Only hide custom cursor elements on narrow mobile touch phones */
   .vault-cursor-dot,
   .vault-cursor-ring,
   .vault-trail-canvas {
@@ -296,5 +311,11 @@ body.vault-cursor-active [contenteditable="true"] {
   body.vault-cursor-active,
   body.vault-cursor-active * {
     cursor: auto !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vault-firefly-canvas {
+    display: none !important;
   }
 }
