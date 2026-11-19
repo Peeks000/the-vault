@@ -770,7 +770,7 @@
       }
       return {
         x: window.innerWidth - 65,
-        y: 35
+        y: 130
       };
     }
 
@@ -870,23 +870,28 @@
 
       const emitter = this.getEmitterCoords();
 
-      // 1. Subtle Bioluminescent Aura around the mouth of the Firefly Sound Jar
-      ctx.save();
-      const auraPulse = (Math.sin(now * 0.0016) + 1) / 2;
-      const auraRadius = 38 + auraPulse * 16;
-      const auraAlpha = 0.16 + auraPulse * 0.09;
+      // 1. Subtle Bioluminescent Aura around the mouth of the Firefly Sound Jar (fades when jar is scrolled away)
+      const jarEl = document.getElementById('vaultSoundJar');
+      const isJarHidden = jarEl && jarEl.classList.contains('is-scrolled-hidden');
 
-      const auraGrad = ctx.createRadialGradient(emitter.x, emitter.y, 0, emitter.x, emitter.y, auraRadius);
-      auraGrad.addColorStop(0, `rgba(245, 218, 156, ${auraAlpha * 1.5})`);
-      auraGrad.addColorStop(0.4, `rgba(224, 188, 120, ${auraAlpha})`);
-      auraGrad.addColorStop(0.78, `rgba(182, 138, 64, ${auraAlpha * 0.25})`);
-      auraGrad.addColorStop(1, 'rgba(164, 122, 54, 0)');
+      if (!isJarHidden) {
+        ctx.save();
+        const auraPulse = (Math.sin(now * 0.0016) + 1) / 2;
+        const auraRadius = 38 + auraPulse * 16;
+        const auraAlpha = 0.16 + auraPulse * 0.09;
 
-      ctx.beginPath();
-      ctx.arc(emitter.x, emitter.y, auraRadius, 0, Math.PI * 2);
-      ctx.fillStyle = auraGrad;
-      ctx.fill();
-      ctx.restore();
+        const auraGrad = ctx.createRadialGradient(emitter.x, emitter.y, 0, emitter.x, emitter.y, auraRadius);
+        auraGrad.addColorStop(0, `rgba(245, 218, 156, ${auraAlpha * 1.5})`);
+        auraGrad.addColorStop(0.4, `rgba(224, 188, 120, ${auraAlpha})`);
+        auraGrad.addColorStop(0.78, `rgba(182, 138, 64, ${auraAlpha * 0.25})`);
+        auraGrad.addColorStop(1, 'rgba(164, 122, 54, 0)');
+
+        ctx.beginPath();
+        ctx.arc(emitter.x, emitter.y, auraRadius, 0, Math.PI * 2);
+        ctx.fillStyle = auraGrad;
+        ctx.fill();
+        ctx.restore();
+      }
 
       // 2. Update & Draw Active Fireflies
       ctx.save();
@@ -996,27 +1001,39 @@
         this.toggleSound();
       });
 
-      // Active Theory Scroll Direction Reaction:
-      // Scrolling down -> box slides up out of view
-      // Scrolling up -> box slides down into view
-      window.addEventListener('scroll', () => {
-        const currentScrollY = window.scrollY;
-        const delta = currentScrollY - this.lastScrollY;
+      // Active Theory Dynamic Scroll Reaction:
+      // Scrolling down -> box glides smoothly up out of view
+      // Scrolling up -> box glides smoothly down into view
+      let ticking = false;
+      const onScroll = () => {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            const currentScrollY = window.scrollY;
+            const delta = currentScrollY - this.lastScrollY;
 
-        if (currentScrollY > 70 && delta > 6) {
-          if (!this.isHiddenByScroll) {
-            this.isHiddenByScroll = true;
-            this.jarEl.classList.add('is-scrolled-hidden');
-          }
-        } else if (delta < -4 || currentScrollY <= 25) {
-          if (this.isHiddenByScroll) {
-            this.isHiddenByScroll = false;
-            this.jarEl.classList.remove('is-scrolled-hidden');
-          }
+            // When scrolling down past initial threshold -> glide up out of view
+            if (currentScrollY > 50 && delta > 3) {
+              if (!this.isHiddenByScroll) {
+                this.isHiddenByScroll = true;
+                this.jarEl.classList.add('is-scrolled-hidden');
+              }
+            }
+            // When scrolling up even slightly, or when back near page top -> glide back down into view
+            else if (delta < -2 || currentScrollY <= 30) {
+              if (this.isHiddenByScroll) {
+                this.isHiddenByScroll = false;
+                this.jarEl.classList.remove('is-scrolled-hidden');
+              }
+            }
+
+            this.lastScrollY = currentScrollY;
+            ticking = false;
+          });
+          ticking = true;
         }
+      };
 
-        this.lastScrollY = currentScrollY;
-      }, { passive: true });
+      window.addEventListener('scroll', onScroll, { passive: true });
     }
 
     toggleSound() {

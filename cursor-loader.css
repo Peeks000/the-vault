@@ -303,40 +303,45 @@ body.vault-cursor-active [contenteditable="true"] {
 
 .vault-sound-jar {
   position: fixed;
-  top: 24px;
-  right: 28px;
+  top: 130px;
+  right: clamp(20px, 2.8vw, 36px);
   z-index: 10000;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 6px 14px 6px 8px;
   border-radius: 999px;
-  background: rgba(22, 23, 20, 0.88);
-  border: 1px solid rgba(212, 188, 145, 0.35);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28), 0 0 16px rgba(212, 188, 145, 0.08);
+  background: rgba(20, 22, 18, 0.92);
+  border: 1px solid rgba(212, 188, 145, 0.42);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.32), 0 0 16px rgba(212, 188, 145, 0.1);
   cursor: pointer;
   user-select: none;
   outline: none;
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.35s ease,
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.25s ease,
               box-shadow 0.25s ease,
               background 0.25s ease;
+  will-change: transform, opacity;
 }
 
 .vault-sound-jar:hover {
-  border-color: rgba(212, 188, 145, 0.75);
-  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.35), 0 0 22px rgba(212, 188, 145, 0.28);
-  transform: translateY(-1px);
+  border-color: rgba(212, 188, 145, 0.85);
+  box-shadow: 0 12px 38px rgba(0, 0, 0, 0.42), 0 0 24px rgba(212, 188, 145, 0.32);
+  transform: translateY(-2px);
 }
 
-/* Active Theory Intelligent Scroll Reaction */
+/* Active Theory Intelligent Scroll Reaction:
+   Scrolling down -> glides up out of viewport
+   Scrolling up -> glides smoothly back down into view */
 .vault-sound-jar.is-scrolled-hidden {
-  transform: translateY(-80px);
-  opacity: 0;
-  pointer-events: none;
+  transform: translateY(-100px) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* Bottle Miniature Structure */
@@ -497,8 +502,24 @@ body.vault-cursor-active [contenteditable="true"] {
 }
 
 /* ==========================================================================
-   4. Small Screen Optimization
+   4. Small Screen & Responsive Optimization
    ========================================================================== */
+
+@media (max-width: 900px) {
+  .vault-sound-jar {
+    top: 122px;
+    right: 20px;
+  }
+}
+
+@media (max-width: 680px) {
+  .vault-sound-jar {
+    top: 108px;
+    right: 14px;
+    padding: 5px 11px 5px 6px;
+    gap: 8px;
+  }
+}
 
 @media (max-width: 600px) and (hover: none) {
   /* Hide custom pointer dot and ring on small touchscreen phones */
@@ -510,11 +531,5 @@ body.vault-cursor-active [contenteditable="true"] {
   body.vault-cursor-active,
   body.vault-cursor-active * {
     cursor: auto !important;
-  }
-
-  .vault-sound-jar {
-    top: 14px;
-    right: 14px;
-    padding: 5px 10px 5px 6px;
   }
 }
