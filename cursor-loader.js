@@ -4,8 +4,9 @@
  * Implements:
  *  1. Active Theory inspired minimalist loading overlay with sequential dot pulse
  *  2. Dual-element champagne-brass custom cursor with physical inertia & contextual hover states
- *  3. Viscous molten champagne gold liquid trail on Canvas 2D with elastic deformation & continuous fluid hulls
- *  4. Ambient glowing firefly colony emerging from upper-edge gathering point and dispersing into the gallery
+ *  3. Sleek, professional champagne silk filament trail on Canvas 2D
+ *  4. Ambient glowing firefly colony emerging from the Firefly Sound Jar
+ *  5. Interactive Firefly Sound Jar (Active Theory scroll reaction & cinematic ambient audio)
  *
  * Strict constraint: Pure vanilla JavaScript, CSS3, Canvas 2D. Zero external libraries.
  */
@@ -130,7 +131,7 @@
   }
 
   // ===========================================================================
-  // 2. SIGNATURE LUXURY CURSOR & MOLTEN LIQUID TRAIL PHYSICS
+  // 2. SIGNATURE LUXURY CURSOR & SLEEK FILAMENT TRAIL
   // ===========================================================================
   class VaultCursorAndTrail {
     constructor() {
@@ -354,8 +355,8 @@
       this.mouse.y = clientY;
       this.lastMoveTime = now;
 
-      // Add molten fluid trail point if moved at least 1.5px
-      if (dist > 1.5) {
+      // Add fluid trail point if moved at least 2.0px
+      if (dist > 2.0) {
         this.addTrailPoint(clientX, clientY, dx, dy, dist, now);
       }
 
@@ -514,44 +515,44 @@
   }
 
   // ===========================================================================
-  // 3. AMBIENT FIREFLY COLONY (UPPER-EDGE EMERGENCE & GALLERY DISPERSION)
+  // 3. AMBIENT FIREFLY COLONY (EMERGING FROM THE FIREFLY SOUND JAR)
   // ===========================================================================
   class VaultFireflyParticle {
-    constructor(emitterX, canvasWidth, canvasHeight, isInitial) {
+    constructor(emitter, canvasWidth, canvasHeight, isInitial) {
       this.trail = [];
       this.maxTrail = 6;
-      this.reset(emitterX, canvasWidth, canvasHeight, isInitial);
+      this.reset(emitter, canvasWidth, canvasHeight, isInitial);
     }
 
-    reset(emitterX, canvasWidth, canvasHeight, isInitial = false) {
+    reset(emitter, canvasWidth, canvasHeight, isInitial = false) {
       this.w = canvasWidth;
       this.h = canvasHeight;
       this.trail = [];
 
       // Optical depth layers: 0.5 (distant) to 1.0 (near/radiant)
       this.depth = 0.5 + Math.random() * 0.5;
-      this.baseRadius = 2.0 + this.depth * 1.6; // 2.8px to 3.6px core radius (unmistakably visible)
+      this.baseRadius = 2.0 + this.depth * 1.6; // 2.8px to 3.6px core radius
 
       // Spawn location:
       // If isInitial, distribute across the visible viewport so room is immediately alive on load
-      // If re-emerging during normal life-cycle, originate from the upper-edge colony cluster
+      // If re-emerging during normal life-cycle, originate from the mouth of the Firefly Sound Jar!
       if (isInitial) {
-        this.x = emitterX + (Math.random() - 0.5) * (canvasWidth * 0.8);
-        this.y = 30 + Math.random() * (canvasHeight * 0.65);
+        this.x = emitter.x + (Math.random() - 0.5) * (canvasWidth * 0.75);
+        this.y = 35 + Math.random() * (canvasHeight * 0.65);
         this.alpha = 0;
-        this.targetAlpha = 0.65 + this.depth * 0.35; // 0.65 to 1.0 opacity
+        this.targetAlpha = 0.65 + this.depth * 0.35;
         this.born = performance.now() - Math.random() * 9000;
       } else {
-        // Upper edge colony emergence point (subtle golden cluster near header)
-        this.x = emitterX + (Math.random() - 0.5) * 70;
-        this.y = Math.random() * 12 + 2;
+        // Emerge directly from the mouth of the Firefly Sound Jar at top right
+        this.x = emitter.x + (Math.random() - 0.5) * 8;
+        this.y = emitter.y + Math.random() * 4;
         this.alpha = 0;
         this.targetAlpha = 0.65 + this.depth * 0.35;
         this.born = performance.now();
       }
 
-      // Weightless drift velocities: slow, elegant downward & diagonal floating
-      const angle = (0.2 + Math.random() * 0.6) * Math.PI;
+      // Weightless drift velocities: gently floating away from the jar diagonally down-left
+      const angle = (0.55 + Math.random() * 0.38) * Math.PI;
       const speed = (0.28 + Math.random() * 0.36) * this.depth;
       this.vx = Math.cos(angle) * speed;
       this.vy = Math.abs(Math.sin(angle) * speed);
@@ -575,7 +576,7 @@
       this.isDying = false;
     }
 
-    update(now, mouseX, mouseY, emitterX) {
+    update(now, mouseX, mouseY, emitter) {
       const age = now - this.born;
 
       // Fade-in during emergence
@@ -594,7 +595,7 @@
       if (this.isDying) {
         this.alpha -= 0.014;
         if (this.alpha <= 0) {
-          this.reset(emitterX, this.w, this.h, false);
+          this.reset(emitter, this.w, this.h, false);
           return;
         }
       }
@@ -758,6 +759,31 @@
       }
     }
 
+    getEmitterCoords() {
+      const jar = document.getElementById('vaultSoundJar');
+      if (jar) {
+        const rect = jar.getBoundingClientRect();
+        return {
+          x: rect.left + 15,
+          y: Math.max(12, rect.top + 8)
+        };
+      }
+      return {
+        x: window.innerWidth - 65,
+        y: 35
+      };
+    }
+
+    emitBurst(count = 3) {
+      const emitter = this.getEmitterCoords();
+      const num = Math.min(count, this.particles.length);
+      for (let i = 0; i < num; i++) {
+        this.particles[i].reset(emitter, window.innerWidth, window.innerHeight, false);
+        this.particles[i].vx = -(0.45 + Math.random() * 0.45) * this.particles[i].depth;
+        this.particles[i].vy = (0.25 + Math.random() * 0.35) * this.particles[i].depth;
+      }
+    }
+
     resizeCanvas() {
       if (!this.canvas || !this.ctx) return;
       this.dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -776,7 +802,6 @@
       }
       this.ctx.scale(this.dpr, this.dpr);
 
-      const emitterX = width * 0.5;
       for (const p of this.particles) {
         p.w = width;
         p.h = height;
@@ -786,14 +811,14 @@
     initParticles() {
       const width = window.innerWidth;
       const height = window.innerHeight;
-      const emitterX = width * 0.5;
+      const emitter = this.getEmitterCoords();
 
       // 12 active fireflies on desktop, 7 on mobile viewports
       const count = width < 680 ? 7 : 12;
       this.particles = [];
 
       for (let i = 0; i < count; i++) {
-        this.particles.push(new VaultFireflyParticle(emitterX, width, height, true));
+        this.particles.push(new VaultFireflyParticle(emitter, width, height, true));
       }
     }
 
@@ -843,22 +868,22 @@
 
       ctx.clearRect(0, 0, width, height);
 
-      const emitterX = width * 0.5;
+      const emitter = this.getEmitterCoords();
 
-      // 1. Discreet Upper-Edge Gathering Aura (Emergence Colony Cluster)
+      // 1. Subtle Bioluminescent Aura around the mouth of the Firefly Sound Jar
       ctx.save();
-      const auraPulse = (Math.sin(now * 0.0014) + 1) / 2;
-      const auraRadius = 88 + auraPulse * 22;
-      const auraAlpha = 0.12 + auraPulse * 0.08;
+      const auraPulse = (Math.sin(now * 0.0016) + 1) / 2;
+      const auraRadius = 38 + auraPulse * 16;
+      const auraAlpha = 0.16 + auraPulse * 0.09;
 
-      const auraGrad = ctx.createRadialGradient(emitterX, 0, 0, emitterX, 0, auraRadius);
-      auraGrad.addColorStop(0, `rgba(245, 218, 156, ${auraAlpha * 1.6})`);
-      auraGrad.addColorStop(0.35, `rgba(224, 188, 120, ${auraAlpha})`);
-      auraGrad.addColorStop(0.72, `rgba(182, 138, 64, ${auraAlpha * 0.35})`);
+      const auraGrad = ctx.createRadialGradient(emitter.x, emitter.y, 0, emitter.x, emitter.y, auraRadius);
+      auraGrad.addColorStop(0, `rgba(245, 218, 156, ${auraAlpha * 1.5})`);
+      auraGrad.addColorStop(0.4, `rgba(224, 188, 120, ${auraAlpha})`);
+      auraGrad.addColorStop(0.78, `rgba(182, 138, 64, ${auraAlpha * 0.25})`);
       auraGrad.addColorStop(1, 'rgba(164, 122, 54, 0)');
 
       ctx.beginPath();
-      ctx.arc(emitterX, 0, auraRadius, 0, Math.PI * 2);
+      ctx.arc(emitter.x, emitter.y, auraRadius, 0, Math.PI * 2);
       ctx.fillStyle = auraGrad;
       ctx.fill();
       ctx.restore();
@@ -866,10 +891,213 @@
       // 2. Update & Draw Active Fireflies
       ctx.save();
       for (const p of this.particles) {
-        p.update(now, this.mouseX, this.mouseY, emitterX);
+        p.update(now, this.mouseX, this.mouseY, emitter);
         p.draw(ctx, now);
       }
       ctx.restore();
+    }
+  }
+
+  // ===========================================================================
+  // 4. INTERACTIVE FIREFLY SOUND JAR (ACTIVE THEORY SCROLL REACTION & AMBIENT AUDIO)
+  // ===========================================================================
+  class VaultSoundJar {
+    constructor() {
+      this.jarEl = null;
+      this.audio = null;
+      this.isPlaying = false;
+      this.fadeInterval = null;
+      this.lastScrollY = window.scrollY;
+      this.isHiddenByScroll = false;
+
+      this.init();
+    }
+
+    init() {
+      this.createJarDOM();
+      this.initAudio();
+      this.bindEvents();
+    }
+
+    createJarDOM() {
+      if (document.getElementById('vaultSoundJar')) {
+        this.jarEl = document.getElementById('vaultSoundJar');
+        return;
+      }
+
+      this.jarEl = document.createElement('button');
+      this.jarEl.id = 'vaultSoundJar';
+      this.jarEl.className = 'vault-sound-jar';
+      this.jarEl.setAttribute('role', 'button');
+      this.jarEl.setAttribute('aria-label', 'Toggle ambient gallery sound');
+      this.jarEl.setAttribute('aria-pressed', 'false');
+
+      this.jarEl.innerHTML = `
+        <div class="vault-jar-bottle">
+          <div class="vault-jar-cork"></div>
+          <div class="vault-jar-neck"></div>
+          <div class="vault-jar-glass">
+            <div class="vault-jar-ember vault-jar-ember-1"></div>
+            <div class="vault-jar-ember vault-jar-ember-2"></div>
+            <div class="vault-jar-ember vault-jar-ember-3"></div>
+            <div class="vault-jar-reflection"></div>
+          </div>
+        </div>
+        <div class="vault-sound-info">
+          <div class="vault-sound-bars">
+            <span class="vault-sound-bar"></span>
+            <span class="vault-sound-bar"></span>
+            <span class="vault-sound-bar"></span>
+            <span class="vault-sound-bar"></span>
+          </div>
+          <span class="vault-sound-label">SOUND</span>
+        </div>
+      `;
+
+      const mount = () => {
+        document.body.appendChild(this.jarEl);
+      };
+
+      if (document.body) {
+        mount();
+      } else {
+        document.addEventListener('DOMContentLoaded', mount);
+      }
+    }
+
+    initAudio() {
+      this.audio = new Audio('the-vault-ambient.mp3');
+      this.audio.loop = true;
+      this.audio.volume = 0;
+      this.audio.preload = 'auto';
+
+      try {
+        const saved = sessionStorage.getItem('vault_sound_playing');
+        if (saved === 'true') {
+          const playPromise = this.audio.play();
+          if (playPromise !== undefined) {
+            playPromise.then(() => {
+              this.isPlaying = true;
+              this.setPlayingState(true);
+              this.fadeAudio(0.55, 600);
+            }).catch(() => {
+              this.isPlaying = false;
+              this.setPlayingState(false);
+            });
+          }
+        }
+      } catch (e) {}
+    }
+
+    bindEvents() {
+      this.jarEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.toggleSound();
+      });
+
+      // Active Theory Scroll Direction Reaction:
+      // Scrolling down -> box slides up out of view
+      // Scrolling up -> box slides down into view
+      window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+        const delta = currentScrollY - this.lastScrollY;
+
+        if (currentScrollY > 70 && delta > 6) {
+          if (!this.isHiddenByScroll) {
+            this.isHiddenByScroll = true;
+            this.jarEl.classList.add('is-scrolled-hidden');
+          }
+        } else if (delta < -4 || currentScrollY <= 25) {
+          if (this.isHiddenByScroll) {
+            this.isHiddenByScroll = false;
+            this.jarEl.classList.remove('is-scrolled-hidden');
+          }
+        }
+
+        this.lastScrollY = currentScrollY;
+      }, { passive: true });
+    }
+
+    toggleSound() {
+      if (this.isPlaying) {
+        this.pause();
+      } else {
+        this.play();
+      }
+    }
+
+    play() {
+      if (!this.audio) return;
+      this.isPlaying = true;
+      this.setPlayingState(true);
+
+      const playPromise = this.audio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          this.fadeAudio(0.55, 600);
+          try {
+            sessionStorage.setItem('vault_sound_playing', 'true');
+          } catch (e) {}
+
+          // Emit a burst of fireflies escaping from the jar!
+          if (window.__vaultFireflySystem) {
+            window.__vaultFireflySystem.emitBurst(3);
+          }
+        }).catch((err) => {
+          console.warn('[THE VAULT] Audio play prevented by browser policy:', err);
+          this.isPlaying = false;
+          this.setPlayingState(false);
+        });
+      }
+    }
+
+    pause() {
+      if (!this.audio) return;
+      this.isPlaying = false;
+      this.setPlayingState(false);
+
+      this.fadeAudio(0, 450, () => {
+        this.audio.pause();
+      });
+
+      try {
+        sessionStorage.setItem('vault_sound_playing', 'false');
+      } catch (e) {}
+    }
+
+    setPlayingState(playing) {
+      if (playing) {
+        this.jarEl.classList.add('is-playing');
+        this.jarEl.setAttribute('aria-pressed', 'true');
+        const label = this.jarEl.querySelector('.vault-sound-label');
+        if (label) label.textContent = 'MUTE';
+      } else {
+        this.jarEl.classList.remove('is-playing');
+        this.jarEl.setAttribute('aria-pressed', 'false');
+        const label = this.jarEl.querySelector('.vault-sound-label');
+        if (label) label.textContent = 'SOUND';
+      }
+    }
+
+    fadeAudio(targetVol, duration, onComplete) {
+      if (this.fadeInterval) clearInterval(this.fadeInterval);
+      if (!this.audio) return;
+
+      const startVol = this.audio.volume;
+      const startTime = performance.now();
+
+      this.fadeInterval = setInterval(() => {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        this.audio.volume = Math.max(0, Math.min(1, startVol + (targetVol - startVol) * progress));
+
+        if (progress >= 1) {
+          clearInterval(this.fadeInterval);
+          this.fadeInterval = null;
+          if (onComplete) onComplete();
+        }
+      }, 25);
     }
   }
 
@@ -879,6 +1107,7 @@
   let loaderInstance = null;
   let cursorInstance = null;
   let fireflyInstance = null;
+  let soundJarInstance = null;
 
   function boot() {
     if (!loaderInstance) {
@@ -889,9 +1118,13 @@
     }
     if (!fireflyInstance) {
       fireflyInstance = new VaultFireflySystem();
+      window.__vaultFireflySystem = fireflyInstance;
+    }
+    if (!soundJarInstance) {
+      soundJarInstance = new VaultSoundJar();
     }
     try {
-      console.log('[THE VAULT] ✨ Ambient Firefly Colony & Liquid Cursor Active');
+      console.log('[THE VAULT] ✨ Ambient Firefly Jar, Audio & Liquid Cursor Active');
     } catch (e) {}
   }
 
