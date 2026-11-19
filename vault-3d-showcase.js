@@ -48,14 +48,18 @@
     }
 
     init() {
+      let retryCount = 0;
       const mount = () => {
         this.canvas = document.getElementById('vault3dCanvas');
         this.container = document.getElementById('closing3dWrap');
-        if (!this.canvas || !this.container) return;
+        if (!this.canvas || !this.container) {
+          if (retryCount++ < 40) setTimeout(mount, 60);
+          return;
+        }
 
         // Ensure Three.js and loaders are present
         if (typeof THREE === 'undefined' || typeof THREE.GLTFLoader === 'undefined') {
-          console.warn('[THE VAULT 3D] Three.js or GLTFLoader not yet loaded.');
+          if (retryCount++ < 40) setTimeout(mount, 60);
           return;
         }
 
@@ -67,10 +71,16 @@
         this.bindEvents();
         this.loadModel();
         this.animate();
+
+        // Render immediate initial frame
+        if (this.renderer && this.scene && this.camera) {
+          this.renderer.render(this.scene, this.camera);
+        }
       };
 
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', mount);
+        window.addEventListener('load', mount);
       } else {
         mount();
       }
@@ -89,13 +99,15 @@
       this.camera.position.set(this.initialCameraPos.x, this.initialCameraPos.y, this.initialCameraPos.z);
       this.camera.lookAt(this.initialTarget.x, this.initialTarget.y, this.initialTarget.z);
 
-      // WebGL Renderer with graceful error boundary
+      // WebGL Renderer with graceful error boundary and preserveDrawingBuffer for headless test captures
       try {
         this.renderer = new THREE.WebGLRenderer({
           canvas: this.canvas,
           antialias: true,
           alpha: true,
-          powerPreference: 'high-performance'
+          preserveDrawingBuffer: true,
+          powerPreference: 'default',
+          failIfMajorPerformanceCaveat: false
         });
         this.renderer.setSize(width, height, false);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -110,6 +122,7 @@
         }
       } catch (err) {
         console.warn('[THE VAULT 3D] WebGL renderer initialization error:', err);
+        this.renderer = null;
         this.dismissLoader();
       }
 
@@ -128,7 +141,8 @@
       const bodyMat = new THREE.MeshStandardMaterial({
         color: 0x242621,
         roughness: 0.45,
-        metalness: 0.65
+        metalness: 0.65,
+        emissive: 0x161814
       });
       const bodyMesh = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.56, 0.44), bodyMat);
       bodyMesh.castShadow = true;
@@ -137,9 +151,10 @@
 
       // 2. Brass top plate
       const brassMat = new THREE.MeshStandardMaterial({
-        color: 0xc4a672,
-        roughness: 0.32,
-        metalness: 0.85
+        color: 0xd4af37,
+        roughness: 0.28,
+        metalness: 0.85,
+        emissive: 0x3a2c14
       });
       const topPlate = new THREE.Mesh(new THREE.BoxGeometry(0.93, 0.12, 0.45), brassMat);
       topPlate.position.y = 0.32;
@@ -147,9 +162,10 @@
 
       // 3. Central mechanical lens barrel
       const lensMat = new THREE.MeshStandardMaterial({
-        color: 0x181916,
-        roughness: 0.35,
-        metalness: 0.75
+        color: 0x1a1c18,
+        roughness: 0.32,
+        metalness: 0.75,
+        emissive: 0x121410
       });
       const lensMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.27, 0.32, 32), lensMat);
       lensMesh.rotation.x = Math.PI / 2;
@@ -172,7 +188,7 @@
       // 6. Orbital focus ring
       const orbitRing = new THREE.Mesh(
         new THREE.TorusGeometry(0.88, 0.005, 16, 64),
-        new THREE.MeshBasicMaterial({ color: 0xd4bc91, transparent: true, opacity: 0.45 })
+        new THREE.MeshBasicMaterial({ color: 0xd4bc91, transparent: true, opacity: 0.55 })
       );
       orbitRing.rotation.x = Math.PI / 3;
       this.placeholderGroup.add(orbitRing);
@@ -385,6 +401,9 @@
       } else {
         window.addEventListener('resize', resize, { passive: true });
       }
+      resize();
+      setTimeout(resize, 100);
+      setTimeout(resize, 500);
 
       // 2. Interactive Cursor Parallax over Section
       const ctaSection = document.getElementById('closing-cta');

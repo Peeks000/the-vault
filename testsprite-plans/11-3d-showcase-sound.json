@@ -1,0 +1,29 @@
+{
+  "projectId": "6fd2be6a-0f8d-4472-8855-3e90bedf40e5",
+  "type": "frontend",
+  "name": "11 3D Showcase & Ambient Sound — Interactive 3D artifact stage and sound jar",
+  "description": "Verifies that the 3D artifact showcase in the closing section renders the WebGL canvas with controls and that the ambient firefly sound jar is accessible.",
+  "priority": "Medium",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to /index.html and verify the page loads completely"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the ambient sound jar button is visible on the right side of the screen"
+    },
+    {
+      "type": "action",
+      "description": "Scroll down to the closing section with headline 'Make room for the exceptional.'"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the 3D Artifact Study stage is displayed with the WebGL canvas and lot specification"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the stage controls include Auto-Rotate and Reset buttons"
+    }
+  ]
+}
