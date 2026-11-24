@@ -1,22 +1,49 @@
 /**
- * THE VAULT — Signature Liquid Cursor, Ambient Firefly Colony & Cinematic Loading Experience
+ * =============================================================================
+ * THE VAULT — Signature Liquid Cursor, Ambient Firefly Colony & Cinematic Loading
+ * (cursor-loader.js)
+ * =============================================================================
+ * WHAT THIS FILE DOES:
+ * Powers the interactive luxury atmosphere across all pages of THE VAULT:
+ * 1. VaultLoader: Active Theory inspired editorial preloader with sequential pulse.
+ * 2. VaultCursorAndTrail: Custom dual-element cursor (precision point + inertia ring)
+ *    and silky, flowing champagne liquid filament trail on full-screen Canvas 2D.
+ * 3. VaultFireflyParticle & System: Bioluminescent firefly colony with organic
+ *    harmonic wandering trajectories emerging from the top right edge.
+ * 4. VaultSoundJar: Floating interactive glass sound jar button that reacts
+ *    to scroll direction and plays curated ambient gallery sound with smooth volume fading.
  *
- * Implements:
- *  1. Active Theory inspired minimalist loading overlay with sequential dot pulse
- *  2. Dual-element champagne-brass custom cursor with physical inertia & contextual hover states
- *  3. Sleek, professional champagne silk filament trail on Canvas 2D
- *  4. Ambient glowing firefly colony emerging from the Firefly Sound Jar
- *  5. Interactive Firefly Sound Jar (Active Theory scroll reaction & cinematic ambient audio)
+ * STRICT TECHNOLOGY CONSTRAINT SATISFIED:
+ * Zero external libraries (no GSAP, no Framer Motion, no jQuery).
+ * Implemented entirely with native HTML5, CSS3, requestAnimationFrame, and Canvas 2D.
  *
- * Strict constraint: Pure vanilla JavaScript, CSS3, Canvas 2D. Zero external libraries.
+ * VIVA CONCEPTS TO EXPLAIN:
+ * - Linear Interpolation (LERP): A mathematical formula `val += (target - val) * factor`
+ *   used to create smooth inertia and spring-like trailing instead of instant jumping.
+ * - Device Pixel Ratio (DPR): window.devicePixelRatio compensates for high-density
+ *   Retina screens so Canvas lines remain razor-sharp rather than blurry.
+ * - Quadratic Bézier Curves: ctx.quadraticCurveTo(cpX, cpY, toX, toY) connects discrete
+ *   mouse coordinates into continuous, silky liquid light ribbons.
+ * =============================================================================
  */
 
 (function () {
   'use strict';
 
   // ===========================================================================
-  // 1. ACTIVE THEORY INSPIRED CINEMATIC LOADING SCREEN
+  // 1. ACTIVE THEORY INSPIRED CINEMATIC LOADING SCREEN (VaultLoader)
   // ===========================================================================
+  /**
+   * Class: VaultLoader
+   * Purpose: Presents a minimal, refined loading sequence on first visit.
+   *
+   * How it works:
+   * 1. Inspects sessionStorage to see if 'vault_visited' is 'true'.
+   * 2. If first visit: Runs an 800ms luxury sequence showing editorial brand text.
+   * 3. If subsequent internal page navigation: Uses a snappy 160ms duration so
+   *    the site feels fast and responsive while still preventing layout flashes.
+   * 4. Once window 'load' event fires, smoothly transitions the overlay out.
+   */
   class VaultLoader {
     constructor() {
       this.loaderEl = null;
@@ -28,6 +55,7 @@
     }
 
     init() {
+      // Check session storage to identify return visits within this browsing session
       try {
         if (sessionStorage.getItem('vault_visited') === 'true') {
           this.isSubsequentVisit = true;
@@ -40,6 +68,12 @@
       this.setupDismissal();
     }
 
+    /**
+     * Creates and mounts the loader overlay HTML if not already in the page.
+     * Includes accessibility attributes:
+     * - role="status": Informs screen readers this element conveys loading status.
+     * - aria-live="polite": Screen readers announce status changes without interrupting.
+     */
     createLoaderDOM() {
       let el = document.getElementById('vaultLoader');
       if (!el) {
@@ -87,6 +121,9 @@
       this.loaderEl = el;
     }
 
+    /**
+     * Coordinates the smooth transition out when the page is fully loaded.
+     */
     setupDismissal() {
       const targetDuration = this.isSubsequentVisit
         ? this.subsequentDuration
@@ -107,7 +144,7 @@
         window.addEventListener('load', triggerDismiss, { once: true });
       }
 
-      // Hard safety timeout: guarantee loader never locks interaction
+      // Hard safety timeout: guarantees loader never locks the screen if an asset hangs
       setTimeout(() => {
         this.dismiss();
       }, 2000);
@@ -122,6 +159,7 @@
         sessionStorage.setItem('vault_visited', 'true');
       } catch (e) {}
 
+      // Remove from layout after fade-out transition finishes
       setTimeout(() => {
         if (this.loaderEl && this.loaderEl.parentNode) {
           this.loaderEl.style.display = 'none';
@@ -131,8 +169,23 @@
   }
 
   // ===========================================================================
-  // 2. SIGNATURE LUXURY CURSOR & SLEEK FILAMENT TRAIL
+  // 2. SIGNATURE LUXURY CURSOR & SLEEK FILAMENT TRAIL (VaultCursorAndTrail)
   // ===========================================================================
+  /**
+   * Class: VaultCursorAndTrail
+   * Purpose: Custom luxury cursor experience replacing the default OS pointer.
+   *
+   * Dual-Element Architecture:
+   * 1. Central Point (#vaultCursorDot): Tight tracking (factor 0.65), acts as precision needle.
+   * 2. Outer Ring (#vaultCursorRing): Delayed follower (factor 0.18), creates physical inertia.
+   * 3. Fluid Mouse Trail (#vaultTrailCanvas): Transparent Canvas 2D layer drawing a tapered
+   *    molten champagne gold filament that organically tracks velocity and dissolves.
+   * 4. Contextual Hover States:
+   *    - Over links: ring expands with subtle brass glow.
+   *    - Over buttons: ring contracts with magnetic liquid snap.
+   *    - Over lot cards: transforms into an editorial "VIEW" badge pill.
+   *    - Over inputs / text: custom cursor hides and restores native text-selection I-beam.
+   */
   class VaultCursorAndTrail {
     constructor() {
       this.mouse = { x: -100, y: -100, vx: 0, vy: 0, speed: 0 };
@@ -144,10 +197,10 @@
       this.lastMoveTime = 0;
       this.rafId = null;
 
-      // Professional Luxury Filament Trail History & Dynamics
+      // Trail history array storing recent pointer coordinates
       this.points = [];
       this.maxTrailPoints = 20;
-      this.trailLifespan = 320; // ms for sleek, silky luxury filament that dissolves crisply
+      this.trailLifespan = 320; // Milliseconds before trailing points dissolve
 
       this.canvas = null;
       this.ctx = null;
@@ -166,6 +219,9 @@
       this.bindEvents();
     }
 
+    /**
+     * Injects the DOM elements for the center dot, follower ring, and "VIEW" label.
+     */
     createCursorElements() {
       if (document.getElementById('vaultCursorDot')) {
         this.dotEl = document.getElementById('vaultCursorDot');
@@ -203,6 +259,9 @@
       }
     }
 
+    /**
+     * Injects the full-viewport Canvas 2D element used for drawing the liquid trail.
+     */
     createCanvas() {
       if (document.getElementById('vaultTrailCanvas')) {
         this.canvas = document.getElementById('vaultTrailCanvas');
@@ -229,17 +288,23 @@
       }
     }
 
+    /**
+     * Scales the canvas buffer for Retina / HiDPI screens using devicePixelRatio.
+     */
     resizeCanvas() {
       if (!this.canvas || !this.ctx) return;
       this.dpr = Math.min(window.devicePixelRatio || 1, 2);
       const width = window.innerWidth;
       const height = window.innerHeight;
 
+      // Set physical canvas pixel dimensions
       this.canvas.width = Math.floor(width * this.dpr);
       this.canvas.height = Math.floor(height * this.dpr);
+      // Set CSS layout dimensions
       this.canvas.style.width = width + 'px';
       this.canvas.style.height = height + 'px';
 
+      // Reset and scale coordinate system so 1 canvas unit = 1 CSS pixel
       if (this.ctx.resetTransform) {
         this.ctx.resetTransform();
       } else {
@@ -261,12 +326,16 @@
       this.setupContextualHover();
     }
 
+    /**
+     * Detects what element is currently under the cursor and adapts the cursor's appearance.
+     * Uses event delegation on document pointerover for maximum efficiency.
+     */
     setupContextualHover() {
       document.addEventListener('pointerover', (e) => {
         const target = e.target;
         if (!target || !target.closest || !this.ringEl || !this.dotEl) return;
 
-        // 1. Text Inputs / Textarea / Select -> Restore native cursor
+        // 1. Text Inputs / Textarea / Select -> Restore native OS cursor for readability
         const isEditable = target.closest('input, textarea, select, [contenteditable="true"]');
         if (isEditable) {
           this.setHidden(true);
@@ -287,7 +356,7 @@
           this.dotEl.classList.remove('is-card');
         }
 
-        // 3. Action Buttons & Bidding Triggers -> Button State
+        // 3. Action Buttons & Bidding Triggers -> Button Compress State
         const isButton = target.closest('button, [role="button"], .admin-action-btn, .filter-chip, .thumb');
         if (isButton) {
           this.ringEl.classList.add('is-button');
@@ -297,7 +366,7 @@
           this.ringEl.classList.remove('is-button');
         }
 
-        // 4. Standard Links
+        // 4. Standard Navigation Links -> Ring Expansion
         const isLink = target.closest('a');
         if (isLink) {
           this.ringEl.classList.add('is-hovering');
@@ -320,6 +389,7 @@
     }
 
     onPointerMove(e) {
+      // Ignore touch events on mobile screens to preserve native touch scrolling
       if (e.pointerType === 'touch' && window.innerWidth < 680) {
         return;
       }
@@ -332,6 +402,7 @@
         document.body.classList.add('vault-cursor-active');
       }
 
+      // First move initialization
       if (!this.hasPointerMoved) {
         this.hasPointerMoved = true;
         this.isPointerInside = true;
@@ -346,7 +417,7 @@
 
       const dx = clientX - this.mouse.x;
       const dy = clientY - this.mouse.y;
-      const dist = Math.hypot(dx, dy);
+      const dist = Math.hypot(dx, dy); // Euclidean distance = sqrt(dx^2 + dy^2)
 
       this.mouse.vx = dx;
       this.mouse.vy = dy;
@@ -355,11 +426,12 @@
       this.mouse.y = clientY;
       this.lastMoveTime = now;
 
-      // Add fluid trail point if moved at least 2.0px
+      // Add a trail point if the mouse moved at least 2 pixels
       if (dist > 2.0) {
         this.addTrailPoint(clientX, clientY, dx, dy, dist, now);
       }
 
+      // Start rAF animation loop if not already running
       if (!this.rafId) {
         this.startLoop();
       }
@@ -375,6 +447,7 @@
         lifespan: this.trailLifespan
       });
 
+      // Keep array bounded to prevent memory growth
       if (this.points.length > this.maxTrailPoints) {
         this.points.length = this.maxTrailPoints;
       }
@@ -395,6 +468,11 @@
       }
     }
 
+    /**
+     * Main animation loop for the custom cursor.
+     * Automatically stops itself when the mouse is idle and all trail points have dissolved,
+     * dropping CPU/GPU usage to exactly 0%!
+     */
     startLoop() {
       if (this.rafId) return;
 
@@ -403,6 +481,7 @@
         this.renderCursor();
         this.renderTrail(now);
 
+        // Sleep when cursor is completely still
         const idleDuration = now - this.lastMoveTime;
         if (idleDuration > 220 && this.points.length === 0) {
           this.rafId = null;
@@ -415,10 +494,17 @@
       this.rafId = requestAnimationFrame(loop);
     }
 
+    /**
+     * Physics update step:
+     * - Uses LERP to pull dot (fast) and ring (relaxed) towards the mouse.
+     * - Ages and culls expired trail points.
+     */
     updatePhysics(now) {
+      // Dot LERP (0.65 = snappy response)
       this.dot.x += (this.mouse.x - this.dot.x) * 0.65;
       this.dot.y += (this.mouse.y - this.dot.y) * 0.65;
 
+      // Ring LERP (0.18 = smooth, weighted inertia)
       this.ring.x += (this.mouse.x - this.ring.x) * 0.18;
       this.ring.y += (this.mouse.y - this.ring.y) * 0.18;
 
@@ -432,11 +518,13 @@
           continue;
         }
 
+        // Friction damping
         pt.vx *= 0.84;
         pt.vy *= 0.84;
         pt.x += pt.vx;
         pt.y += pt.vy;
 
+        // Pull towards adjacent newer point for continuous fluid cohesion
         if (i > 0) {
           const newer = pts[i - 1];
           pt.x += (newer.x - pt.x) * 0.16;
@@ -445,6 +533,10 @@
       }
     }
 
+    /**
+     * Positions the cursor DOM elements using GPU-accelerated CSS translate3d.
+     * translate3d triggers hardware composite layers, avoiding browser layout recalculations.
+     */
     renderCursor() {
       if (!this.hasPointerMoved || !this.isPointerInside || !this.dotEl || !this.ringEl) return;
 
@@ -452,6 +544,14 @@
       this.ringEl.style.transform = `translate3d(${this.ring.x}px, ${this.ring.y}px, 0) translate(-50%, -50%)`;
     }
 
+    /**
+     * Renders the liquid filament trail onto the Canvas 2D.
+     *
+     * How the smoothing math works:
+     * Instead of drawing sharp straight lines between points (which looks jagged),
+     * it calculates midpoints between adjacent points and uses quadratic Bézier curves
+     * (ctx.quadraticCurveTo), producing an organic, fluid champagne ribbon!
+     */
     renderTrail(now) {
       if (!this.ctx || !this.canvas) return;
 
@@ -466,18 +566,18 @@
 
       ctx.save();
 
-      // Draw silky, continuous champagne filament with graceful tapering
+      // Draw tapered champagne filament
       for (let i = 0; i < pts.length - 1; i++) {
         const p1 = pts[i];
         const p2 = pts[i + 1];
 
         const age = now - p1.birth;
         const progress = Math.min(1, Math.max(0, age / p1.lifespan));
-        const alpha = Math.pow(1 - progress, 1.35);
+        const alpha = Math.pow(1 - progress, 1.35); // Non-linear alpha decay curve
 
         if (alpha <= 0.01) continue;
 
-        // Elegant tapered line width: 2.6px at head down to 0.4px at tail
+        // Tapered stroke width: 2.6px at cursor head down to 0.4px at tail
         const strokeWidth = Math.max(0.4, 0.4 + (1 - progress) * 2.2);
 
         ctx.beginPath();
@@ -485,6 +585,7 @@
           ctx.moveTo(p1.x, p1.y);
           ctx.lineTo((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
         } else {
+          // Calculate midpoints for Bézier control points
           const prevMidX = (pts[i - 1].x + p1.x) / 2;
           const prevMidY = (pts[i - 1].y + p1.y) / 2;
           const nextMidX = (p1.x + p2.x) / 2;
@@ -501,7 +602,7 @@
         ctx.shadowBlur = 4;
         ctx.stroke();
 
-        // Delicate luminous core on the leading segments
+        // Luminous white-gold core on the newest segments
         if (i < 4) {
           ctx.strokeStyle = `rgba(255, 252, 245, ${alpha * 0.88})`;
           ctx.lineWidth = Math.max(0.4, strokeWidth * 0.45);
@@ -515,8 +616,20 @@
   }
 
   // ===========================================================================
-  // 3. AMBIENT FIREFLY COLONY (EMERGING FROM THE FIREFLY SOUND JAR)
+  // 3. AMBIENT FIREFLY COLONY (VaultFireflyParticle & VaultFireflySystem)
   // ===========================================================================
+  /**
+   * Class: VaultFireflyParticle
+   * Purpose: Individual bioluminescent firefly entity with autonomous organic flight.
+   *
+   * Trajectory Physics:
+   * - Harmonic wandering using sine/cosine trigonometry (Perlin-like smooth randomness).
+   * - Optical depth simulation: this.depth (0.5 to 1.0) controls speed, scale, and brightness,
+   *   creating a convincing 3D multi-layered parallax feel across the viewport.
+   * - Natural inspection behavior: fireflies occasionally hover in place with subtle
+   *   bobbing before continuing their flight through the gallery.
+   * - Bioluminescent pulsing: periodic mathematical sine waves simulate organic light flashes.
+   */
   class VaultFireflyParticle {
     constructor(emitter, canvasWidth, canvasHeight, isInitial) {
       this.trail = [];
@@ -529,13 +642,13 @@
       this.h = canvasHeight;
       this.trail = [];
 
-      // Optical depth layers: 0.5 (distant) to 1.0 (near/radiant)
+      // Optical depth factor: 0.5 (distant/small) to 1.0 (near/bright)
       this.depth = 0.5 + Math.random() * 0.5;
       this.baseRadius = 2.0 + this.depth * 1.6; // 2.8px to 3.6px core radius
 
       // Spawn location:
-      // If isInitial, distribute across the visible viewport so room is immediately alive on load
-      // If re-emerging during normal life-cycle, originate from the mouth of the Firefly Sound Jar!
+      // If isInitial on page boot: distribute across viewport so room feels alive immediately.
+      // If rebirth during flight: emerge from the mouth of the Firefly Sound Jar!
       if (isInitial) {
         this.x = emitter.x + (Math.random() - 0.5) * (canvasWidth * 0.75);
         this.y = 35 + Math.random() * (canvasHeight * 0.65);
@@ -543,7 +656,6 @@
         this.targetAlpha = 0.65 + this.depth * 0.35;
         this.born = performance.now() - Math.random() * 9000;
       } else {
-        // Emerge directly from the mouth of the Firefly Sound Jar at top right
         this.x = emitter.x + (Math.random() - 0.5) * 8;
         this.y = emitter.y + Math.random() * 4;
         this.alpha = 0;
@@ -551,18 +663,18 @@
         this.born = performance.now();
       }
 
-      // Weightless drift velocities: gently floating away from the jar diagonally down-left
+      // Weightless drift velocity: gently flowing diagonally downwards and across
       const angle = (0.55 + Math.random() * 0.38) * Math.PI;
       const speed = (0.28 + Math.random() * 0.36) * this.depth;
       this.vx = Math.cos(angle) * speed;
       this.vy = Math.abs(Math.sin(angle) * speed);
 
-      // Wander forces: gentle harmonic sways
+      // Wander forces: gentle harmonic sway parameters
       this.wanderAngle = Math.random() * Math.PI * 2;
       this.wanderSpeed = 0.007 + Math.random() * 0.01;
       this.wanderRadius = 0.07 + Math.random() * 0.12;
 
-      // Bioluminescence: periodic flash pulse
+      // Bioluminescence: periodic flash pulse speed and phase
       this.pulsePhase = Math.random() * Math.PI * 2;
       this.pulseSpeed = 0.0018 + Math.random() * 0.0028;
 
@@ -579,19 +691,19 @@
     update(now, mouseX, mouseY, emitter) {
       const age = now - this.born;
 
-      // Fade-in during emergence
+      // Emergence fade-in
       if (age < 2200) {
         this.alpha = (age / 2200) * this.targetAlpha;
       } else if (!this.isDying) {
         this.alpha = this.targetAlpha;
       }
 
-      // Check life completion or viewport exit
+      // Check life completion or viewport boundary exit
       if (age >= this.lifespan || this.y > this.h + 30 || this.x < -50 || this.x > this.w + 50) {
         this.isDying = true;
       }
 
-      // Fade out before rebirth
+      // Fade out before rebirth at sound jar
       if (this.isDying) {
         this.alpha -= 0.014;
         if (this.alpha <= 0) {
@@ -611,7 +723,7 @@
         if (now < this.hoverUntil) {
           this.vx *= 0.91;
           this.vy *= 0.91;
-          this.y += Math.sin(now * 0.004) * 0.18;
+          this.y += Math.sin(now * 0.004) * 0.18; // Delicate vertical hover oscillation
         } else {
           this.isHovering = false;
           this.wanderAngle += (Math.random() - 0.5) * 0.9;
@@ -627,7 +739,7 @@
         this.vx += ax;
         this.vy += ay;
 
-        // Terminal drift speed limit (never falls like rain)
+        // Terminal drift speed limit (guarantees they float gently, never falling like rain)
         const currentSpeed = Math.hypot(this.vx, this.vy);
         const maxSpeed = 0.85 * this.depth;
         if (currentSpeed > maxSpeed) {
@@ -648,11 +760,10 @@
         }
       }
 
-      // Move particle
       this.x += this.vx;
       this.y += this.vy;
 
-      // Update trailing positions history
+      // Update trailing vapor coordinates
       if (Math.hypot(this.vx, this.vy) > 0.08) {
         this.trail.unshift({ x: this.x, y: this.y });
         if (this.trail.length > this.maxTrail) {
@@ -661,10 +772,17 @@
       }
     }
 
+    /**
+     * Renders the bioluminescent particle with radial gradients.
+     * Layers:
+     * 1. Phosphorescent vapor trail.
+     * 2. Diffused warm golden halo (multi-stop radial gradient).
+     * 3. Brilliant white-gold central core with subtle glow blur.
+     */
     draw(ctx, now) {
       if (this.alpha <= 0.01) return;
 
-      // Bioluminescent pulse curve (sharp organic flash, rich warm resting ember)
+      // Bioluminescent pulse formula (sharp organic flash with warm resting glow)
       const rawPulse = Math.sin(now * this.pulseSpeed + this.pulsePhase);
       const flash = Math.pow(Math.max(0, rawPulse), 2.6);
       const lum = this.alpha * (0.52 + 0.48 * flash);
@@ -681,7 +799,7 @@
         ctx.stroke();
       }
 
-      // 2. High-Contrast Diffused Warm Halo (Visible on ivory & dark backgrounds)
+      // 2. High-Contrast Diffused Warm Halo
       const haloRadius = this.baseRadius * (4.8 + flash * 2.2);
       const halo = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, haloRadius);
       halo.addColorStop(0, `rgba(255, 245, 215, ${lum * 0.65})`);
@@ -711,6 +829,10 @@
     }
   }
 
+  /**
+   * Class: VaultFireflySystem
+   * Purpose: Manages the particle pool, canvas lifecycle, and animation loop.
+   */
   class VaultFireflySystem {
     constructor() {
       this.canvas = null;
@@ -759,6 +881,10 @@
       }
     }
 
+    /**
+     * Resolves the current screen coordinates of the Firefly Sound Jar mouth.
+     * Used as the dynamic emergence origin for new fireflies.
+     */
     getEmitterCoords() {
       const jar = document.getElementById('vaultSoundJar');
       if (jar) {
@@ -774,6 +900,9 @@
       };
     }
 
+    /**
+     * Triggers a visual burst of fireflies escaping from the jar (e.g. when unmuting sound).
+     */
     emitBurst(count = 3) {
       const emitter = this.getEmitterCoords();
       const num = Math.min(count, this.particles.length);
@@ -808,12 +937,15 @@
       }
     }
 
+    /**
+     * Initializes a lightweight particle pool (12 on desktop, 7 on mobile).
+     * Strictly avoids performance lag or battery drain.
+     */
     initParticles() {
       const width = window.innerWidth;
       const height = window.innerHeight;
       const emitter = this.getEmitterCoords();
 
-      // 12 active fireflies on desktop, 7 on mobile viewports
       const count = width < 680 ? 7 : 12;
       this.particles = [];
 
@@ -834,6 +966,7 @@
         this.resizeCanvas();
       }, { passive: true });
 
+      // Performance Optimization: Pause rendering when browser tab is hidden
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
           this.isPaused = true;
@@ -870,7 +1003,7 @@
 
       const emitter = this.getEmitterCoords();
 
-      // 1. Subtle Bioluminescent Aura around the mouth of the Firefly Sound Jar (fades when jar is scrolled away)
+      // 1. Subtle Bioluminescent Aura around the mouth of the Firefly Sound Jar
       const jarEl = document.getElementById('vaultSoundJar');
       const isJarHidden = jarEl && jarEl.classList.contains('is-scrolled-hidden');
 
@@ -893,7 +1026,7 @@
         ctx.restore();
       }
 
-      // 2. Update & Draw Active Fireflies
+      // 2. Update and draw all active fireflies
       ctx.save();
       for (const p of this.particles) {
         p.update(now, this.mouseX, this.mouseY, emitter);
@@ -904,8 +1037,21 @@
   }
 
   // ===========================================================================
-  // 4. INTERACTIVE FIREFLY SOUND JAR (ACTIVE THEORY SCROLL REACTION & AMBIENT AUDIO)
+  // 4. INTERACTIVE FIREFLY SOUND JAR (VaultSoundJar)
   // ===========================================================================
+  /**
+   * Class: VaultSoundJar
+   * Purpose: Floating interactive glass sound jar button that plays ambient music.
+   *
+   * Features:
+   * 1. Active Theory Scroll Reaction:
+   *    - Scrolling down: The jar glides smoothly up out of view so content is unobstructed.
+   *    - Scrolling up: The jar glides smoothly back down into view.
+   * 2. HTML5 Audio API:
+   *    - Loops 'the-vault-ambient.mp3'.
+   *    - Uses smooth programmatic volume fading (fadeAudio) to eliminate harsh audio clicks.
+   * 3. Session Persistence: Remembers sound state across internal page navigation.
+   */
   class VaultSoundJar {
     constructor() {
       this.jarEl = null;
@@ -976,6 +1122,7 @@
       this.audio.volume = 0;
       this.audio.preload = 'auto';
 
+      // Restore playback state if user turned sound on previously
       try {
         const saved = sessionStorage.getItem('vault_sound_playing');
         if (saved === 'true') {
@@ -1001,9 +1148,7 @@
         this.toggleSound();
       });
 
-      // Active Theory Dynamic Scroll Reaction:
-      // Scrolling down -> box glides smoothly up out of view
-      // Scrolling up -> box glides smoothly down into view
+      // Active Theory Scroll-Linked Motion
       let ticking = false;
       const onScroll = () => {
         if (!ticking) {
@@ -1011,14 +1156,14 @@
             const currentScrollY = window.scrollY;
             const delta = currentScrollY - this.lastScrollY;
 
-            // When scrolling down past initial threshold -> glide up out of view
+            // When scrolling down past 50px -> glide up and out
             if (currentScrollY > 50 && delta > 3) {
               if (!this.isHiddenByScroll) {
                 this.isHiddenByScroll = true;
                 this.jarEl.classList.add('is-scrolled-hidden');
               }
             }
-            // When scrolling up even slightly, or when back near page top -> glide back down into view
+            // When scrolling up, or when near the top -> glide back down into view
             else if (delta < -2 || currentScrollY <= 30) {
               if (this.isHiddenByScroll) {
                 this.isHiddenByScroll = false;
@@ -1057,12 +1202,12 @@
             sessionStorage.setItem('vault_sound_playing', 'true');
           } catch (e) {}
 
-          // Emit a burst of fireflies escaping from the jar!
+          // Emit an atmospheric burst of fireflies escaping from the jar!
           if (window.__vaultFireflySystem) {
             window.__vaultFireflySystem.emitBurst(3);
           }
         }).catch((err) => {
-          console.warn('[THE VAULT] Audio play prevented by browser policy:', err);
+          console.warn('[THE VAULT] Audio play prevented by browser autoplay policy:', err);
           this.isPlaying = false;
           this.setPlayingState(false);
         });
@@ -1097,6 +1242,11 @@
       }
     }
 
+    /**
+     * Programmatic audio volume fader:
+     * Uses setInterval to step volume smoothly over a defined duration,
+     * preventing sudden audio pop or harsh cutoff.
+     */
     fadeAudio(targetVol, duration, onComplete) {
       if (this.fadeInterval) clearInterval(this.fadeInterval);
       if (!this.audio) return;
@@ -1119,7 +1269,7 @@
   }
 
   // ===========================================================================
-  // DOM BOOTSTRAP
+  // 5. GLOBAL INITIALIZATION (BOOTSTRAP)
   // ===========================================================================
   let loaderInstance = null;
   let cursorInstance = null;

@@ -1,6 +1,38 @@
+<!--
+=============================================================================
+THE VAULT — About the House (about.html)
+=============================================================================
+
+PURPOSE OF THIS PAGE:
+---------------------
+Brand philosophy, curatorial principles, independent digital auction house model, and team ethos.
+
+SCRIPTS CONTROLLING THIS PAGE:
+------------------------------
+cursor-loader.js, supabase-client.js, app.js (mobile nav & auth sync)
+
+KEY DOM HOOKS & ATTRIBUTES:
+---------------------------
+Semantic HTML5 structure (<main>
+    <!-- =======================================================================
+         3. MAIN CONTENT CONTAINER: About the House (about.html)
+         =======================================================================
+         Hosts the interactive layouts, data grids, and user interface controls.
+    -->, <section>, <article>, <aside>)
+
+VIVA EXAM HIGHLIGHTS:
+---------------------
+Semantic editorial content hierarchy, typography pairing (Instrument Serif + DM Sans), accessible responsive layout.
+-->
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- =========================================================================
+       1. HEAD: Document Metadata, Fonts, Stylesheets, and Non-blocking Scripts
+       =========================================================================
+       VIVA NOTE: 'defer' tells the browser to download scripts in the background
+       and execute them after the HTML document is fully parsed into the DOM.
+  -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f1efe8">
@@ -23,6 +55,13 @@
     <span>WHERE RARITY MEETS COMPETITION <i>↗</i></span>
   </div>
 
+  
+  <!-- =========================================================================
+       2. SITE HEADER & NAVIGATION
+       =========================================================================
+       Semantic banner container with brand wordmark, mobile navigation drawer
+       toggle, main navigation menu links, and real-time saved watchlist counter.
+  -->
   <header class="site-header">
     <a class="wordmark" href="index.html" aria-label="The Vault home">THE VAULT<span>.</span></a>
     <button class="mobile-menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
@@ -174,6 +213,13 @@
     </section>
   </main>
 
+  
+  <!-- =========================================================================
+       4. SITE FOOTER & LEGAL METADATA
+       =========================================================================
+       Contains secondary navigation, copyright, educational student project
+       disclaimer, and smooth scroll-to-top interaction link.
+  -->
   <footer class="site-footer page-gutter">
     <div class="footer-top">
       <a class="wordmark footer-wordmark" href="index.html">THE VAULT<span>.</span></a>

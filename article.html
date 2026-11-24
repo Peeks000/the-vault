@@ -1,6 +1,33 @@
+<!--
+=============================================================================
+THE VAULT — Journal Story Reader (article.html)
+=============================================================================
+
+PURPOSE OF THIS PAGE:
+---------------------
+Dedicated reading view for individual editorial journal stories with hero photography and related story recommendations.
+
+SCRIPTS CONTROLLING THIS PAGE:
+------------------------------
+cursor-loader.js, supabase-client.js, app.js (renderArticle())
+
+KEY DOM HOOKS & ATTRIBUTES:
+---------------------------
+#article-root (container populated by renderArticle() in app.js)
+
+VIVA EXAM HIGHLIGHTS:
+---------------------
+Single-page story rendering by reading ?story=xyz query string, nested array mapping for multi-section article bodies.
+-->
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- =========================================================================
+       1. HEAD: Document Metadata, Fonts, Stylesheets, and Non-blocking Scripts
+       =========================================================================
+       VIVA NOTE: 'defer' tells the browser to download scripts in the background
+       and execute them after the HTML document is fully parsed into the DOM.
+  -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f1efe8">
@@ -23,6 +50,13 @@
     <span>THE JOURNAL / EDITORIAL DEMONSTRATION <i>↗</i></span>
   </div>
 
+  
+  <!-- =========================================================================
+       2. SITE HEADER & NAVIGATION
+       =========================================================================
+       Semantic banner container with brand wordmark, mobile navigation drawer
+       toggle, main navigation menu links, and real-time saved watchlist counter.
+  -->
   <header class="site-header">
     <a class="wordmark" href="index.html" aria-label="The Vault home">THE VAULT<span>.</span></a>
     <button class="mobile-menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
@@ -43,6 +77,13 @@
 
   <main id="article-root" class="article-main page-gutter"></main>
 
+  
+  <!-- =========================================================================
+       4. SITE FOOTER & LEGAL METADATA
+       =========================================================================
+       Contains secondary navigation, copyright, educational student project
+       disclaimer, and smooth scroll-to-top interaction link.
+  -->
   <footer class="site-footer page-gutter">
     <div class="footer-top">
       <a class="wordmark footer-wordmark" href="index.html">THE VAULT<span>.</span></a>

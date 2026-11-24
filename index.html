@@ -1,6 +1,42 @@
+<!--
+=============================================================================
+THE VAULT — Homepage (index.html)
+=============================================================================
+
+PURPOSE OF THIS PAGE:
+---------------------
+The flagship entry point for THE VAULT luxury digital auction platform.
+It introduces the brand's aesthetic, showcases the primary featured auction lot,
+previews active live bidding lots, explains the house's curatorial ethos, and
+hosts the interactive 3D WebGL Artifact Showcase stage.
+
+SCRIPTS CONTROLLING THIS PAGE:
+------------------------------
+1. cursor-loader.js    - Controls the Active Theory loading screen, custom liquid cursor,
+                         and the floating sound jar pill.
+2. vendor/three.min.js - Three.js WebGL 3D graphics library.
+3. vendor/GLTFLoader.js- Loads the 3D asset (3d_model_the_vault.glb).
+4. vendor/OrbitControls- Enables mouse orbit rotation and zooming.
+5. vault-3d-showcase.js- Custom Three.js controller for the closing 3D stage.
+6. supabase-client.js  - Syncs the authentication status in the header navigation.
+7. app.js              - Calls renderHome() to populate featured and live auction cards.
+
+VIVA EXAM POINTS:
+-----------------
+- Semantic HTML5 structure: <header>, <nav>, <main>, <section>, <article>, <footer>.
+- Responsive design via clamp() and CSS Grid.
+- Script execution order: 'defer' ensures non-blocking asset loading.
+-->
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- =========================================================================
+       1. HEAD: Metadata, Typography, Stylesheets, and Script Loading Order
+       =========================================================================
+       VIVA NOTE: The 'defer' attribute ensures external JavaScript scripts do NOT
+       block HTML parsing. Scripts are downloaded in parallel and executed in the
+       exact order they appear in the HTML once the DOM is fully constructed.
+  -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f1efe8">
@@ -27,6 +63,17 @@
     <span>WHERE RARITY MEETS COMPETITION <i>↗</i></span>
   </div>
 
+  
+  <!-- =========================================================================
+       2. SITE HEADER & NAVIGATION
+       =========================================================================
+       - <header>: Semantic HTML5 banner container.
+       - .wordmark: Brand identity logo link.
+       - .mobile-menu-toggle: Hamburger button toggled via app.js setupMobileNavigation().
+         aria-expanded="false" is an accessibility attribute indicating menu state.
+       - <nav class="main-nav">: Semantic navigation links.
+       - .saved-count: Dynamically updated by Watchlist.updateBadges() in app.js.
+  -->
   <header class="site-header">
     <a class="wordmark" href="index.html" aria-label="The Vault home">THE VAULT<span>.</span></a>
     <button class="mobile-menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
@@ -46,6 +93,13 @@
   </header>
 
   <main>
+    
+    <!-- =======================================================================
+         3. HERO SECTION: Brand Statement & Featured Timepiece Visual
+         =======================================================================
+         Editorial layout combining large typography (Instrument Serif) with
+         high-resolution horology photography and prominent call-to-actions.
+    -->
     <section class="vault-hero page-gutter">
       <div class="home-meta">
         <span>ISSUE NO. 01 / 2026</span>
@@ -93,6 +147,14 @@
       <span>RARE FINDS</span>
     </section>
 
+    
+    <!-- =======================================================================
+         4. FEATURED AUCTION SHOWCASE (#featured)
+         =======================================================================
+         Populated dynamically by renderHome() in app.js.
+         IDs such as #featured-image, #featured-title, #featured-bid, and #featured-save
+         are targeted by JavaScript to inject data and bind live bidding/watchlist events.
+    -->
     <section class="featured-auction page-gutter" id="featured">
       <div class="home-section-heading">
         <div>
@@ -398,6 +460,13 @@
     </section>
   </main>
 
+  
+  <!-- =========================================================================
+       7. SITE FOOTER
+       =========================================================================
+       Semantic <footer> containing secondary site links, copyright notice,
+       and smooth scroll-to-top anchor (.back-top).
+  -->
   <footer class="site-footer page-gutter">
     <div class="footer-top">
       <a class="wordmark footer-wordmark" href="index.html">THE VAULT<span>.</span></a>

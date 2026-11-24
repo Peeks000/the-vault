@@ -1,18 +1,38 @@
 /**
- * THE VAULT — Signature Liquid Cursor, Ambient Firefly Colony & Cinematic Loading Experience
- *
- * Implements:
- *  1. Custom precision cursor & fluid liquid mouse trail
- *  2. Ambient glowing firefly colony emerging from upper-edge gathering point
- *  3. Active Theory inspired editorial loading sequence
- *  4. Interactive Firefly Sound Jar with Active Theory scroll reaction
+ * =============================================================================
+ * THE VAULT — Signature Liquid Cursor, Ambient Firefly Colony & Cinematic Loader
+ * =============================================================================
+ * 
+ * WHAT THIS FILE DOES:
+ * --------------------
+ * This stylesheet provides the complete visual architecture for THE VAULT's award-winning
+ * interactive sensory layer:
+ *   1. Custom Dual-Layer Precision Cursor (Luminous center dot + physical inertia follower ring)
+ *   2. Canvas Layer Stacking & GPU Acceleration (Firefly canvas, Liquid Trail canvas)
+ *   3. Active Theory Inspired Editorial Preloader Overlay (Branded framing, pulsing typography)
+ *   4. Interactive Floating Sound Jar Pill (Active Theory scroll-reactive mechanics, dancing embers)
+ *   5. Responsive Mobile Fallbacks & Accessibility Overrides
+ * 
+ * VIVA TECHNICAL HIGHLIGHTS:
+ * --------------------------
+ * - Stacking Context (Z-Index Hierarchy): Carefully structured so canvases never block user clicks.
+ * - Hardware Acceleration: Using `translate3d()` and `will-change: transform` to force GPU compositing.
+ * - Event Pass-Through: `pointer-events: none` ensures clicks hit underlying HTML links/buttons.
+ * - Deceleration Curves: `cubic-bezier(0.16, 1, 0.3, 1)` creates a high-end luxury mechanical feel.
+ * - Media Capabilities: `@media (hover: none)` automatically restores native touchscreen behavior.
  */
 
 /* ==========================================================================
-   1. Custom Cursor Precision Styles
+   1. Custom Cursor Precision Styles & Canvas Stacking
    ========================================================================== */
 
-/* Hide standard system cursor when custom cursor is active on non-touch interactions */
+/**
+ * HIDE NATIVE SYSTEM CURSOR:
+ * --------------------------
+ * When JavaScript detects a non-touch mouse device, it adds `.vault-cursor-active`
+ * to the `<body>` element. We hide the default OS pointer (`cursor: none !important`)
+ * on interactive elements so our custom gold dot and ring take over smoothly.
+ */
 body.vault-cursor-active,
 body.vault-cursor-active a,
 body.vault-cursor-active button,
@@ -26,7 +46,13 @@ body.vault-cursor-active .admin-action-btn {
   cursor: none !important;
 }
 
-/* Explicitly restore native text cursor on form inputs, textareas, and selects */
+/**
+ * ACCESSIBILITY & FORM USABILITY EXCEPTION:
+ * -----------------------------------------
+ * When the user focuses on form inputs, search bars, textareas, or dropdowns,
+ * we explicitly restore the native I-beam text selection cursor (`cursor: auto !important`).
+ * This ensures visitors can easily position their text caret without confusion.
+ */
 body.vault-cursor-active input,
 body.vault-cursor-active textarea,
 body.vault-cursor-active select,
@@ -34,7 +60,15 @@ body.vault-cursor-active [contenteditable="true"] {
   cursor: auto !important;
 }
 
-/* Ambient Firefly Canvas (Above content, below cursor and liquid trail) */
+/**
+ * AMBIENT FIREFLY CANVAS (z-index: 99990):
+ * ----------------------------------------
+ * - position: fixed: Pins the canvas across the entire viewport.
+ * - pointer-events: none: CRITICAL! Allows clicks, scrolling, and drags to pass directly
+ *   through the canvas to underlying website links and buttons without interference.
+ * - z-index: 99990: Sits above standard page content, but behind the liquid trail and cursor.
+ * - will-change: transform: Informs the browser GPU to optimize composite layers.
+ */
 .vault-firefly-canvas {
   position: fixed;
   top: 0;
@@ -47,7 +81,12 @@ body.vault-cursor-active [contenteditable="true"] {
   will-change: transform;
 }
 
-/* Fluid Liquid Mouse Trail Canvas */
+/**
+ * FLUID LIQUID MOUSE TRAIL CANVAS (z-index: 99998):
+ * -------------------------------------------------
+ * Renders the quadratic Bézier curve fluid filaments connecting recent mouse positions.
+ * Sits directly below the custom cursor dot.
+ */
 .vault-trail-canvas {
   position: fixed;
   top: 0;
@@ -60,7 +99,13 @@ body.vault-cursor-active [contenteditable="true"] {
   will-change: transform;
 }
 
-/* Precision Center Dot */
+/**
+ * PRECISION CENTER DOT (z-index: 100001):
+ * ---------------------------------------
+ * The tiny champagne-gold dot (6px × 6px) that follows the mouse with ZERO lag.
+ * - translate3d(-50%, -50%, 0): Centers the dot exactly over the mouse coordinates.
+ * - box-shadow: Creates the soft luminous bioluminescent halo.
+ */
 .vault-cursor-dot {
   position: fixed;
   top: 0;
@@ -77,7 +122,13 @@ body.vault-cursor-active [contenteditable="true"] {
   will-change: transform;
 }
 
-/* Refined Follower Ring with Physical Inertia */
+/**
+ * REFINED FOLLOWER RING WITH PHYSICAL INERTIA (z-index: 100000):
+ * --------------------------------------------------------------
+ * The outer floating ring (32px × 32px) that trails behind the mouse using Linear
+ * Interpolation (LERP) calculated in JavaScript.
+ * - cubic-bezier(0.16, 1, 0.3, 1): Custom deceleration curve for springy expansion.
+ */
 .vault-cursor-ring {
   position: fixed;
   top: 0;
@@ -103,7 +154,11 @@ body.vault-cursor-active [contenteditable="true"] {
   will-change: transform, width, height;
 }
 
-/* Interactive States */
+/* --------------------------------------------------------------------------
+   Interactive Cursor Morphing States
+   -------------------------------------------------------------------------- */
+
+/* Hovering regular links: Ring gently expands to 48px */
 .vault-cursor-ring.is-hovering {
   width: 48px;
   height: 48px;
@@ -112,6 +167,7 @@ body.vault-cursor-active [contenteditable="true"] {
   box-shadow: 0 0 24px rgba(212, 188, 145, 0.25);
 }
 
+/* Hovering buttons: Ring tightens and fills with a gold tint */
 .vault-cursor-ring.is-button {
   width: 44px;
   height: 44px;
@@ -120,6 +176,7 @@ body.vault-cursor-active [contenteditable="true"] {
   box-shadow: 0 0 20px rgba(212, 188, 145, 0.35);
 }
 
+/* Hovering auction lot cards: Ring morphs into a solid gold badge (60px) displaying "VIEW" */
 .vault-cursor-ring.is-card {
   width: 60px;
   height: 60px;
@@ -128,6 +185,7 @@ body.vault-cursor-active [contenteditable="true"] {
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.28);
 }
 
+/* The "VIEW" label inside the card cursor */
 .vault-cursor-label {
   font: 8px/1 'DM Mono', monospace;
   letter-spacing: 0.14em;
@@ -146,10 +204,12 @@ body.vault-cursor-active [contenteditable="true"] {
   transform: scale(1);
 }
 
+/* Hide center dot when ring is in card badge mode */
 .vault-cursor-dot.is-card {
   opacity: 0;
 }
 
+/* Hidden state when cursor exits the browser window */
 .vault-cursor-dot.is-hidden,
 .vault-cursor-ring.is-hidden {
   opacity: 0 !important;
@@ -160,6 +220,14 @@ body.vault-cursor-active [contenteditable="true"] {
    2. Active Theory Inspired Cinematic Loading Overlay
    ========================================================================== */
 
+/**
+ * FULLSCREEN PRELOADER CONTAINER (z-index: 9999999):
+ * --------------------------------------------------
+ * Sits at the highest possible layer in the DOM, concealing the page while fonts,
+ * images, and 3D models load into browser memory.
+ * - inset: 0: Modern shorthand for top: 0; right: 0; bottom: 0; left: 0;
+ * - transition: Provides the smooth fade-out and slide-up dismissal.
+ */
 .vault-loader {
   position: fixed;
   inset: 0;
@@ -176,6 +244,7 @@ body.vault-cursor-active [contenteditable="true"] {
   user-select: none;
 }
 
+/* Dismissed state triggered by JavaScript when loading finishes */
 .vault-loader.is-hidden {
   opacity: 0;
   transform: translateY(-26px);
@@ -183,7 +252,7 @@ body.vault-cursor-active [contenteditable="true"] {
   visibility: hidden;
 }
 
-/* Architectural Framing Elements */
+/* Architectural Framing Elements (Corner coordinates & date) */
 .vault-loader-frame {
   position: absolute;
   inset: clamp(20px, 3.5vw, 48px);
@@ -301,6 +370,13 @@ body.vault-cursor-active [contenteditable="true"] {
    3. Interactive Firefly Sound Jar (Top-Right Active Theory Floating Pill)
    ========================================================================== */
 
+/**
+ * FLOATING JAR CONTROLLER (z-index: 10000):
+ * -----------------------------------------
+ * Positioned in the upper-right corner of the website.
+ * - backdrop-filter: blur(16px): Glassmorphism background blur effect.
+ * - border-radius: 999px: Full capsule pill geometry.
+ */
 .vault-sound-jar {
   position: fixed;
   top: 130px;
@@ -335,16 +411,20 @@ body.vault-cursor-active [contenteditable="true"] {
   transform: translateY(-2px);
 }
 
-/* Active Theory Intelligent Scroll Reaction:
-   Scrolling down -> glides up out of viewport
-   Scrolling up -> glides smoothly back down into view */
+/**
+ * ACTIVE THEORY SCROLL REACTION:
+ * ------------------------------
+ * Inspired by Active Theory's portfolio navigation:
+ * - Scrolling DOWN hides the button smoothly upward (-100px).
+ * - Scrolling UP brings it gliding back down into view.
+ */
 .vault-sound-jar.is-scrolled-hidden {
   transform: translateY(-100px) !important;
   opacity: 0 !important;
   pointer-events: none !important;
 }
 
-/* Bottle Miniature Structure */
+/* Pure CSS Miniature Glass Bottle */
 .vault-jar-bottle {
   width: 22px;
   height: 32px;
@@ -388,7 +468,7 @@ body.vault-cursor-active [contenteditable="true"] {
   box-shadow: inset 0 0 10px rgba(245, 218, 156, 0.65), 0 0 18px rgba(224, 196, 140, 0.55);
 }
 
-/* Glass Highlight Sheen */
+/* Glass Surface Reflection Sheen */
 .vault-jar-reflection {
   position: absolute;
   left: 2px;
@@ -453,7 +533,7 @@ body.vault-cursor-active [contenteditable="true"] {
   50% { transform: translate(4px, -2px) scale(1.2); }
 }
 
-/* Sound Info & Equalizer */
+/* Sound Info & Animated Audio Equalizer Bars */
 .vault-sound-info {
   display: flex;
   align-items: center;
@@ -502,7 +582,7 @@ body.vault-cursor-active [contenteditable="true"] {
 }
 
 /* ==========================================================================
-   4. Small Screen & Responsive Optimization
+   4. Small Screen & Responsive Media Queries
    ========================================================================== */
 
 @media (max-width: 900px) {
@@ -521,8 +601,13 @@ body.vault-cursor-active [contenteditable="true"] {
   }
 }
 
+/**
+ * MOBILE TOUCH DETECTION:
+ * -----------------------
+ * On touchscreens (where mouse pointers do not exist), we completely hide
+ * the custom cursor elements and restore native touch taps.
+ */
 @media (max-width: 600px) and (hover: none) {
-  /* Hide custom pointer dot and ring on small touchscreen phones */
   .vault-cursor-dot,
   .vault-cursor-ring {
     display: none !important;

@@ -1,3 +1,36 @@
+/**
+ * =============================================================================
+ * THE VAULT — Global Design System & Luxury Editorial Stylesheet (styles.css)
+ * =============================================================================
+ * 
+ * WHAT THIS FILE DOES:
+ * --------------------
+ * This is the central design system and master stylesheet for THE VAULT.
+ * It defines the entire visual personality of the luxury digital auction house:
+ *   1. CSS Custom Properties / Design Tokens (:root variables for palette & typography)
+ *   2. Global Typography & Reset (Instrument Serif, DM Sans, DM Mono, Box-Sizing)
+ *   3. Editorial Layout System (Announcement bar, site header, responsive navigation)
+ *   4. Responsive Grid & Flexbox Architectures (Catalog cards, auction lot details)
+ *   5. Interactive Micro-states (Hover effects, smooth transitions, heart button states)
+ *   6. 3D Artifact Showcase Section (Canvas container, studio stage lighting, controls)
+ *   7. Editorial Journal & Reading Experience (Multi-column reading layouts)
+ *   8. Correspondence & Contact Validation Styles (ARIA invalid indicators, error alerts)
+ *   9. Admin Telemetry & CRUD Management Dashboard (Metric tiles, tables, modals)
+ *  10. Responsive Breakpoints & Mobile Optimization (@media queries)
+ * 
+ * VIVA CONCEPTS FOR FIRST-YEAR CS STUDENTS:
+ * -----------------------------------------
+ * - CSS Variables (:root): Allows defining colors and fonts in one place and reusing
+ *   them throughout thousands of lines of CSS using `var(--name)`.
+ * - Box Sizing (border-box): Ensures padding and borders are included within the element's
+ *   total width and height, preventing layout breakage.
+ * - Fluid Sizing (clamp()): `clamp(min, preferred, max)` scales smoothly between screen sizes.
+ * - Flexbox vs Grid: Flexbox is 1-dimensional (rows or columns), Grid is 2-dimensional (rows and columns).
+ */
+
+/* ==========================================================================
+   1. Design Tokens & CSS Custom Properties (:root)
+   ========================================================================== */
 :root {
   --paper: #f1efe8;
   --paper-deep: #e8e4da;

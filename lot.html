@@ -1,6 +1,33 @@
+<!--
+=============================================================================
+THE VAULT — Lot Details View (lot.html)
+=============================================================================
+
+PURPOSE OF THIS PAGE:
+---------------------
+Comprehensive single-lot dossier with interactive gallery, zoom lightbox, simulated bidding desk, and countdown.
+
+SCRIPTS CONTROLLING THIS PAGE:
+------------------------------
+cursor-loader.js, supabase-client.js, app.js (renderLot())
+
+KEY DOM HOOKS & ATTRIBUTES:
+---------------------------
+#lot-title, #lot-image, #gallery-thumbs (thumbnail switcher), #image-lightbox (modal zoom), #current-bid, #place-bid, #bid-feedback, #countdown
+
+VIVA EXAM HIGHLIGHTS:
+---------------------
+Dynamic DOM updates via query parameters (?lot=watch), modal dialog handling, validation math in createBidDesk, setInterval timer.
+-->
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- =========================================================================
+       1. HEAD: Document Metadata, Fonts, Stylesheets, and Non-blocking Scripts
+       =========================================================================
+       VIVA NOTE: 'defer' tells the browser to download scripts in the background
+       and execute them after the HTML document is fully parsed into the DOM.
+  -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f1efe8">
@@ -23,6 +50,13 @@
     <span>COLLECT WITH INTENTION <i>↗</i></span>
   </div>
 
+  
+  <!-- =========================================================================
+       2. SITE HEADER & NAVIGATION
+       =========================================================================
+       Semantic banner container with brand wordmark, mobile navigation drawer
+       toggle, main navigation menu links, and real-time saved watchlist counter.
+  -->
   <header class="site-header">
     <a class="wordmark" href="index.html" aria-label="The Vault home">THE VAULT<span>.</span></a>
     <button class="mobile-menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
@@ -171,6 +205,13 @@
     <img id="lightbox-image" src="" alt="">
   </div>
 
+  
+  <!-- =========================================================================
+       4. SITE FOOTER & LEGAL METADATA
+       =========================================================================
+       Contains secondary navigation, copyright, educational student project
+       disclaimer, and smooth scroll-to-top interaction link.
+  -->
   <footer class="site-footer page-gutter">
     <div class="footer-top">
       <a class="wordmark footer-wordmark" href="index.html">THE VAULT<span>.</span></a>

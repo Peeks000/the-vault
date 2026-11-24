@@ -1,17 +1,75 @@
 /**
- * THE VAULT — Client Application
- *
- * Core interactive controller for catalog exploration, detail views,
- * live auction simulation, editorial journal, and correspondence.
+ * =============================================================================
+ * THE VAULT — Client Application Controller (app.js)
+ * =============================================================================
+ * 
+ * WHAT THIS FILE DOES:
+ * --------------------
+ * This is the central JavaScript engine of "THE VAULT" website. It acts as the
+ * controller for the entire front-end user experience, managing:
+ *   1. Mock Data Store (Static fallback archive of auction lots and journal articles)
+ *   2. Utility Formatters (Indian Rupee currency, HH:MM:SS countdown clock, status labels)
+ *   3. Watchlist Manager (Persistent saved items using browser localStorage)
+ *   4. Simulated Bidding Engine (Session-persisted bidding desk using sessionStorage)
+ *   5. Catalogue Service (Asynchronous data-fetching from Supabase with graceful fallback)
+ *   6. Explore Page Controller (Dynamic multi-facet filtering, searching, and sorting)
+ *   7. Lot Details Page Controller (Image gallery, modal lightbox, dynamic bid placement)
+ *   8. Homepage View Controller (Featured lot showcase and live auction grid)
+ *   9. Arena View Controller (Real-time auction room floor simulation and signals)
+ *  10. Journal & Article Controllers (Editorial stories, category filters, reading times)
+ *  11. Contact Form Controller (Client-side validation, regex email check, accessibility)
+ *  12. Global Interactions & Bootstrap (Mobile responsive drawer, smooth scrolling)
+ * 
+ * VIVA CONCEPT HIGHLIGHTS:
+ * ------------------------
+ * - Architecture: Single-Page Application (SPA) style controllers organized inside an IIFE.
+ * - Storage: Demonstrates difference between localStorage (permanent) and sessionStorage (temporary).
+ * - DOM Manipulation: Extensive use of querySelector, createElement, template literals, and event delegation.
+ * - Asynchronous JavaScript: Async/await, Promises, and error boundaries for resilient API fetching.
+ * - Design Pattern: Module Pattern & Factory Functions (e.g., createBidDesk).
  */
 
 (function () {
   'use strict';
+  /**
+   * WHAT IS AN IIFE?
+   * -----------------
+   * Immediately Invoked Function Expression: (function () { ... })();
+   * 1. The function is defined and executed immediately when the script loads.
+   * 2. Variable Scope: Any variable declared with `const` or `let` inside this function
+   *    is private to this file. It prevents polluting the global `window` object or
+   *    causing naming conflicts with other scripts (like auth.js or Three.js).
+   * 
+   * WHAT DOES 'use strict' DO?
+   * --------------------------
+   * Strict Mode prevents common JavaScript bugs:
+   * 1. Disallows undeclared variables (prevents accidentally creating global variables like `x = 5`).
+   * 2. Throws errors for silent failures (e.g., writing to read-only properties).
+   * 3. Prevents using reserved keywords as variable names.
+   */
 
   // ---------------------------------------------------------------------------
-  // 1. Data Store
+  // 1. Data Store (Static Demonstration Fallback Archive)
   // ---------------------------------------------------------------------------
-
+  /**
+   * WHY WE NEED THIS STATIC ARRAY:
+   * ------------------------------
+   * In a production environment, data comes from a cloud database (like Supabase PostgreSQL).
+   * However, if the user is running the project offline, during a network drop, or before
+   * running the database migration scripts, this static array ensures the website NEVER
+   * crashes or displays an ugly blank screen.
+   * 
+   * Each object represents an auction lot with properties matching the database schema:
+   * - id: Unique string slug used in URL query parameters (e.g., lot.html?lot=watch).
+   * - key: Unique identifier used for the user's saved items watchlist in localStorage.
+   * - number: Traditional auction catalog lot number (e.g., '024').
+   * - category & period: Classification fields used for filtering.
+   * - price: Numerical integer representing the current highest bid in Indian Rupees (₹).
+   * - bids: Count of bids placed so far.
+   * - estimate: Human-readable estimated price range.
+   * - ends: Seconds remaining until the lot closes (used by countdown timers).
+   * - image & story: High-resolution Unsplash asset URL and curatorial editorial description.
+   */
   const AUCTION_LOTS = [
     {
       id: 'watch',
@@ -83,7 +141,7 @@
       subtitle: 'An enduring instrument for seeing the world differently.',
       price: 42000,
       bids: 3,
-      estimate: '₹35,000 – ₹60,000',
+      estimate: '₹35,00,000 – ₹60,000',
       ends: 172800,
       image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=85',
       story: 'Mechanical cameras are a reminder that the process of making an image can be as satisfying as the image itself. This demonstration entry would be accompanied by verified technical details in a production auction.'
@@ -135,6 +193,13 @@
     }
   ];
 
+  /**
+   * JOURNAL ARTICLES DATA STORE:
+   * ----------------------------
+   * Static editorial stories for the Journal view (journal.html) and detailed
+   * reading view (article.html). Each article contains a nested `body` array
+   * of section headings and paragraphs, plus an array of `related` article IDs.
+   */
   const JOURNAL_ARTICLES = [
     {
       id: 'mechanical-watchmaking',
@@ -201,97 +266,95 @@
       ]
     },
     {
-      id: 'jewellery-material',
-      category: 'Jewellery',
-      title: 'Jewellery: Beyond the Precious Material',
-      subtitle: 'Why the meaning of a piece is found in proportion, gesture and the life it gathers around itself.',
-      image: 'https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1400&q=88',
-      readingTime: '4 min read',
-      caption: 'Material is only the beginning of a piece’s presence.',
-      related: ['mechanical-watchmaking', 'collector-eye'],
-      body: [
-        {
-          heading: 'More than rarity',
-          paragraphs: [
-            'The value of jewellery is easy to reduce to a list of materials. Yet a piece becomes memorable through more than what it contains. Its scale, balance and relationship to the body determine how it is worn and how it is remembered.',
-            'A small shift in proportion can change the character of a necklace or ring completely. The best pieces allow material to support the gesture rather than overwhelm it.'
-          ]
-        },
-        {
-          heading: 'The language of wear',
-          paragraphs: [
-            'Jewellery lives close to the person who wears it. It catches light, gathers small traces of use and moves through ordinary moments. That proximity gives it a particular emotional register: less object on display, more object in conversation with a life.',
-            'This is why restraint can be so powerful. A considered surface or an unexpected line may say more than abundance, because it leaves room for the wearer to become part of the composition.'
-          ]
-        },
-        {
-          heading: 'An object with a future',
-          paragraphs: [
-            'To look beyond the precious material is to notice the decisions that make a piece feel lasting. Craft, proportion and adaptability give jewellery a future beyond its first impression.'
-          ]
-        }
-      ]
-    },
-    {
       id: 'collector-eye',
       category: 'Collecting',
-      title: "The Collector's Eye: What Makes an Object Timeless?",
-      subtitle: 'Timelessness is less about age than the ability to keep rewarding attention.',
-      image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1400&q=88',
-      readingTime: '5 min read',
-      caption: 'A useful object can become a lasting one through attention.',
-      related: ['fine-art-language', 'jewellery-material'],
+      title: 'Developing a Collector’s Eye',
+      subtitle: 'How patience, restraint and curiosity help a collection find its shape over time.',
+      image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=1400&q=88',
+      readingTime: '7 min read',
+      caption: 'A collection begins with looking, but grows through restraint.',
+      related: ['mechanical-watchmaking', 'fine-art-language'],
       body: [
         {
-          heading: 'The first encounter',
+          heading: 'The first impulse',
           paragraphs: [
-            'Some objects are understood immediately. Others become interesting only after a second look. The difference is often not rarity, but density: the number of decisions, details and possibilities held within a form.',
-            'A collector’s eye learns to notice that density. It looks for the quality of a surface, the logic of a handle, the way a line continues around an edge.'
+            'Most collections begin with attraction rather than plan. An object catches the eye, demands curiosity and finds a place in the house. In the early stages, that responsiveness is essential — it teaches a collector what they notice and what leaves them cold.',
+            'Over time, however, the questions become more demanding: what belongs together, what creates contrast and what simply adds noise.'
           ]
         },
         {
-          heading: 'Time as a collaborator',
+          heading: 'Learning what to leave behind',
           paragraphs: [
-            'Timelessness is not the absence of a particular period. It is the ability of an object to carry its period without being trapped by it. Materials age, tastes shift and contexts change; a strong object keeps its internal clarity.',
-            'That clarity allows it to enter a new room without losing its original voice. It does not need to be neutral. It needs to be specific enough to remain itself.'
+            'The discipline of collecting is as much about saying no as it is about acquiring. A strong collection is defined by its boundaries: the decisions that exclude an object even when it is attractive, because it does not speak to the rest of the room.',
+            'That discipline takes time to develop. It requires living with things, looking at them repeatedly and noticing which objects retain their interest once novelty fades.'
           ]
         },
         {
-          heading: 'Keeping with intention',
+          heading: 'The dialogue between objects',
           paragraphs: [
-            'Collecting is a form of editing. The objects that stay are usually the ones that continue to offer a question, a sensation or a useful reminder. Their place is earned slowly, through repeated attention.'
+            'A collection becomes more than the sum of its parts when the objects begin to comment on one another. A mid-century chair alongside a classical torso, a contemporary painting opposite a vintage timepiece — these juxtapositions create conversations that single objects cannot produce on their own.'
           ]
         }
       ]
     },
     {
       id: 'classic-automobiles',
-      category: 'Automobiles',
-      title: 'The Design Legacy of Classic Automobiles',
-      subtitle: 'When proportion, movement and purpose combine, a car becomes more than a machine.',
+      category: 'Automotive',
+      title: 'Proportion and Presence: The Classic Automobile',
+      subtitle: 'Why the silhouettes of mid-century motoring retain their hold on our imagination.',
       image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=88',
       readingTime: '6 min read',
-      caption: 'A lasting silhouette carries its era without being confined by it.',
+      caption: 'The sculptural qualities of vintage automotive design.',
+      related: ['mechanical-watchmaking', 'collector-eye'],
+      body: [
+        {
+          heading: 'Sculpture before speed',
+          paragraphs: [
+            'Before wind tunnels and regulatory constraints shaped the automotive landscape, car design was fundamentally an exercise in sculpture. Coachbuilders worked by eye, bending aluminium and steel over wooden bucks to produce forms that were expressive before they were functional.',
+            'The cars that emerged from that period have a character that modern manufacturing rarely replicates. Their lines carry the signature of human decisions made in three dimensions.'
+          ]
+        },
+        {
+          heading: 'The interior as room',
+          paragraphs: [
+            'To sit in a classic grand tourer is to enter a different relationship with the road. The instruments are analogue dials behind glass, the switches are toggle and rotary, and the materials are leather, wool and wood. It feels less like an interface and more like a furnished room moving through space.'
+          ]
+        },
+        {
+          heading: 'Preservation as stewardship',
+          paragraphs: [
+            'Owning a classic automobile is an exercise in stewardship. These machines require mechanical empathy — an understanding of cold starts, oil pressure and the subtle sounds that signal a need for attention. The reward is a visceral connection to a bygone era of design.'
+          ]
+        }
+      ]
+    },
+    {
+      id: 'jewellery-material',
+      category: 'Jewellery',
+      title: 'Material and Making: The Narrative of Fine Jewellery',
+      subtitle: 'From geological origins to bench craft, how jewellery carries stories across generations.',
+      image: 'https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1400&q=88',
+      readingTime: '5 min read',
+      caption: 'Light, material and the quiet art of the bench jeweller.',
       related: ['collector-eye', 'fine-art-language'],
       body: [
         {
-          heading: 'A silhouette in motion',
+          heading: 'Deep time on the finger',
           paragraphs: [
-            'The first impression of a classic automobile is often its stance. Before the engine turns or the door opens, proportion has already suggested speed, comfort or intent. The relationship between cabin, bonnet and wheels becomes a kind of visual grammar.',
-            'That grammar is why some cars remain recognisable from a distance. Their forms are not decoration added to a machine; they are the expression of what the machine was made to do.'
+            'A gemstone is a fragment of geological history made wearable. Formed millions of years ago under extreme heat and pressure, its arrival at the jeweller’s bench is the culmination of an immense and improbable journey.',
+            'When an artisan sets that stone into precious metal, they are bridging the timescale of the earth with the human timescale of memory, celebration and inheritance.'
           ]
         },
         {
-          heading: 'Purpose made visible',
+          heading: 'The touch of the maker',
           paragraphs: [
-            'Good automotive design makes function visible without becoming literal. An intake, curve or crease can be necessary and beautiful at once. The result feels resolved because the practical and the expressive belong to the same decision.',
-            'Classic examples are especially revealing because their technologies are no longer invisible to us. We can see how designers balanced limitation and ambition, material and movement.'
+            'In fine jewellery, the finest craft is often that which leaves the least trace. A setting that holds a stone securely while allowing light to enter from every angle requires extraordinary precision. The weight of the metal, the smooth articulation of links, the balance of a clasp — these tactile qualities reveal the hand of a master.'
           ]
         },
         {
-          heading: 'The road ahead',
+          heading: 'Heirloom value',
           paragraphs: [
-            'A lasting automobile does not ask to be preserved in stillness. Its design carries the memory of motion. That is part of its appeal as a collectible: it brings an entire idea of travel, craft and possibility into the room.'
+            'Jewellery is among the most durable of human artefacts. Long after textiles have frayed and paintings have dimmed, gold and gems endure. A piece acquired today has the potential to carry its story into centuries yet to come.'
           ]
         }
       ]
@@ -301,17 +364,44 @@
   // ---------------------------------------------------------------------------
   // 2. Formatters & Core Helpers
   // ---------------------------------------------------------------------------
-
+  /**
+   * WHAT THE FORMATTERS OBJECT DOES:
+   * --------------------------------
+   * This object centralizes all data presentation logic (converting raw numbers
+   * into clean, readable strings formatted for Indian audiences).
+   * 
+   * VIVA CONCEPT: Separation of Concerns (Presentation vs Business Logic).
+   * We store pure numbers in variables (e.g. 240000), but we format them only
+   * when rendering into the HTML DOM.
+   */
   const Formatters = {
     /**
-     * Formats numerical amounts into Indian Rupee currency representations.
+     * currency(value)
+     * ----------------
+     * Formats numerical amounts into Indian Rupee currency representations (e.g. ₹2,40,000).
+     * 
+     * HOW IT WORKS:
+     * - `Number(value)`: Casts the input to a JavaScript number.
+     * - `.toLocaleString('en-IN')`: Built-in browser Internationalization API (Intl).
+     *   In the Indian numbering system, commas follow the 3, 2, 2 pattern
+     *   (Hundreds, Thousands, Lakhs, Crores) rather than international 3, 3, 3.
      */
     currency(value) {
       return '₹' + Number(value).toLocaleString('en-IN');
     },
 
     /**
-     * Converts seconds into a zero-padded HH:MM:SS digital clock string.
+     * clock(totalSeconds)
+     * --------------------
+     * Converts seconds into a zero-padded HH:MM:SS digital countdown string (e.g. 02:35:40).
+     * 
+     * HOW THE MATH WORKS:
+     * 1. `clamped`: Prevents negative seconds if a countdown expires.
+     * 2. `hours`: Total seconds divided by 3600 (number of seconds in an hour), rounded down.
+     * 3. `minutes`: Remainder of hours (`clamped % 3600`), divided by 60.
+     * 4. `seconds`: Remainder after dividing by 60 (`clamped % 60`).
+     * 5. `.padStart(2, '0')`: Ensures single digits have a leading zero (e.g., 5 becomes "05").
+     * 6. `.join(':')`: Combines hours, minutes, and seconds with colons.
      */
     clock(totalSeconds) {
       const clamped = Math.max(0, Math.floor(totalSeconds));
@@ -325,8 +415,15 @@
     },
 
     /**
+     * status(lotOrSeconds)
+     * --------------------
      * Computes the high-level urgency badge status for an auction lot.
-     * Accepts either remaining seconds or a lot object containing `.ends`.
+     * Accepts either a raw number of seconds OR a lot object containing `.ends`.
+     * 
+     * THRESHOLDS:
+     * - Less than 4 hours (14,400s) -> 'CLOSING SOON' (shown in high-contrast styling)
+     * - Less than 24 hours (86,400s) -> 'LIVE TODAY'
+     * - Greater than 24 hours        -> 'UPCOMING'
      */
     status(lotOrSeconds) {
       const endsInSeconds = typeof lotOrSeconds === 'object' && lotOrSeconds !== null
@@ -339,8 +436,10 @@
     },
 
     /**
-     * Generates human-friendly closing schedules.
-     * Accepts either remaining seconds or a lot object containing `.ends`.
+     * closing(lotOrSeconds)
+     * ---------------------
+     * Generates human-friendly closing schedules for auction cards.
+     * If within 24 hours, returns "Closes today". Otherwise calculates remaining days.
      */
     closing(lotOrSeconds) {
       const endsInSeconds = typeof lotOrSeconds === 'object' && lotOrSeconds !== null
@@ -357,15 +456,37 @@
   const money = Formatters.currency;
 
   // ---------------------------------------------------------------------------
-  // 3. Watchlist / Saved Lots Manager
+  // 3. Watchlist / Saved Lots Manager (Client-side localStorage)
   // ---------------------------------------------------------------------------
-
+  /**
+   * WHAT THE WATCHLIST OBJECT DOES:
+   * -------------------------------
+   * Allows users to bookmark/favorite lots by clicking heart buttons (♥ / ♡).
+   * It persists the saved lot keys in the browser's `localStorage`.
+   * 
+   * VIVA CONCEPT: localStorage vs sessionStorage vs Cookies:
+   * - localStorage: Persists even after browser/tab is closed; holds up to ~5MB of strings.
+   * - sessionStorage: Erased when the browser tab is closed.
+   * - Cookies: Sent to server with every HTTP request; limited to 4KB.
+   * 
+   * Custom Event Bus (`vault:saved-change`):
+   * When a lot is saved or removed, this module emits a `CustomEvent`.
+   * This decouples the components: any view (e.g. Explore page, Navigation bar)
+   * can listen to this event and update its UI automatically without direct coupling.
+   */
   const SAVED_STORAGE_KEY = 'vault-saved-lots';
 
   const Watchlist = {
+    /**
+     * getAll()
+     * --------
+     * Retrieves the array of saved lot keys from localStorage.
+     * Uses try/catch to gracefully handle disabled cookies or private browsing restrictions.
+     */
     getAll() {
       try {
         const raw = localStorage.getItem(SAVED_STORAGE_KEY);
+        // JSON.parse converts the serialized string (e.g. '["lot-watch"]') back into a real JS Array
         const parsed = JSON.parse(raw || '[]');
         return Array.isArray(parsed) ? parsed : [];
       } catch (err) {
@@ -374,6 +495,12 @@
       }
     },
 
+    /**
+     * save(items)
+     * -----------
+     * Serializes an array of keys to JSON and writes it to localStorage,
+     * updates all badge counters on the page, and dispatches a CustomEvent.
+     */
     save(items) {
       try {
         localStorage.setItem(SAVED_STORAGE_KEY, JSON.stringify(items));
@@ -381,13 +508,25 @@
         console.warn('Unable to persist saved lots to local storage:', err);
       }
       this.updateBadges();
+      // Publish event so any listening view can re-render immediately
       document.dispatchEvent(new CustomEvent('vault:saved-change', { detail: { saved: items } }));
     },
 
+    /**
+     * has(lotKey)
+     * -----------
+     * Returns true if the lotKey is currently bookmarked in the watchlist.
+     */
     has(lotKey) {
       return this.getAll().includes(lotKey);
     },
 
+    /**
+     * toggle(lotKey)
+     * --------------
+     * Adds the lotKey if missing; removes it if already present.
+     * Uses the array `.filter()` method to remove items immutably.
+     */
     toggle(lotKey) {
       const current = this.getAll();
       const next = current.includes(lotKey)
@@ -398,6 +537,12 @@
       return next.includes(lotKey);
     },
 
+    /**
+     * updateBadges()
+     * --------------
+     * Queries all counter elements across the header navigation and filters,
+     * updating their displayed count to match the watchlist length.
+     */
     updateBadges() {
       const count = this.getAll().length;
       document.querySelectorAll('.saved-count').forEach(el => {
@@ -408,6 +553,13 @@
       });
     },
 
+    /**
+     * bindButtons()
+     * -------------
+     * Finds all heart buttons (`[data-save]`) in the current DOM, synchronizes
+     * their visual state (filled heart vs outline), and attaches click listeners.
+     * Prevents duplicate event listeners using `button.dataset.saveBound = 'true'`.
+     */
     bindButtons() {
       const savedItems = this.getAll();
 
@@ -418,11 +570,14 @@
         button.classList.toggle('saved', isSaved);
         button.textContent = isSaved ? '♥' : '♡';
 
+        // Guard against duplicate listener binding
         if (button.dataset.saveBound === 'true') return;
         button.dataset.saveBound = 'true';
 
         button.addEventListener('click', event => {
+          // Prevent navigating to the lot detail link when clicking the heart button
           event.preventDefault();
+          // Prevent event from bubbling up to parent cards
           event.stopPropagation();
 
           const active = this.toggle(key);
@@ -435,7 +590,7 @@
     }
   };
 
-  // Backwards-compatible aliases for any dependent code
+  // Backwards-compatible aliases for legacy function calls
   function getSaved() { return Watchlist.getAll(); }
   function setSaved(items) { Watchlist.save(items); }
   function updateSavedCount() { Watchlist.updateBadges(); }
@@ -445,7 +600,17 @@
   // ---------------------------------------------------------------------------
   // 4. Shared Simulated Bidding Utility & Session Persistence
   // ---------------------------------------------------------------------------
-
+  /**
+   * WHAT THIS SECTION DOES:
+   * -----------------------
+   * Simulates an interactive auction bidding desk directly in the client's browser.
+   * 
+   * VIVA ARCHITECTURE NOTE:
+   * In a complete production system, bids are written to PostgreSQL via a backend API.
+   * In this educational demonstration, bids are stored in `sessionStorage` so students
+   * can demonstrate placing bids, price increases, validation errors, and simulated
+   * bid activity logs live in the browser without requiring live payment transactions!
+   */
   const SESSION_BIDS_STORAGE_KEY = 'vault-demo-bids';
 
   function getSessionBids() {
@@ -465,6 +630,16 @@
     } catch (_) {}
   }
 
+  /**
+   * createBidDesk(config)
+   * ---------------------
+   * Factory function that creates a stateful bidding desk instance for an auction lot.
+   * 
+   * VIVA DESIGN PATTERN: Factory Function & Closure Pattern
+   * The returned object exposes methods (`recordBid`, `isValid`, `getMinimumBid`)
+   * that maintain access to private variables (`currentPrice`, `bidCount`, `increment`)
+   * enclosed within the function scope.
+   */
   function createBidDesk({
     lotId,
     initialPrice,
@@ -472,17 +647,26 @@
     increment = 5000,
     onBidAccepted
   }) {
-    // Check if session bid already exists
+    // Check if user previously placed a bid on this lot during this browser session
     const sessionBids = getSessionBids();
     const stored = lotId && sessionBids[lotId] ? sessionBids[lotId] : null;
 
     let currentPrice = stored ? stored.price : initialPrice;
     let bidCount = stored ? stored.bidCount : initialBids;
 
+    // Minimum allowable bid is current price + standard auction increment
     function getMinimumBid() {
       return currentPrice + increment;
     }
 
+    /**
+     * getValidationError(amount)
+     * --------------------------
+     * Strict bid validation rules:
+     * 1. Must be a finite positive number.
+     * 2. Must be greater than or equal to current price + increment.
+     * 3. Must be an exact multiple of the increment: (amount - currentPrice) % increment === 0.
+     */
     function getValidationError(amount) {
       if (!Number.isFinite(amount) || amount <= 0) {
         return `Enter a bid of at least ${Formatters.currency(getMinimumBid())}.`;
@@ -500,6 +684,12 @@
       return getValidationError(amount) === '';
     }
 
+    /**
+     * recordBid(amount)
+     * -----------------
+     * If valid, updates price and bid count, writes to sessionStorage, and
+     * invokes the `onBidAccepted` UI callback to refresh the screen.
+     */
     function recordBid(amount) {
       if (!isValid(amount)) return false;
 
@@ -516,6 +706,11 @@
       return true;
     }
 
+    /**
+     * getSimulatedHistory()
+     * ---------------------
+     * Returns an array of prior bid amounts to populate the bid activity log.
+     */
     function getSimulatedHistory() {
       return [
         currentPrice,
@@ -539,10 +734,28 @@
   // ---------------------------------------------------------------------------
   // 5. Catalogue Service (Supabase Integration with Resilient Fallback)
   // ---------------------------------------------------------------------------
-
+  /**
+   * WHAT THE CATALOGUE SERVICE DOES:
+   * --------------------------------
+   * Fetches real auction lots from Supabase PostgreSQL database if available,
+   * while seamlessly falling back to local static data if offline.
+   * 
+   * VIVA ARCHITECTURE: Graceful Degradation / Resilience:
+   * The frontend doesn't break if the backend is down or unconfigured.
+   * It attempts to query the database; if an error or empty result occurs,
+   * it returns the sample static archive smoothly.
+   */
   const SAMPLE_AUCTION_LOTS = AUCTION_LOTS;
 
+  /**
+   * mapDatabaseLotToLot(row)
+   * ------------------------
+   * Data Transformation Function (Adapter Pattern):
+   * Maps PostgreSQL snake_case database columns into the camelCase object structure
+   * expected by the frontend UI cards and templates.
+   */
   function mapDatabaseLotToLot(row) {
+    // Sort associated images so the primary banner image is first
     const images = Array.isArray(row.lot_images) ? [...row.lot_images] : [];
     images.sort((a, b) => {
       if (a.is_primary && !b.is_primary) return -1;
@@ -553,6 +766,7 @@
     const primaryImage = images[0]?.image_url || 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85';
     const gallery = images.length > 0 ? images.map(img => img.image_url) : [primaryImage];
 
+    // Calculate countdown remaining seconds from ISO database timestamp (ends_at)
     let endsInSeconds = 86400;
     if (row.ends_at) {
       const diff = Math.floor((new Date(row.ends_at).getTime() - Date.now()) / 1000);
@@ -562,6 +776,7 @@
     const lotId = row.legacy_id || row.id;
     const numOnly = (row.lot_number || '').replace(/^LOT\s*/i, '').trim();
 
+    // Format estimate string
     let estimateStr = 'Estimate upon request';
     if (row.estimate_low && row.estimate_high) {
       estimateStr = `${Formatters.currency(row.estimate_low)} – ${Formatters.currency(row.estimate_high)}`;
@@ -569,6 +784,7 @@
       estimateStr = `From ${Formatters.currency(row.estimate_low)}`;
     }
 
+    // Check if session bid overrides the database bid
     const sessionBids = getSessionBids();
     const stored = sessionBids[lotId];
     const livePrice = stored ? stored.price : (Number(row.current_bid) || 0);
@@ -599,18 +815,29 @@
     cachedLots: null,
     fetchPromise: null,
 
+    /**
+     * getLots()
+     * ---------
+     * Asynchronously queries Supabase for published auction lots, including nested
+     * foreign-key relations to `lot_images`. Caches results in memory to avoid
+     * duplicate network requests.
+     */
     async getLots() {
+      // 1. Cache hit check
       if (this.cachedLots) return this.cachedLots;
+      // 2. In-flight request check (prevents duplicate parallel requests)
       if (this.fetchPromise) return this.fetchPromise;
 
       this.fetchPromise = (async () => {
         const auth = window.vaultAuth;
+        // If Supabase client is not loaded or unconfigured, fall back immediately
         if (!auth || !auth.client) {
           this.cachedLots = SAMPLE_AUCTION_LOTS;
           return this.cachedLots;
         }
 
         try {
+          // Perform SQL SELECT with nested JOIN to lot_images table
           const { data, error } = await auth.client
             .from('auction_lots')
             .select(`
@@ -651,6 +878,7 @@
             return this.cachedLots;
           }
 
+          // Map raw SQL rows to clean JS objects
           this.cachedLots = data.map(mapDatabaseLotToLot);
           return this.cachedLots;
         } catch (err) {
@@ -665,6 +893,11 @@
       return this.fetchPromise;
     },
 
+    /**
+     * getLotById(requestedId)
+     * -----------------------
+     * Finds a single lot matching the requested ID string.
+     */
     async getLotById(requestedId) {
       const all = await this.getLots();
       let match = all.find(item => item.id === requestedId || (requestedId && (requestedId.startsWith(item.id) || item.id.startsWith(requestedId))));
@@ -678,19 +911,30 @@
   };
 
   // ---------------------------------------------------------------------------
-  // 6. Explore Catalog View
+  // 6. Explore Catalog View (explore.html)
   // ---------------------------------------------------------------------------
-
+  /**
+   * WHAT RENDEREXPLORE() DOES:
+   * --------------------------
+   * Controls the Explore Auctions catalog page:
+   * 1. Reads initial filter state from URL query parameters (e.g., ?category=Timepieces&saved=true).
+   * 2. Renders dynamic auction lot cards with lazy-loading images, badges, and heart buttons.
+   * 3. Implements real-time search filtering across titles, categories, and periods.
+   * 4. Implements sorting by Curated, Closing Soonest, Price Low-High, and Price High-Low.
+   * 5. Displays an empty state notice if no lots match the selected filters.
+   */
   async function renderExplore() {
     const grid = document.querySelector('#auction-grid');
-    if (!grid) return;
+    if (!grid) return; // Exit if not on explore.html page
 
+    // Read URL search parameters (e.g. explore.html?category=Art&saved=true)
     const params = new URLSearchParams(window.location.search);
     let activeCategory = params.get('category') || 'All';
     let savedOnly = params.get('saved') === 'true';
     let searchQuery = '';
     let sortMode = 'curated';
 
+    // Query interactive controls in the DOM
     const filterButtons = Array.from(document.querySelectorAll('[data-filter]'));
     const searchInput = document.querySelector('#lot-search');
     const sortSelect = document.querySelector('#lot-sort');
@@ -706,6 +950,11 @@
       savedFilter.scrollIntoView({ block: 'center' });
     }
 
+    /**
+     * createLotCardMarkup(lot, index, isSaved)
+     * ----------------------------------------
+     * Returns an HTML template literal representing a luxury auction lot card.
+     */
     function createLotCardMarkup(lot, index, isSaved) {
       const statusText = Formatters.status(lot.ends);
       const isUrgent = statusText === 'CLOSING SOON';
@@ -749,9 +998,21 @@
 
     let activeCatalogue = SAMPLE_AUCTION_LOTS;
 
+    /**
+     * renderList()
+     * ------------
+     * Filters, sorts, and injects the lot cards into the DOM based on active user selections.
+     * 
+     * VIVA CONCEPTS:
+     * - Array.filter(): Creates a new array with items passing all conditions.
+     * - Array.sort(): Orders items in-place using numeric comparators.
+     * - Array.map(): Transforms lot data objects into HTML markup strings.
+     * - innerHTML: Injects generated markup into the grid container.
+     */
     function renderList() {
       const savedKeys = Watchlist.getAll();
 
+      // 1. FILTERING
       let visibleLots = activeCatalogue.filter(lot => {
         const matchesCategory = activeCategory === 'All' || lot.category.toLowerCase() === activeCategory.toLowerCase();
         const matchesSaved = !savedOnly || savedKeys.includes(lot.key);
@@ -761,18 +1022,21 @@
         return matchesCategory && matchesSaved && matchesSearch;
       });
 
+      // 2. SORTING
       if (sortMode === 'ending') {
-        visibleLots.sort((a, b) => a.ends - b.ends);
+        visibleLots.sort((a, b) => a.ends - b.ends); // Ending soonest first
       } else if (sortMode === 'bid-low') {
-        visibleLots.sort((a, b) => a.price - b.price);
+        visibleLots.sort((a, b) => a.price - b.price); // Price low to high
       } else if (sortMode === 'bid-high') {
-        visibleLots.sort((a, b) => b.price - a.price);
+        visibleLots.sort((a, b) => b.price - a.price); // Price high to low
       }
 
+      // 3. DOM INJECTION
       grid.innerHTML = visibleLots.map((lot, idx) => {
         return createLotCardMarkup(lot, idx, savedKeys.includes(lot.key));
       }).join('');
 
+      // 4. COUNTERS & EMPTY STATE
       if (resultsCount) {
         const countText = String(visibleLots.length).padStart(2, '0');
         const scopeText = savedOnly ? 'SAVED ' : 'SELECTED ';
@@ -799,13 +1063,16 @@
         savedFilter.classList.toggle('active', savedOnly);
       }
 
+      // Re-bind click handlers to heart icons
       Watchlist.bindButtons();
     }
 
+    // Reactively re-render if a lot is saved or unsaved while on the "Saved" view
     document.addEventListener('vault:saved-change', () => {
       if (savedOnly) renderList();
     });
 
+    // Category button click handlers
     filterButtons.forEach(button => {
       button.addEventListener('click', () => {
         activeCategory = button.dataset.filter;
@@ -815,16 +1082,19 @@
       });
     });
 
+    // Real-time search input listener
     searchInput?.addEventListener('input', event => {
       searchQuery = event.target.value;
       renderList();
     });
 
+    // Sort dropdown change listener
     sortSelect?.addEventListener('change', event => {
       sortMode = event.target.value;
       renderList();
     });
 
+    // Toggle Saved Filter
     savedFilter?.addEventListener('click', () => {
       savedOnly = !savedOnly;
       activeCategory = 'All';
@@ -832,6 +1102,7 @@
       renderList();
     });
 
+    // Reset / Clear all filters
     clearButton?.addEventListener('click', () => {
       activeCategory = 'All';
       savedOnly = false;
@@ -849,10 +1120,10 @@
       button.classList.toggle('active', button.dataset.filter === activeCategory);
     });
 
-    // Render initial list immediately
+    // 1. Initial fast render using local static fallback archive
     renderList();
 
-    // Fetch dynamic database lots asynchronously and re-render if database records exist
+    // 2. Asynchronous update from Supabase if online
     CatalogueService.getLots().then(lots => {
       if (lots && lots.length > 0) {
         activeCatalogue = lots;
@@ -862,17 +1133,28 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 7. Lot Detail View
+  // 7. Lot Detail View (lot.html)
   // ---------------------------------------------------------------------------
-
+  /**
+   * WHAT RENDERLOT() DOES:
+   * ----------------------
+   * Controls the individual Lot Details page (lot.html):
+   * 1. Reads the `?lot=xyz` URL parameter.
+   * 2. Fetches the lot details via CatalogueService.
+   * 3. Sets up an interactive image gallery thumbnail switcher and modal lightbox.
+   * 4. Instantiates a `createBidDesk` for simulated live bidding and input validation.
+   * 5. Displays the dynamic countdown timer.
+   * 6. Recommends "Similar Lots" in the same category.
+   */
   async function renderLot() {
     const titleElement = document.querySelector('#lot-title');
-    if (!titleElement) return;
+    if (!titleElement) return; // Exit if not on lot.html
 
     const params = new URLSearchParams(window.location.search);
     const requestedId = params.get('lot');
     const lot = await CatalogueService.getLotById(requestedId);
 
+    // 404 Lot Not Found handling
     if (!lot) {
       document.title = 'Lot not found — THE VAULT';
       const detailGrid = document.querySelector('.lot-detail-grid');
@@ -887,6 +1169,7 @@
       return;
     }
 
+    // Determine gallery images (primary + secondary angles)
     const gallery = lot.gallery && lot.gallery.length > 0 ? lot.gallery : (lot.id === 'watch'
       ? [
           lot.image,
@@ -897,10 +1180,10 @@
 
     const statusLabel = Formatters.status(lot.ends);
 
-    // Meta & Title
+    // Dynamic browser tab title
     document.title = `${lot.title} — THE VAULT`;
 
-    // Static text fields
+    // Helper to safely set text content of DOM elements
     const setText = (selector, val) => {
       const el = document.querySelector(selector);
       if (el) el.textContent = val;
@@ -924,14 +1207,14 @@
       storyHeading.innerHTML = `${lot.category}, <em>considered.</em>`;
     }
 
-    // Main Image
+    // Main Showcase Image
     const mainImage = document.querySelector('#lot-image');
     if (mainImage) {
       mainImage.src = gallery[0];
       mainImage.alt = lot.title;
     }
 
-    // Gallery Thumbnails
+    // Gallery Thumbnails Switcher
     const thumbsContainer = document.querySelector('#gallery-thumbs');
     if (thumbsContainer) {
       const thumbButtons = gallery.map((imageSrc, index) => {
@@ -942,6 +1225,7 @@
 
       thumbsContainer.innerHTML = thumbButtons + '<span>SELECT AN IMAGE TO VIEW</span>';
 
+      // Thumbnail click interaction
       thumbsContainer.querySelectorAll('.thumb').forEach(button => {
         button.addEventListener('click', () => {
           thumbsContainer.querySelectorAll('.thumb').forEach(b => b.classList.remove('active'));
@@ -951,7 +1235,7 @@
       });
     }
 
-    // Lightbox Functionality
+    // Lightbox Modal Feature (Full-screen image zoom)
     const lightbox = document.querySelector('#image-lightbox');
     const lightboxImage = document.querySelector('#lightbox-image');
     const expandButton = document.querySelector('#image-expand');
@@ -976,7 +1260,7 @@
       });
     }
 
-    // Simulated Bidding Desk
+    // Simulated Bidding Desk Integration
     const currentBidEl = document.querySelector('#current-bid');
     const bidCountEl = document.querySelector('#bid-count');
     const bidInput = document.querySelector('#bid-amount');
@@ -1010,7 +1294,7 @@
       bidInput.value = desk.getMinimumBid();
     }
 
-    // Populate initial simulated bid activity
+    // Populate initial simulated bid activity feed
     if (historyList) {
       const initialHistory = desk.getSimulatedHistory();
       historyList.innerHTML = initialHistory.map((val, idx) => {
@@ -1028,6 +1312,7 @@
       }).join('');
     }
 
+    // Place Bid button click handler
     bidButton?.addEventListener('click', () => {
       const enteredAmount = Number(bidInput?.value);
       const validationError = desk.getValidationError(enteredAmount);
@@ -1040,8 +1325,10 @@
         return;
       }
 
+      // Record valid bid
       desk.recordBid(enteredAmount);
 
+      // Prepend user bid row to the visual activity list
       if (historyList) {
         const userRow = document.createElement('div');
         userRow.className = 'history-row';
@@ -1061,7 +1348,7 @@
       }
     });
 
-    // Detail Watchlist Button
+    // Detail Watchlist Heart Button
     const saveDetailButton = document.querySelector('#save-detail');
     if (saveDetailButton) {
       const syncSaveDetail = () => {
@@ -1082,13 +1369,13 @@
 
     Watchlist.updateBadges();
 
-    // Similar Lots Section
+    // Similar Lots Recommendation Engine
     const similarGrid = document.querySelector('#similar-lots-grid');
     if (similarGrid) {
       CatalogueService.getLots().then(allLots => {
         const similarLots = allLots
           .filter(item => item.id !== lot.id && item.category.toLowerCase() === lot.category.toLowerCase())
-          .slice(0, 3);
+          .slice(0, 3); // Take top 3 recommendations
 
         similarGrid.innerHTML = similarLots.map(item => `
           <article class="similar-lot">
@@ -1103,7 +1390,7 @@
       });
     }
 
-    // Countdown Timer (illustrative prototype)
+    // Live Countdown Timer (Ticks every 1,000 milliseconds)
     let remainingSeconds = lot.ends;
     const timerElement = document.querySelector('#countdown');
 
@@ -1118,12 +1405,19 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 7. Homepage View
+  // 8. Homepage View (index.html)
   // ---------------------------------------------------------------------------
-
+  /**
+   * WHAT RENDERHOME() DOES:
+   * -----------------------
+   * Controls the Homepage (index.html):
+   * 1. Injects the hero "Featured Lot" (The Heritage Chronograph).
+   * 2. Renders the top live auction lots in the preview grid.
+   * 3. Synchronizes interactive heart save buttons across the hero and grid.
+   */
   function renderHome() {
     const liveGrid = document.querySelector('#home-live-grid');
-    if (!liveGrid) return;
+    if (!liveGrid) return; // Exit if not on index.html
 
     const featured = AUCTION_LOTS[0];
     const featuredLink = document.querySelector('#featured-link');
@@ -1160,7 +1454,7 @@
     const featuredAction = document.querySelector('#featured-action');
     if (featuredAction) featuredAction.href = lotUrl;
 
-    // Live Grid lots (indices 1 to 3)
+    // Live Grid lots (display items 1 to 3 from static catalog)
     liveGrid.innerHTML = AUCTION_LOTS.slice(1, 4).map(lot => {
       const statusText = Formatters.status(lot.ends);
       const isUrgent = statusText === 'CLOSING SOON';
@@ -1196,12 +1490,20 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 8. Arena Live Simulation View
+  // 9. Arena Live Simulation View (arena.html)
   // ---------------------------------------------------------------------------
-
+  /**
+   * WHAT RENDERARENA() DOES:
+   * ------------------------
+   * Controls the Live Auction Arena (arena.html):
+   * 1. Simulates a live bidding floor where collectors place real-time bids.
+   * 2. Displays the prominent spotlight lot with bid history and live countdown.
+   * 3. Renders the live floor room lots with live status tickers.
+   * 4. Simulates incoming room signals and bidding notifications.
+   */
   function renderArena() {
     const floor = document.querySelector('#arena-floor');
-    if (!floor) return;
+    if (!floor) return; // Exit if not on arena.html
 
     const liveLots = AUCTION_LOTS
       .filter(lot => lot.ends > 0 && lot.ends < 86400)
@@ -1320,7 +1622,7 @@
       }
     });
 
-    // Floor Lots
+    // Floor Lots list
     const roomLots = activeLots.filter(lot => lot.id !== featured.id);
     floor.innerHTML = roomLots.map((lot, index) => {
       const statusText = Formatters.status(lot.ends);
@@ -1354,7 +1656,7 @@
     const arenaEmpty = document.querySelector('#arena-empty');
     if (arenaEmpty) arenaEmpty.hidden = roomLots.length > 0;
 
-    // Room Signals (Activity)
+    // Room Signals Activity Feed
     const activityLots = activeLots.slice(0, 3);
     const arenaActivity = document.querySelector('#arena-activity');
     if (arenaActivity) {
@@ -1376,7 +1678,7 @@
       }).join('');
     }
 
-    // Closing Soon Lots
+    // Closing Soon preview rail
     const closingLots = AUCTION_LOTS.filter(lot => lot.ends < 86400).slice(0, 3);
     const arenaClosing = document.querySelector('#arena-closing');
     if (arenaClosing) {
@@ -1389,7 +1691,7 @@
       `.trim()).join('');
     }
 
-    // Featured Timer
+    // Spotlight Closing Countdown
     let secondsLeft = featured.ends;
     const closingLabel = document.querySelector('#arena-featured-closing');
 
@@ -1409,9 +1711,17 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 9. Editorial Journal Views
+  // 10. Editorial Journal Views (journal.html & article.html)
   // ---------------------------------------------------------------------------
-
+  /**
+   * WHAT THIS SECTION DOES:
+   * -----------------------
+   * Renders the luxury editorial publishing section:
+   * - `renderArticleCard`: Generates HTML for an individual story card.
+   * - `renderJournal`: Manages category tabs (Watches, Art, Automotive, Collecting).
+   * - `renderArticle`: Renders the full multi-section story with hero photography,
+   *   reading time, and related article links based on URL query `?story=xyz`.
+   */
   function renderArticleCard(article, isFeatured) {
     const encodedId = encodeURIComponent(article.id);
     const featuredClass = isFeatured ? ' journal-story-featured' : '';
@@ -1437,7 +1747,7 @@
 
   function renderJournal() {
     const grid = document.querySelector('#journal-story-grid');
-    if (!grid) return;
+    if (!grid) return; // Exit if not on journal.html
 
     const filterButtons = Array.from(document.querySelectorAll('[data-journal-filter]'));
     const emptyNotice = document.querySelector('#journal-empty');
@@ -1478,11 +1788,12 @@
 
   function renderArticle() {
     const articleRoot = document.querySelector('#article-root');
-    if (!articleRoot) return;
+    if (!articleRoot) return; // Exit if not on article.html
 
     const requestedStory = new URLSearchParams(window.location.search).get('story');
     const article = JOURNAL_ARTICLES.find(item => item.id === requestedStory || (requestedStory && requestedStory.startsWith(item.id)));
 
+    // Story 404 Fallback
     if (!article) {
       document.title = 'Story not found — THE VAULT';
       articleRoot.innerHTML = `
@@ -1498,6 +1809,7 @@
 
     document.title = `${article.title} — THE VAULT`;
 
+    // Map body sections and paragraphs to semantic HTML
     const bodySectionsHtml = article.body.map(section => `
       <section>
         <h2>${section.heading}</h2>
@@ -1505,6 +1817,7 @@
       </section>
     `.trim()).join('');
 
+    // Fetch related articles
     const relatedArticles = article.related
       .map(relId => JOURNAL_ARTICLES.find(item => item.id === relId))
       .filter(Boolean);
@@ -1513,6 +1826,7 @@
       .map(item => renderArticleCard(item, false))
       .join('');
 
+    // Inject editorial reading template
     articleRoot.innerHTML = `
       <div class="article-breadcrumb">
         <a href="index.html">HOME</a>
@@ -1551,12 +1865,21 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 10. Correspondence Form View
+  // 11. Correspondence Form View (contact.html)
   // ---------------------------------------------------------------------------
-
+  /**
+   * WHAT RENDERCONTACT() DOES:
+   * --------------------------
+   * Controls the Contact & Enquiries page (contact.html):
+   * 1. Validates user input before submission using client-side JavaScript.
+   * 2. Tests email validity with a Regular Expression (RegEx).
+   * 3. Sets accessibility attributes (`aria-invalid="true"`) for screen readers.
+   * 4. Shows clear error messages beneath each invalid field.
+   * 5. Displays a confirmation notice when valid.
+   */
   function renderContact() {
     const form = document.querySelector('#contact-form');
-    if (!form) return;
+    if (!form) return; // Exit if not on contact.html
 
     const fields = {
       name: form.querySelector('#contact-name'),
@@ -1575,6 +1898,7 @@
     };
 
     const confirmation = document.querySelector('#contact-confirmation');
+    // Standard email validation regular expression: [chars]@[domain].[extension]
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     function setFieldError(fieldKey, message) {
@@ -1623,7 +1947,7 @@
       return errorMap;
     }
 
-    // Direction shortcut buttons
+    // Direction shortcut buttons (e.g. "Consignment", "Private acquisition")
     document.querySelectorAll('[data-contact-type]').forEach(button => {
       button.addEventListener('click', () => {
         fields.type.value = button.dataset.contactType;
@@ -1643,7 +1967,7 @@
       });
     });
 
-    // Revalidate on input once a field was marked invalid
+    // Real-time revalidation on user typing
     Object.keys(fields).forEach(key => {
       fields[key]?.addEventListener('input', () => {
         if (fields[key].getAttribute('aria-invalid') === 'true') {
@@ -1652,24 +1976,29 @@
       });
     });
 
+    // Form submit listener
     form.addEventListener('submit', event => {
+      // Prevent browser default full-page reload
       event.preventDefault();
       if (confirmation) confirmation.hidden = true;
 
       const validationErrors = validateForm();
       const errorKeys = Object.keys(validationErrors);
 
+      // If errors exist, focus the first invalid field
       if (errorKeys.length > 0) {
         fields[errorKeys[0]]?.focus();
         return;
       }
 
+      // Display success message
       if (confirmation) {
         confirmation.hidden = false;
         confirmation.classList.add('visible');
       }
     });
 
+    // Reset button handling
     form.addEventListener('reset', () => {
       window.setTimeout(() => {
         clearAllErrors();
@@ -1682,9 +2011,15 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 11. Navigation & Global Interactions
+  // 12. Navigation & Global Interactions
   // ---------------------------------------------------------------------------
-
+  /**
+   * WHAT THIS SECTION DOES:
+   * -----------------------
+   * 1. Mobile Hamburger Menu Toggle: Handles aria-expanded state and open class.
+   * 2. Smooth Scroll to Top: Intercepts clicks on .back-top links.
+   * 3. Demo Account Fallback: Informs user if auth is not initialized.
+   */
   function setupMobileNavigation() {
     const toggleButton = document.querySelector('.mobile-menu-toggle');
     const mainNav = document.querySelector('.main-nav');
@@ -1720,9 +2055,17 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 12. Application Bootstrap
+  // 13. Application Bootstrap
   // ---------------------------------------------------------------------------
-
+  /**
+   * WHAT BOOTSTRAP DOES:
+   * --------------------
+   * Master initialization function called when the DOM is ready.
+   * It initializes global navigation and invokes each page renderer.
+   * Each renderer checks for its own DOM anchor elements (e.g., #auction-grid for explore,
+   * #lot-title for lot details, #contact-form for contact), ensuring that only
+   * the appropriate controller runs on each page.
+   */
   async function bootstrap() {
     setupMobileNavigation();
     setupSmoothScroll();
@@ -1737,13 +2080,23 @@
     setupDemoAccountFallback();
   }
 
+  // Check document loading state to guarantee the DOM is parsed before running
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', bootstrap);
   } else {
     bootstrap();
   }
 
-  // Export safe, immutable application namespace for testing and extension
+  /**
+   * GLOBAL EXPORTS & OBJECT FREEZING:
+   * ---------------------------------
+   * We attach our controller to `window.VaultApp` so other scripts or unit tests
+   * can inspect it.
+   * 
+   * VIVA CONCEPT: Object.freeze()
+   * Prevents any external code from modifying, adding, or deleting properties
+   * on the exported VaultApp object, ensuring runtime immutability and security.
+   */
   window.VaultApp = Object.freeze({
     lots: AUCTION_LOTS,
     sampleLots: SAMPLE_AUCTION_LOTS,
@@ -1755,7 +2108,7 @@
     init: bootstrap
   });
 
-  // Export historical identifiers for script-level compatibility
+  // Export historical identifiers for script-level backwards compatibility
   window.auctionLots = AUCTION_LOTS;
   window.journalArticles = JOURNAL_ARTICLES;
   window.money = money;

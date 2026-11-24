@@ -1,34 +1,73 @@
 /**
- * THE VAULT — Administration Controller
+ * =============================================================================
+ * THE VAULT — Administration Controller (admin.js)
+ * =============================================================================
+ * WHAT THIS FILE DOES:
+ * Controls the private curator & administration dashboard on admin.html.
  *
- * Secures the private room via database-level super-admin verification.
- * Provides read-only operational telemetry, metrics, and activity streams
- * through Supabase Row Level Security policies.
+ * CORE CAPABILITIES:
+ * 1. Cryptographic Security Gate:
+ *    Restricts access strictly to verified super-admin sessions via the
+ *    database-level is_super_admin() RPC function. Unauthorized users are blocked.
+ * 2. Real-Time Telemetry & Metrics:
+ *    Fetches accurate counts for total lots, live auctions, closed auctions,
+ *    registered bidders, and submitted bids from PostgreSQL tables.
+ * 3. Recent Activity Streams:
+ *    Displays feeds of recent lots, live bids, and incoming contact enquiries.
+ * 4. Full Auction Lot Management (CRUD):
+ *    - Create (Add new auction lot with imagery).
+ *    - Read (Query, filter by category/status, search by keyword).
+ *    - Update (Edit details, adjust price, quick-change status via dropdown).
+ *    - Delete (Delete lot, or safely withdraw if bids already exist).
+ * 5. Database Seeding:
+ *    Injects 8 curated demonstration lots into Supabase using SQL UPSERT.
+ * 6. Error Diagnostics:
+ *    Captures PostgreSQL SQLSTATE errors (such as 42501 permission denied or
+ *    23503 foreign key violation) and displays helpful troubleshooting hints.
+ *
+ * VIVA CONCEPTS TO HIGHLIGHT:
+ * - Nested Relational Joins: Fetches images from the child table lot_images
+ *   directly within the parent auction_lots query using Supabase's GraphQL-like syntax.
+ * - Promise.all(): Fires multiple asynchronous database queries concurrently
+ *   instead of sequentially, dramatically reducing dashboard loading time.
+ * - SQLSTATE 23503 (Foreign Key Constraint): Why financial records cannot be
+ *   deleted if bids reference them, demonstrating database integrity.
+ * - Clearly Documented Placeholders: Sections 03 (Bids management), 04 (Articles),
+ *   and 05 (Settings) are explicitly documented as future extensions.
+ * =============================================================================
  */
 
 (function () {
   'use strict';
 
+  /**
+   * Main Admin Initialization:
+   * Coordinates security verification, DOM references, and data loading.
+   */
   async function initAdmin() {
     const auth = window.vaultAuth;
 
-    // DOM Elements
-    const accessState = document.querySelector('#admin-access-state');
-    const dashboard = document.querySelector('#admin-dashboard');
-    const sidebar = document.querySelector('#admin-sidebar');
-    const menuToggle = document.querySelector('#admin-menu-toggle');
-    const connectionIndicator = document.querySelector('#admin-connection');
-    const sectionTitle = document.querySelector('#admin-section-title');
-    const overviewSection = document.querySelector('#admin-overview');
-    const placeholderSection = document.querySelector('#admin-placeholder');
+    // -------------------------------------------------------------------------
+    // DOM Element References — Navigation & Panels
+    // -------------------------------------------------------------------------
+    const accessState = document.querySelector('#admin-access-state'); // Access Denied screen
+    const dashboard = document.querySelector('#admin-dashboard');       // Main Admin UI container
+    const sidebar = document.querySelector('#admin-sidebar');           // Collapsible navigation drawer
+    const menuToggle = document.querySelector('#admin-menu-toggle');     // Mobile hamburger button
+    const connectionIndicator = document.querySelector('#admin-connection'); // Database health badge
+    const sectionTitle = document.querySelector('#admin-section-title'); // Active section heading
+    const overviewSection = document.querySelector('#admin-overview');   // 01 / Telemetry section
+    const placeholderSection = document.querySelector('#admin-placeholder'); // Placeholder section for upcoming tabs
     const placeholderTitle = document.querySelector('#admin-placeholder-title');
     const placeholderCopy = document.querySelector('#admin-placeholder-copy');
-    const accountEmail = document.querySelector('#admin-account-email');
-    const sidebarEmail = document.querySelector('#admin-sidebar-email');
-    const diagnosticsSection = document.querySelector('#admin-diagnostics');
+    const accountEmail = document.querySelector('#admin-account-email'); // Header admin email display
+    const sidebarEmail = document.querySelector('#admin-sidebar-email'); // Sidebar admin email display
+    const diagnosticsSection = document.querySelector('#admin-diagnostics'); // Error diagnostics panel
     const diagnosticsList = document.querySelector('#admin-diagnostics-list');
 
-    // 02 / Lots Management DOM Elements
+    // -------------------------------------------------------------------------
+    // DOM Element References — 02 / Lots Management Table & Filters
+    // -------------------------------------------------------------------------
     const lotsSection = document.querySelector('#admin-lots');
     const lotsTbody = document.querySelector('#admin-lots-tbody');
     const lotsStatus = document.querySelector('#admin-lots-status');
@@ -39,7 +78,9 @@
     const refreshLotsBtn = document.querySelector('#admin-refresh-lots-btn');
     const seedLotsBtn = document.querySelector('#admin-seed-lots-btn');
 
-    // Lot Modal Elements
+    // -------------------------------------------------------------------------
+    // DOM Element References — Lot Add/Edit Modal Form
+    // -------------------------------------------------------------------------
     const lotModal = document.querySelector('#admin-lot-modal');
     const lotModalClose = document.querySelector('#admin-lot-modal-close');
     const lotForm = document.querySelector('#admin-lot-form');
@@ -47,7 +88,7 @@
     const modalLotTitle = document.querySelector('#modal-lot-title');
     const modalFeedback = document.querySelector('#modal-lot-feedback');
 
-    // Lot Form Fields
+    // Lot Form Input Fields
     const fieldLotId = document.querySelector('#lot-form-id');
     const fieldLotMode = document.querySelector('#lot-form-mode');
     const fieldLotTitle = document.querySelector('#lot-form-title');
@@ -63,7 +104,9 @@
     const fieldLotImage = document.querySelector('#lot-form-image');
     const fieldLotPublished = document.querySelector('#lot-form-published');
 
-    // Delete Modal Elements
+    // -------------------------------------------------------------------------
+    // DOM Element References — Lot Deletion Confirmation Modal
+    // -------------------------------------------------------------------------
     const deleteModal = document.querySelector('#admin-delete-modal');
     const deleteModalClose = document.querySelector('#admin-delete-modal-close');
     const deleteModalCopy = document.querySelector('#delete-modal-copy');
@@ -72,19 +115,25 @@
     const withdrawInsteadBtn = document.querySelector('#withdraw-instead-btn');
     const cancelDeleteBtn = document.querySelector('#cancel-delete-btn');
 
-    let adminLots = [];
-    let pendingDeleteLot = null;
-    const queryErrors = [];
-    let verifiedUserId = '';
+    // In-memory state variables
+    let adminLots = [];          // Stores current auction lots loaded from Supabase
+    let pendingDeleteLot = null; // References the lot object currently targeted for deletion
+    const queryErrors = [];      // Diagnostic error bucket capturing failed database calls
+    let verifiedUserId = '';     // UUID of the authenticated super-admin
 
     // -------------------------------------------------------------------------
-    // UI Helpers
+    // UI Helpers (Formatting & Feedback)
     // -------------------------------------------------------------------------
 
+    /**
+     * Function: showAccessError(message)
+     * Purpose: Renders a full-screen "Access Denied" lock state when an unauthorized
+     * or unauthenticated user tries to view admin.html.
+     */
     function showAccessError(message) {
       if (!accessState) return;
 
-      accessState.replaceChildren();
+      accessState.replaceChildren(); // Efficiently removes all existing child elements
 
       const label = document.createElement('p');
       label.className = 'admin-kicker';
@@ -104,6 +153,10 @@
       accessState.append(label, heading, detail, returnLink);
     }
 
+    /**
+     * Function: setConnectionStatus(text, statusClass)
+     * Purpose: Updates the database status pill indicator (e.g. green "Supabase connected").
+     */
     function setConnectionStatus(text, statusClass) {
       if (!connectionIndicator) return;
       connectionIndicator.className = `admin-connection ${statusClass}`;
@@ -113,6 +166,10 @@
       connectionIndicator.append(dot, document.createTextNode(text));
     }
 
+    /**
+     * Function: setMetric(id, value)
+     * Purpose: Formats numeric metrics using Indian locale grouping (e.g. 10,00,000).
+     */
     function setMetric(id, value) {
       const element = document.querySelector(`#${id}`);
       if (!element) return;
@@ -121,6 +178,10 @@
         : Number(value).toLocaleString('en-IN');
     }
 
+    /**
+     * Function: formatDate(value)
+     * Purpose: Formats ISO timestamp strings into curatorial editorial dates (e.g. "20 Nov 2026").
+     */
     function formatDate(value) {
       if (!value) return 'Date unavailable';
       return new Intl.DateTimeFormat('en-IN', {
@@ -130,11 +191,19 @@
       }).format(new Date(value));
     }
 
+    /**
+     * Function: formatAmount(value)
+     * Purpose: Formats financial values with Indian Rupee symbol (₹).
+     */
     function formatAmount(value) {
       if (value === null || value === undefined) return 'Amount unavailable';
       return `₹${Number(value).toLocaleString('en-IN')}`;
     }
 
+    /**
+     * Function: setListStatusMessage(id, message, isError)
+     * Purpose: Displays loading spinners or empty-state notices inside list containers.
+     */
     function setListStatusMessage(id, message, isError = false) {
       const target = document.querySelector(`#${id}`);
       if (!target) return;
@@ -146,6 +215,10 @@
       target.append(paragraph);
     }
 
+    /**
+     * Function: createActivityRow(kickerText, titleText, detailText)
+     * Purpose: Factory function creating a structured DOM node for activity stream rows.
+     */
     function createActivityRow(kickerText, titleText, detailText) {
       const row = document.createElement('div');
       row.className = 'admin-activity-row';
@@ -167,6 +240,10 @@
       return row;
     }
 
+    /**
+     * Function: renderActivityList(containerId, rows, rowRenderer, emptyMessage)
+     * Purpose: Generic rendering pipeline for feeds (recent lots, recent bids, inquiries).
+     */
     function renderActivityList(containerId, rows, rowRenderer, emptyMessage) {
       const container = document.querySelector(`#${containerId}`);
       if (!container) return;
@@ -183,6 +260,10 @@
       });
     }
 
+    /**
+     * Function: recordQueryError(table, query, error)
+     * Purpose: Logs database exceptions to in-memory diagnostic state for administrator review.
+     */
     function recordQueryError(table, query, error) {
       queryErrors.push({
         table,
@@ -194,6 +275,10 @@
       });
     }
 
+    /**
+     * Function: renderDiagnostics()
+     * Purpose: Populates the troubleshooting panel with actionable SQL error information.
+     */
     function renderDiagnostics() {
       if (!diagnosticsList || !diagnosticsSection) return;
 
@@ -238,9 +323,15 @@
     }
 
     // -------------------------------------------------------------------------
-    // Data Loading
+    // Data Loading (Database Queries & Telemetry)
     // -------------------------------------------------------------------------
 
+    /**
+     * Function: countRows(tableName, queryLabel, configFn)
+     * Purpose: Executes an efficient COUNT query using Supabase's head: true option.
+     * WHY head: true? Returns the exact count from HTTP headers without downloading
+     * any actual row payloads, maximizing network performance!
+     */
     async function countRows(tableName, queryLabel, configFn) {
       try {
         let query = auth.client.from(tableName).select('*', { count: 'exact', head: true });
@@ -258,6 +349,10 @@
       }
     }
 
+    /**
+     * Function: fetchRows(tableName, queryLabel, configFn)
+     * Purpose: Wrapper for executing custom SELECT queries with error boundaries.
+     */
     async function fetchRows(tableName, queryLabel, configFn) {
       try {
         return await configFn(auth.client.from(tableName));
@@ -266,10 +361,19 @@
       }
     }
 
+    /**
+     * Function: loadOverviewData()
+     * Purpose: Concurrently loads all dashboard metrics and recent activity feeds.
+     *
+     * How Promise.all() optimizes this:
+     * Instead of waiting for 6 count queries one after another (serial),
+     * Promise.all executes them in parallel (concurrently). Total load time
+     * equals the slowest query rather than the sum of all queries!
+     */
     async function loadOverviewData() {
       queryErrors.length = 0;
 
-      // 1. Telemetry Metric Counts
+      // 1. Telemetry Metric Counts (Fired concurrently)
       const metricQueries = await Promise.all([
         countRows('auction_lots', 'total count'),
         countRows('auction_lots', 'published count', q => q.not('published_at', 'is', null)),
@@ -293,7 +397,7 @@
         if (res.error) recordQueryError(res.table, res.query, res.error);
       });
 
-      // 2. Recent Streams
+      // 2. Recent Activity Streams (Latest 5 records from each table)
       const [lotsResult, bidsResult, enquiriesResult] = await Promise.all([
         fetchRows('auction_lots', 'recent lots', q =>
           q.select('id, lot_number, title, status, created_at')
@@ -312,7 +416,7 @@
         )
       ]);
 
-      // Handle Recent Lots
+      // Process Recent Lots
       if (lotsResult.error) {
         recordQueryError('auction_lots', 'recent lots', lotsResult.error);
         setListStatusMessage('recent-lots', 'Recent lots are unavailable from the current database connection.', true);
@@ -325,7 +429,7 @@
         );
       }
 
-      // Handle Recent Bids
+      // Process Recent Bids
       if (bidsResult.error) {
         recordQueryError('bids', 'recent bids', bidsResult.error);
         setListStatusMessage('recent-bids', 'Recent bids are unavailable from the current database connection.', true);
@@ -338,7 +442,7 @@
         );
       }
 
-      // Handle Recent Enquiries
+      // Process Recent Enquiries
       if (enquiriesResult.error) {
         recordQueryError('contact_messages', 'recent enquiries', enquiriesResult.error);
         setListStatusMessage('recent-enquiries', 'Recent enquiries are unavailable from the current database connection.', true);
@@ -364,6 +468,7 @@
     // 02 / Lots CRUD Controller
     // -------------------------------------------------------------------------
 
+    // 8 Pre-configured curated demonstration lots for database seeding.
     const DEMO_SEED_LOTS = [
       {
         legacy_id: 'watch',
@@ -471,6 +576,13 @@
       }
     ];
 
+    /**
+     * Function: loadAdminLots()
+     * Purpose: Fetches the complete auction catalog including nested gallery images.
+     * Notice the nested query:
+     * lot_images ( id, image_url, alt_text, is_primary, sort_order )
+     * PostgREST automatically performs a LEFT JOIN using the foreign key constraint.
+     */
     async function loadAdminLots() {
       if (!lotsTbody || !lotsStatus) return;
       lotsStatus.hidden = false;
@@ -525,6 +637,11 @@
       }
     }
 
+    /**
+     * Function: renderAdminLotsTable()
+     * Purpose: Filters, searches, and dynamically populates the administrative lots HTML table.
+     * Uses JavaScript array.filter() for instant, zero-latency client-side filtering.
+     */
     function renderAdminLotsTable() {
       if (!lotsTbody || !lotsStatus) return;
 
@@ -532,6 +649,7 @@
       const selectedStatus = statusFilter?.value || 'all';
       const selectedCategory = categoryFilter?.value || 'all';
 
+      // Multi-criteria client-side filter
       const filtered = adminLots.filter(lot => {
         const matchesStatus = selectedStatus === 'all' || lot.status === selectedStatus;
         const matchesCategory = selectedCategory === 'all' || lot.category === selectedCategory;
@@ -558,6 +676,7 @@
 
       lotsStatus.hidden = true;
 
+      // Construct table rows using standard, secure DOM methods (no dangerous innerHTML injection)
       filtered.forEach(lot => {
         const images = Array.isArray(lot.lot_images) ? [...lot.lot_images] : [];
         const primaryImg = images.find(img => img.is_primary) || images[0];
@@ -565,13 +684,13 @@
 
         const row = document.createElement('tr');
 
-        // Lot Number
+        // Column 1: Lot Number
         const tdNumber = document.createElement('td');
         const strongNum = document.createElement('strong');
         strongNum.textContent = `LOT ${lot.lot_number || '—'}`;
         tdNumber.append(strongNum);
 
-        // Product Details & Thumbnail
+        // Column 2: Product Details & Thumbnail
         const tdDetails = document.createElement('td');
         const cellWrap = document.createElement('div');
         cellWrap.className = 'admin-lot-cell';
@@ -595,17 +714,17 @@
         cellWrap.append(thumb, metaWrap);
         tdDetails.append(cellWrap);
 
-        // Category
+        // Column 3: Category
         const tdCategory = document.createElement('td');
         tdCategory.textContent = lot.category;
 
-        // Current Bid
+        // Column 4: Current Bid
         const tdCurrentBid = document.createElement('td');
         const strongBid = document.createElement('strong');
         strongBid.textContent = formatAmount(lot.current_bid);
         tdCurrentBid.append(strongBid);
 
-        // Estimate
+        // Column 5: Estimate Range
         const tdEstimate = document.createElement('td');
         const smallEst = document.createElement('small');
         smallEst.textContent = lot.estimate_low && lot.estimate_high
@@ -613,7 +732,7 @@
           : (lot.estimate_low ? `From ${formatAmount(lot.estimate_low)}` : 'Upon request');
         tdEstimate.append(smallEst);
 
-        // Status Select Dropdown
+        // Column 6: Quick Status Change Dropdown
         const tdStatus = document.createElement('td');
         const statusSelect = document.createElement('select');
         statusSelect.className = `admin-action-btn admin-status-select status-${lot.status}`;
@@ -628,7 +747,7 @@
         statusSelect.addEventListener('change', () => handleQuickStatusChange(lot.id, statusSelect.value));
         tdStatus.append(statusSelect);
 
-        // Actions
+        // Column 7: Actions (Edit & Delete buttons)
         const tdActions = document.createElement('td');
         tdActions.className = 'admin-actions-cell';
         const actionsWrap = document.createElement('div');
@@ -654,7 +773,10 @@
       });
     }
 
-    // Modal Control Helpers
+    // -------------------------------------------------------------------------
+    // Modal Management (Add, Edit, Delete Workflows)
+    // -------------------------------------------------------------------------
+
     function setModalFeedback(message, type = '') {
       if (!modalFeedback) return;
       modalFeedback.textContent = message;
@@ -662,11 +784,15 @@
       modalFeedback.hidden = !message;
     }
 
+    /**
+     * Function: openAddModal()
+     * Purpose: Prepares and displays the lot creation modal form with default values.
+     */
     function openAddModal() {
       if (!lotModal || !lotForm) return;
       lotForm.reset();
       fieldLotId.value = '';
-      fieldLotMode.value = 'add';
+      fieldLotMode.value = 'add'; // Identifies operation as INSERT
       if (modalLotTitle) modalLotTitle.textContent = 'Add new auction listing';
       if (fieldLotStatus) fieldLotStatus.value = 'live';
       if (fieldLotPublished) fieldLotPublished.checked = true;
@@ -674,6 +800,10 @@
       lotModal.hidden = false;
     }
 
+    /**
+     * Function: openEditModal(lotId)
+     * Purpose: Pre-populates form fields with existing lot attributes for editing.
+     */
     function openEditModal(lotId) {
       const lot = adminLots.find(item => item.id === lotId);
       if (!lot || !lotModal || !lotForm) return;
@@ -682,7 +812,7 @@
       const primaryImg = images.find(img => img.is_primary) || images[0];
 
       fieldLotId.value = lot.id;
-      fieldLotMode.value = 'edit';
+      fieldLotMode.value = 'edit'; // Identifies operation as UPDATE
       if (modalLotTitle) modalLotTitle.textContent = `Edit auction listing (LOT ${lot.lot_number})`;
 
       if (fieldLotTitle) fieldLotTitle.value = lot.title || '';
@@ -707,7 +837,10 @@
       setModalFeedback('');
     }
 
-    // Add / Edit Form Submission
+    /**
+     * Handler: handleLotFormSubmit(event)
+     * Purpose: Validates form input and executes either an INSERT or UPDATE on auction_lots.
+     */
     async function handleLotFormSubmit(event) {
       event.preventDefault();
 
@@ -727,7 +860,7 @@
       const imageUrl = (fieldLotImage?.value || '').trim();
       const shouldPublish = fieldLotPublished?.checked;
 
-      // Validation
+      // Data integrity validations matching database check constraints
       if (!title) {
         return setModalFeedback('Please enter a product title.', 'error');
       }
@@ -760,7 +893,7 @@
 
       try {
         if (mode === 'add') {
-          // Generate legacy_id for backward compatibility
+          // INSERT Operation
           payload.legacy_id = `lot-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
           payload.created_by = verifiedUserId || null;
 
@@ -775,7 +908,7 @@
             return setModalFeedback(`Failed to save listing: ${insertError.message}`, 'error');
           }
 
-          // Optional Image Insertion
+          // Insert corresponding image record if provided
           if (imageUrl && newLot) {
             await auth.client.from('lot_images').insert({
               lot_id: newLot.id,
@@ -788,7 +921,7 @@
 
           setModalFeedback('✓ Auction listing created successfully.', 'success');
         } else {
-          // Edit Mode
+          // UPDATE Operation
           const { error: updateError } = await auth.client
             .from('auction_lots')
             .update(payload)
@@ -799,7 +932,7 @@
             return setModalFeedback(`Failed to update listing: ${updateError.message}`, 'error');
           }
 
-          // Update image if supplied
+          // Update or insert primary image record
           if (imageUrl) {
             const { data: existingImages } = await auth.client
               .from('lot_images')
@@ -826,6 +959,7 @@
           setModalFeedback('✓ Auction listing updated successfully.', 'success');
         }
 
+        // Close modal and refresh listings
         setTimeout(() => {
           closeLotModal();
           loadAdminLots();
@@ -836,7 +970,10 @@
       }
     }
 
-    // Quick Status Update
+    /**
+     * Function: handleQuickStatusChange(lotId, newStatus)
+     * Purpose: Directly updates lot status from the table dropdown.
+     */
     async function handleQuickStatusChange(lotId, newStatus) {
       try {
         const updatePayload = {
@@ -858,7 +995,6 @@
           return;
         }
 
-        // Update local object and overview
         const target = adminLots.find(item => item.id === lotId);
         if (target) target.status = newStatus;
         renderAdminLotsTable();
@@ -869,7 +1005,10 @@
       }
     }
 
-    // Delete Modal Handling
+    /**
+     * Function: openDeleteModal(lot)
+     * Purpose: Displays the deletion safety confirmation dialog.
+     */
     function openDeleteModal(lot) {
       pendingDeleteLot = lot;
       if (!deleteModal) return;
@@ -889,6 +1028,16 @@
       pendingDeleteLot = null;
     }
 
+    /**
+     * Function: handleConfirmDelete()
+     * Purpose: Attempts SQL DELETE on the selected lot.
+     *
+     * VIVA SPOTLIGHT — Error 23503 Handling:
+     * If bids have already been placed on this lot, PostgreSQL blocks the delete
+     * because of the foreign key constraint: references auction_lots(id) on delete restrict.
+     * The code catches error.code === '23503', explains financial audit compliance,
+     * and offers a graceful "Withdraw Instead" alternative!
+     */
     async function handleConfirmDelete() {
       if (!pendingDeleteLot) return;
 
@@ -909,6 +1058,7 @@
           recordQueryError('auction_lots', 'delete lot', error);
           if (deleteModalFeedback) {
             deleteModalFeedback.className = 'admin-modal-feedback error';
+            // SQLSTATE 23503 = foreign_key_violation
             if (error.code === '23503' || String(error.message).includes('foreign key')) {
               deleteModalFeedback.textContent = 'This lot cannot be deleted because permanent bid records or watchlist references exist in the database. To preserve financial audit integrity, change its status to Withdrawn instead.';
               if (withdrawInsteadBtn) withdrawInsteadBtn.hidden = false;
@@ -920,7 +1070,7 @@
           return;
         }
 
-        // Successfully deleted
+        // Deletion confirmed
         if (deleteModalFeedback) {
           deleteModalFeedback.className = 'admin-modal-feedback success';
           deleteModalFeedback.textContent = '✓ Lot deleted permanently.';
@@ -946,7 +1096,12 @@
       closeDeleteModal();
     }
 
-    // Seed Demo Lots
+    /**
+     * Function: handleSeedDemoLots()
+     * Purpose: Populates an empty database with 8 curated demonstration lots.
+     * Uses SQL UPSERT ({ onConflict: 'legacy_id' }) so running this multiple times
+     * updates existing rows rather than creating duplicate lots.
+     */
     async function handleSeedDemoLots() {
       if (!confirm('This will insert the 8 curated demonstration lots into your Supabase database. Existing lots will be preserved. Proceed?')) {
         return;
@@ -962,7 +1117,7 @@
       let insertedCount = 0;
       for (const item of DEMO_SEED_LOTS) {
         try {
-          const { data: lotData, error: lotError } = await auth.client
+          const { data: lotData } = await auth.client
             .from('auction_lots')
             .upsert({
               legacy_id: item.legacy_id,
@@ -1003,7 +1158,9 @@
       loadOverviewData();
     }
 
-    // Bind Lots Listeners
+    // -------------------------------------------------------------------------
+    // Event Wiring — Lots Controls
+    // -------------------------------------------------------------------------
     function initLotsControls() {
       addLotBtn?.addEventListener('click', openAddModal);
       refreshLotsBtn?.addEventListener('click', loadAdminLots);
@@ -1022,7 +1179,7 @@
       confirmDeleteBtn?.addEventListener('click', handleConfirmDelete);
       withdrawInsteadBtn?.addEventListener('click', handleWithdrawInstead);
 
-      // Close modal on backdrop click
+      // Close modals when clicking the dim dark backdrop
       lotModal?.addEventListener('click', event => {
         if (event.target === lotModal) closeLotModal();
       });
@@ -1032,7 +1189,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // Navigation & Layout
+    // Navigation & Layout (Sidebar, Tabs, Logout)
     // -------------------------------------------------------------------------
 
     function closeMobileSidebar() {
@@ -1041,6 +1198,10 @@
       menuToggle?.setAttribute('aria-expanded', 'false');
     }
 
+    /**
+     * Function: switchSection(sectionKey, sectionLabel)
+     * Purpose: Single-page tab switcher between Overview, Lots, and upcoming placeholders.
+     */
     function switchSection(sectionKey, sectionLabel) {
       if (sectionTitle) sectionTitle.textContent = sectionLabel;
 
@@ -1058,6 +1219,7 @@
       if (isLots) {
         loadAdminLots();
       } else if (!isOverview) {
+        // Explicitly documents unimplemented placeholder tabs
         if (placeholderTitle) placeholderTitle.textContent = `${sectionLabel} is being prepared.`;
         if (placeholderCopy) {
           placeholderCopy.textContent = `${sectionLabel} management has not been implemented yet. This read-only foundation does not provide simulated actions or controls.`;
@@ -1067,6 +1229,10 @@
       closeMobileSidebar();
     }
 
+    /**
+     * Function: handleLogout()
+     * Purpose: Logs out administrator and redirects to auth.html.
+     */
     async function handleLogout() {
       const result = await auth.signOut();
       if (result.error) {
@@ -1077,25 +1243,29 @@
     }
 
     // -------------------------------------------------------------------------
-    // Authority & Session Verification
+    // Authority & Session Gate (Executes on Boot)
     // -------------------------------------------------------------------------
 
+    // Step 1: Pre-flight check on auth configuration
     if (!auth || !auth.configured || !auth.client) {
       showAccessError('Supabase authentication is not configured for this environment.');
       return;
     }
 
     try {
+      // Step 2: Retrieve the active session token
       const sessionResult = await auth.getSession();
       if (sessionResult.error) {
         showAccessError('Your session could not be restored. Please sign in again.');
         return;
       }
       if (!sessionResult.session) {
+        // Not signed in: redirect to login with return intent
         window.location.replace('auth.html?next=admin');
         return;
       }
 
+      // Step 3: Server-side cryptographic check for super_admin role
       const adminResult = await auth.isSuperAdmin();
       if (adminResult.error) {
         showAccessError('The database could not verify administrator authority. No dashboard data was loaded.');
@@ -1106,7 +1276,7 @@
         return;
       }
 
-      // Authority verified
+      // Access Granted! Populate admin user information
       verifiedUserId = sessionResult.session.user.id;
       const userEmail = sessionResult.session.user.email || 'Verified super-admin';
 
@@ -1116,7 +1286,7 @@
       if (accessState) accessState.hidden = true;
       if (dashboard) dashboard.hidden = false;
 
-      // Bind Section Navigation
+      // Bind Section Navigation click handlers
       document.querySelectorAll('[data-admin-section]').forEach(link => {
         link.addEventListener('click', event => {
           event.preventDefault();
@@ -1125,21 +1295,21 @@
         });
       });
 
-      // Bind Mobile Menu Toggle
+      // Mobile Hamburger Toggle
       menuToggle?.addEventListener('click', () => {
         const isOpen = sidebar?.classList.toggle('is-open');
         menuToggle.setAttribute('aria-expanded', String(isOpen));
       });
 
-      // Bind Logout Actions
+      // Bind Logout buttons
       document.querySelectorAll('#admin-top-logout, #admin-sidebar-logout').forEach(button => {
         button.addEventListener('click', handleLogout);
       });
 
-      // Bind Lots CRUD controls
+      // Initialize lots table controls and listeners
       initLotsControls();
 
-      // Restore requested section or default to overview
+      // Restore active tab from URL hash (#lots or default to #overview)
       const initialSectionKey = window.location.hash.slice(1);
       const matchedLink = document.querySelector(`[data-admin-section="${initialSectionKey}"]`);
       switchSection(
@@ -1147,10 +1317,10 @@
         matchedLink ? matchedLink.dataset.sectionLabel : 'Overview'
       );
 
-      // Load initial overview data
+      // Fetch overview metrics and activity streams
       await loadOverviewData();
 
-      // Monitor session invalidation
+      // Reactive listener: If admin logs out from another browser tab, immediately revoke access
       auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_OUT' || !session) {
           window.location.replace('auth.html');
@@ -1164,6 +1334,7 @@
     }
   }
 
+  // Boot on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAdmin);
   } else {

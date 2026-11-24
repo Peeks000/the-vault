@@ -1,6 +1,33 @@
+<!--
+=============================================================================
+THE VAULT — Live Auction Arena (arena.html)
+=============================================================================
+
+PURPOSE OF THIS PAGE:
+---------------------
+Live auction simulation floor providing real-time room atmosphere, active lot floor, and instant simulated bidding.
+
+SCRIPTS CONTROLLING THIS PAGE:
+------------------------------
+cursor-loader.js, supabase-client.js, app.js (renderArena())
+
+KEY DOM HOOKS & ATTRIBUTES:
+---------------------------
+#arena-floor (floor lots), #arena-featured-bid (spotlight price), #arena-bid-amount, #arena-place-bid, #arena-history-list, #arena-activity
+
+VIVA EXAM HIGHLIGHTS:
+---------------------
+Simulated real-time bidding using sessionStorage persistence, countdown clock timers, dynamic room activity ticker.
+-->
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- =========================================================================
+       1. HEAD: Document Metadata, Fonts, Stylesheets, and Non-blocking Scripts
+       =========================================================================
+       VIVA NOTE: 'defer' tells the browser to download scripts in the background
+       and execute them after the HTML document is fully parsed into the DOM.
+  -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#191a18">
@@ -23,6 +50,13 @@
     <span>THE ARENA / SIMULATED SESSION <i>↗</i></span>
   </div>
 
+  
+  <!-- =========================================================================
+       2. SITE HEADER & NAVIGATION
+       =========================================================================
+       Semantic banner container with brand wordmark, mobile navigation drawer
+       toggle, main navigation menu links, and real-time saved watchlist counter.
+  -->
   <header class="site-header">
     <a class="wordmark" href="index.html" aria-label="The Vault home">THE VAULT<span>.</span></a>
     <button class="mobile-menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
@@ -167,6 +201,13 @@
     </section>
   </main>
 
+  
+  <!-- =========================================================================
+       4. SITE FOOTER & LEGAL METADATA
+       =========================================================================
+       Contains secondary navigation, copyright, educational student project
+       disclaimer, and smooth scroll-to-top interaction link.
+  -->
   <footer class="site-footer page-gutter">
     <div class="footer-top">
       <a class="wordmark footer-wordmark" href="index.html">THE VAULT<span>.</span></a>
