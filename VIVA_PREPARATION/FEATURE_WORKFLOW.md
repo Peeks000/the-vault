@@ -44,7 +44,7 @@
                           │
                           ▼
            [ Step 3: Array.map() -> Template Literals ]
-   - Converts each lot object into an HTML string via createLotCardMarkup()
+   - Converts each lot object into an HTML string inside renderList()
                           │
                           ▼
          [ Step 4: DOM Injection & Re-binding ]

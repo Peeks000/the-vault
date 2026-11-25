@@ -104,7 +104,7 @@
 ## 2. JavaScript Application Files
 
 ### 2.1 `app.js` (Master Application Controller)
-- **Lines of Code:** ~1,760 lines.
+- **Lines of Code:** ~988 lines (concisely structured around shared helpers like `attachBidDeskUI`).
 - **Pattern:** Immediately Invoked Function Expression (`IIFE`) with `'use strict'`.
 - **Key Components:**
   1. `AUCTION_LOTS` & `JOURNAL_ARTICLES`: Static arrays acting as the resilient offline data store.
@@ -146,7 +146,7 @@
 ### 2.6 `vault-3d-showcase.js` (Three.js WebGL 3D Showcase)
 - **Role:** Implements the real-time 3D artifact stage at the bottom of the homepage.
 - **Key Concepts:**
-  - `THREE.WebGLRenderer`: Configured with `antialias: true`, `alpha: true`, and `powerPreference: 'high-performance'`.
+  - `THREE.WebGLRenderer`: Configured with `antialias: true`, `alpha: true`, and `preserveDrawingBuffer: true`.
   - `THREE.PerspectiveCamera`: 42° Field of View positioned for a luxury studio look.
   - 3-Point Studio Lighting: Warm key directional light, cool fill light, and ambient fill.
   - `GLTFLoader`: Asynchronously loads `3d_model_the_vault.glb`, computes a bounding box (`Box3`), and centers the model.
@@ -166,7 +166,7 @@
 ## 3. Cascading Style Sheets
 
 ### 3.1 `styles.css` (Master Luxury Editorial Stylesheet)
-- **Size:** ~6,800 lines.
+- **Size:** ~2,414 lines.
 - **Design Tokens (`:root`):**
   - Colors: `--paper` (`#f1efe8` warm ivory), `--ink` (`#191a18` rich charcoal), `--brass` (`#a58a60` muted antique gold).
   - Typography: `--serif` (`'Instrument Serif'`), `--sans` (`'DM Sans'`), `--mono` (`'DM Mono'`).

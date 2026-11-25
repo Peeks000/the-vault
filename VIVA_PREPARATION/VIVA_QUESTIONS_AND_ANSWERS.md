@@ -78,7 +78,7 @@
 
 ### Q17: What are Template Literals and why are they useful?
 **Spoken Answer:**  
-*"Template literals are strings enclosed by backticks (`` ` ``) rather than quotes. They allow multi-line strings and string interpolation using `${expression}` syntax. We use them extensively in `createLotCardMarkup()` to generate clean, dynamic HTML cards without clunky string concatenation."*
+*"Template literals are strings enclosed by backticks (`` ` ``) rather than quotes. They allow multi-line strings and string interpolation using `${expression}` syntax. We use them extensively in `renderList()` to generate clean, dynamic HTML cards without clunky string concatenation."*
 
 ### Q18: How does `Array.filter()` work in your explore page?
 **Spoken Answer:**  

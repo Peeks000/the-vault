@@ -1,33 +1,8 @@
-<!--
-=============================================================================
-THE VAULT — Admin Control Room (admin.html)
-=============================================================================
-
-PURPOSE OF THIS PAGE:
----------------------
-Super-admin dashboard for catalog telemetry metrics, live lot CRUD operations, image management, and demo seeding.
-
-SCRIPTS CONTROLLING THIS PAGE:
-------------------------------
-cursor-loader.js, supabase-config.js, supabase-client.js, admin.js (AdminApp)
-
-KEY DOM HOOKS & ATTRIBUTES:
----------------------------
-#admin-auth-guard (gate screen), #admin-dashboard (secure view), #admin-lots-table-body, #lot-modal, #lot-form, #btn-seed-lots
-
-VIVA EXAM HIGHLIGHTS:
----------------------
-Role-Based Access Control (RBAC), Server-Side RPC check (is_super_admin), SQL foreign key constraint handling, Promise.all telemetry.
--->
+<!-- THE VAULT — Admin Control Room (admin.html) -->
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- =========================================================================
-       1. HEAD: Document Metadata, Fonts, Stylesheets, and Non-blocking Scripts
-       =========================================================================
-       VIVA NOTE: 'defer' tells the browser to download scripts in the background
-       and execute them after the HTML document is fully parsed into the DOM.
-  -->
+  <!-- Document Head: Metadata, Styles & Deferred Scripts -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#191a18">

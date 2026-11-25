@@ -1,33 +1,8 @@
-<!--
-=============================================================================
-THE VAULT — Authentication Portal (auth.html)
-=============================================================================
-
-PURPOSE OF THIS PAGE:
----------------------
-Unified SPA authentication center for Sign In, Sign Up, Password Reset Request, and Password Update.
-
-SCRIPTS CONTROLLING THIS PAGE:
-------------------------------
-cursor-loader.js, supabase-config.js, supabase-client.js, auth.js (AuthApp)
-
-KEY DOM HOOKS & ATTRIBUTES:
----------------------------
-[data-auth-mode] (mode switch tabs), #auth-form, #auth-email, #auth-password, #auth-error, #auth-submit-btn, #google-auth-btn
-
-VIVA EXAM HIGHLIGHTS:
----------------------
-JWT authentication, Supabase Auth SDK, SPA tab switching without page reload, password strength validation, OAuth redirect.
--->
+<!-- THE VAULT — Authentication Portal (auth.html) -->
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- =========================================================================
-       1. HEAD: Document Metadata, Fonts, Stylesheets, and Non-blocking Scripts
-       =========================================================================
-       VIVA NOTE: 'defer' tells the browser to download scripts in the background
-       and execute them after the HTML document is fully parsed into the DOM.
-  -->
+  <!-- Document Head: Metadata, Styles & Deferred Scripts -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f1efe8">
@@ -144,12 +119,7 @@ JWT authentication, Supabase Auth SDK, SPA tab switching without page reload, pa
   </main>
 
   
-  <!-- =========================================================================
-       4. SITE FOOTER & LEGAL METADATA
-       =========================================================================
-       Contains secondary navigation, copyright, educational student project
-       disclaimer, and smooth scroll-to-top interaction link.
-  -->
+  <!-- Site Footer -->
   <footer class="site-footer page-gutter">
     <div class="footer-top">
       <a class="wordmark footer-wordmark" href="index.html">THE VAULT<span>.</span></a>

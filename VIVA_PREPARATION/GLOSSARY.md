@@ -10,7 +10,7 @@
 
 ### 1. IIFE (Immediately Invoked Function Expression)
 - **Definition:** A JavaScript function that runs as soon as it is defined. It creates an isolated scope, preventing variable leakage into the global environment.
-- **Project Reference:** `app.js` (Line 8), `cursor-loader.js` (Line 1).
+- **Project Reference:** `app.js` (Line 2), `cursor-loader.js` (Line 2).
 
 ### 2. Closure
 - **Definition:** A feature in JavaScript where an inner function retains access to its outer enclosing function's variables even after the outer function has finished executing.
@@ -46,7 +46,7 @@
 
 ### 9. Template Literals
 - **Definition:** String literals allowing embedded expressions and multi-line formatting enclosed by backticks (`` ` ``) and `${}` interpolation.
-- **Project Reference:** `createLotCardMarkup()` in `app.js` (Line 715).
+- **Project Reference:** `renderList()` in `app.js` (Line 530).
 
 ### 10. Destructuring Assignment
 - **Definition:** A syntax that unpacks values from arrays or properties from objects into distinct variables in a single expression.
@@ -118,7 +118,7 @@
 
 ### 26. `event.stopPropagation()`
 - **Definition:** Prevents the further propagation (bubbling) of the current event in the capturing and bubbling phases.
-- **Project Reference:** Heart save buttons in `app.js` (Line 427).
+- **Project Reference:** Heart save buttons in `app.js` (Line 355).
 
 ### 27. `localStorage`
 - **Definition:** Web storage API allowing key-value pairs to be saved persistently across browser restarts with no expiration date.
@@ -154,11 +154,11 @@
 
 ### 34. CSS Custom Properties (`:root`)
 - **Definition:** Entities defined by CSS authors that contain specific values to be reused throughout a document using the `var()` functional notation.
-- **Project Reference:** `styles.css` (Line 1: `--paper`, `--ink`, `--brass`).
+- **Project Reference:** `styles.css` (Line 3: `--paper`, `--ink`, `--brass`).
 
 ### 35. `box-sizing: border-box`
 - **Definition:** Tells the browser to account for any border and padding in the values you specify for an element's width and height.
-- **Project Reference:** `styles.css` (Line 16).
+- **Project Reference:** `styles.css` (Line 17).
 
 ### 36. `clamp()`
 - **Definition:** Clamps a value between an upper and lower bound, scaling fluidly across viewport widths.

@@ -1,33 +1,8 @@
-<!--
-=============================================================================
-THE VAULT — The Journal (journal.html)
-=============================================================================
-
-PURPOSE OF THIS PAGE:
----------------------
-Editorial curatorial magazine featuring articles on watches, fine art, motoring heritage, and collecting culture.
-
-SCRIPTS CONTROLLING THIS PAGE:
-------------------------------
-cursor-loader.js, supabase-client.js, app.js (renderJournal())
-
-KEY DOM HOOKS & ATTRIBUTES:
----------------------------
-#journal-story-grid (article grid), [data-journal-filter] (category tabs), #journal-results (counter)
-
-VIVA EXAM HIGHLIGHTS:
----------------------
-Category filtering of editorial arrays, responsive magazine card layouts, dynamic reading-time badges.
--->
+<!-- THE VAULT — The Journal (Editorial Magazine) (journal.html) -->
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- =========================================================================
-       1. HEAD: Document Metadata, Fonts, Stylesheets, and Non-blocking Scripts
-       =========================================================================
-       VIVA NOTE: 'defer' tells the browser to download scripts in the background
-       and execute them after the HTML document is fully parsed into the DOM.
-  -->
+  <!-- Document Head: Metadata, Styles & Deferred Scripts -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f1efe8">
@@ -51,12 +26,7 @@ Category filtering of editorial arrays, responsive magazine card layouts, dynami
   </div>
 
   
-  <!-- =========================================================================
-       2. SITE HEADER & NAVIGATION
-       =========================================================================
-       Semantic banner container with brand wordmark, mobile navigation drawer
-       toggle, main navigation menu links, and real-time saved watchlist counter.
-  -->
+  <!-- Site Header & Navigation -->
   <header class="site-header">
     <a class="wordmark" href="index.html" aria-label="The Vault home">THE VAULT<span>.</span></a>
     <button class="mobile-menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
@@ -148,12 +118,7 @@ Category filtering of editorial arrays, responsive magazine card layouts, dynami
   </main>
 
   
-  <!-- =========================================================================
-       4. SITE FOOTER & LEGAL METADATA
-       =========================================================================
-       Contains secondary navigation, copyright, educational student project
-       disclaimer, and smooth scroll-to-top interaction link.
-  -->
+  <!-- Site Footer -->
   <footer class="site-footer page-gutter">
     <div class="footer-top">
       <a class="wordmark footer-wordmark" href="index.html">THE VAULT<span>.</span></a>

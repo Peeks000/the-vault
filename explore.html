@@ -1,33 +1,8 @@
-<!--
-=============================================================================
-THE VAULT — Explore Auctions (explore.html)
-=============================================================================
-
-PURPOSE OF THIS PAGE:
----------------------
-Dynamic auction catalog search, multi-facet category filtering, sorting, and watchlist inspection.
-
-SCRIPTS CONTROLLING THIS PAGE:
-------------------------------
-cursor-loader.js, supabase-client.js, app.js (renderExplore())
-
-KEY DOM HOOKS & ATTRIBUTES:
----------------------------
-#auction-grid (card container), [data-filter] (category buttons), #lot-search (real-time input), #lot-sort (dropdown), #saved-filter (watchlist toggle)
-
-VIVA EXAM HIGHLIGHTS:
----------------------
-Array filtering and sorting in JavaScript, URLSearchParams parameter parsing, dynamic HTML template literals.
--->
+<!-- THE VAULT — Explore Auctions Catalog (explore.html) -->
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- =========================================================================
-       1. HEAD: Document Metadata, Fonts, Stylesheets, and Non-blocking Scripts
-       =========================================================================
-       VIVA NOTE: 'defer' tells the browser to download scripts in the background
-       and execute them after the HTML document is fully parsed into the DOM.
-  -->
+  <!-- Document Head: Metadata, Styles & Deferred Scripts -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f1efe8">
@@ -51,12 +26,7 @@ Array filtering and sorting in JavaScript, URLSearchParams parameter parsing, dy
   </div>
 
   
-  <!-- =========================================================================
-       2. SITE HEADER & NAVIGATION
-       =========================================================================
-       Semantic banner container with brand wordmark, mobile navigation drawer
-       toggle, main navigation menu links, and real-time saved watchlist counter.
-  -->
+  <!-- Site Header & Navigation -->
   <header class="site-header">
     <a class="wordmark" href="index.html" aria-label="The Vault home">THE VAULT<span>.</span></a>
     <button class="mobile-menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
@@ -143,12 +113,7 @@ Array filtering and sorting in JavaScript, URLSearchParams parameter parsing, dy
   </main>
 
   
-  <!-- =========================================================================
-       4. SITE FOOTER & LEGAL METADATA
-       =========================================================================
-       Contains secondary navigation, copyright, educational student project
-       disclaimer, and smooth scroll-to-top interaction link.
-  -->
+  <!-- Site Footer -->
   <footer class="site-footer page-gutter">
     <div class="footer-top">
       <a class="wordmark footer-wordmark" href="index.html">THE VAULT<span>.</span></a>

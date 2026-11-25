@@ -126,7 +126,7 @@ When the examiner says: *"Show me the code for X."*
 | **"Show me the bidding logic"** | `app.js` | Scroll to Section 4: `createBidDesk()` & `getValidationError()` |
 | **"Show me how you fetch lots"** | `app.js` | Scroll to Section 5: `CatalogueService.getLots()` & fallback |
 | **"Show me the 3D WebGL setup"** | `vault-3d-showcase.js`| Highlight `THREE.WebGLRenderer`, `GLTFLoader`, and `animate()` |
-| **"Show me the liquid trail canvas"** | `cursor-loader.js` | Highlight `ctx.quadraticCurveTo()` in `drawFilamentTrail()` |
+| **"Show me the liquid trail canvas"** | `cursor-loader.js` | Highlight `ctx.quadraticCurveTo()` in `renderTrail()` |
 | **"Show me the database schema"** | `supabase/migrations/20261114000000_initial_schema.sql` | Highlight ENUMs, `ON DELETE CASCADE`, and RLS policies |
 | **"Show me how admin security works"** | `supabase-client.js` & `admin.js` | Highlight `client.rpc('is_super_admin')` |
 

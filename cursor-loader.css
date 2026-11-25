@@ -1,620 +1,135 @@
-/**
- * =============================================================================
- * THE VAULT — Signature Liquid Cursor, Ambient Firefly Colony & Cinematic Loader
- * =============================================================================
- * 
- * WHAT THIS FILE DOES:
- * --------------------
- * This stylesheet provides the complete visual architecture for THE VAULT's award-winning
- * interactive sensory layer:
- *   1. Custom Dual-Layer Precision Cursor (Luminous center dot + physical inertia follower ring)
- *   2. Canvas Layer Stacking & GPU Acceleration (Firefly canvas, Liquid Trail canvas)
- *   3. Active Theory Inspired Editorial Preloader Overlay (Branded framing, pulsing typography)
- *   4. Interactive Floating Sound Jar Pill (Active Theory scroll-reactive mechanics, dancing embers)
- *   5. Responsive Mobile Fallbacks & Accessibility Overrides
- * 
- * VIVA TECHNICAL HIGHLIGHTS:
- * --------------------------
- * - Stacking Context (Z-Index Hierarchy): Carefully structured so canvases never block user clicks.
- * - Hardware Acceleration: Using `translate3d()` and `will-change: transform` to force GPU compositing.
- * - Event Pass-Through: `pointer-events: none` ensures clicks hit underlying HTML links/buttons.
- * - Deceleration Curves: `cubic-bezier(0.16, 1, 0.3, 1)` creates a high-end luxury mechanical feel.
- * - Media Capabilities: `@media (hover: none)` automatically restores native touchscreen behavior.
- */
+/* THE VAULT — Signature Liquid Cursor, Firefly Canvas, Preloader & Sound Jar */
 
-/* ==========================================================================
-   1. Custom Cursor Precision Styles & Canvas Stacking
-   ========================================================================== */
+/* 1. Custom Cursor & Canvases */
+body.vault-cursor-active, body.vault-cursor-active a, body.vault-cursor-active button,
+body.vault-cursor-active [role="button"], body.vault-cursor-active .lot-card,
+body.vault-cursor-active .editorial-lot, body.vault-cursor-active .home-live-card,
+body.vault-cursor-active .filter-chip, body.vault-cursor-active .thumb,
+body.vault-cursor-active .admin-action-btn { cursor: none !important; }
 
-/**
- * HIDE NATIVE SYSTEM CURSOR:
- * --------------------------
- * When JavaScript detects a non-touch mouse device, it adds `.vault-cursor-active`
- * to the `<body>` element. We hide the default OS pointer (`cursor: none !important`)
- * on interactive elements so our custom gold dot and ring take over smoothly.
- */
-body.vault-cursor-active,
-body.vault-cursor-active a,
-body.vault-cursor-active button,
-body.vault-cursor-active [role="button"],
-body.vault-cursor-active .lot-card,
-body.vault-cursor-active .editorial-lot,
-body.vault-cursor-active .home-live-card,
-body.vault-cursor-active .filter-chip,
-body.vault-cursor-active .thumb,
-body.vault-cursor-active .admin-action-btn {
-  cursor: none !important;
+body.vault-cursor-active input, body.vault-cursor-active textarea,
+body.vault-cursor-active select, body.vault-cursor-active [contenteditable="true"] { cursor: auto !important; }
+
+.vault-firefly-canvas, .vault-trail-canvas {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  pointer-events: none !important; display: block !important; will-change: transform;
 }
+.vault-firefly-canvas { z-index: 99990; }
+.vault-trail-canvas { z-index: 99998; }
 
-/**
- * ACCESSIBILITY & FORM USABILITY EXCEPTION:
- * -----------------------------------------
- * When the user focuses on form inputs, search bars, textareas, or dropdowns,
- * we explicitly restore the native I-beam text selection cursor (`cursor: auto !important`).
- * This ensures visitors can easily position their text caret without confusion.
- */
-body.vault-cursor-active input,
-body.vault-cursor-active textarea,
-body.vault-cursor-active select,
-body.vault-cursor-active [contenteditable="true"] {
-  cursor: auto !important;
-}
-
-/**
- * AMBIENT FIREFLY CANVAS (z-index: 99990):
- * ----------------------------------------
- * - position: fixed: Pins the canvas across the entire viewport.
- * - pointer-events: none: CRITICAL! Allows clicks, scrolling, and drags to pass directly
- *   through the canvas to underlying website links and buttons without interference.
- * - z-index: 99990: Sits above standard page content, but behind the liquid trail and cursor.
- * - will-change: transform: Informs the browser GPU to optimize composite layers.
- */
-.vault-firefly-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none !important;
-  z-index: 99990;
-  display: block !important;
-  will-change: transform;
-}
-
-/**
- * FLUID LIQUID MOUSE TRAIL CANVAS (z-index: 99998):
- * -------------------------------------------------
- * Renders the quadratic Bézier curve fluid filaments connecting recent mouse positions.
- * Sits directly below the custom cursor dot.
- */
-.vault-trail-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none !important;
-  z-index: 99998;
-  display: block !important;
-  will-change: transform;
-}
-
-/**
- * PRECISION CENTER DOT (z-index: 100001):
- * ---------------------------------------
- * The tiny champagne-gold dot (6px × 6px) that follows the mouse with ZERO lag.
- * - translate3d(-50%, -50%, 0): Centers the dot exactly over the mouse coordinates.
- * - box-shadow: Creates the soft luminous bioluminescent halo.
- */
 .vault-cursor-dot {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #d4bc91;
-  pointer-events: none;
-  z-index: 100001;
-  transform: translate3d(-50%, -50%, 0);
+  position: fixed; top: 0; left: 0; width: 6px; height: 6px; border-radius: 50%;
+  background: #d4bc91; pointer-events: none; z-index: 100001;
+  transform: translate3d(-50%, -50%, 0); will-change: transform;
   box-shadow: 0 0 10px rgba(212, 188, 145, 0.85), 0 0 2px rgba(247, 243, 234, 0.95);
   transition: opacity 0.2s ease, background-color 0.2s ease;
-  will-change: transform;
 }
 
-/**
- * REFINED FOLLOWER RING WITH PHYSICAL INERTIA (z-index: 100000):
- * --------------------------------------------------------------
- * The outer floating ring (32px × 32px) that trails behind the mouse using Linear
- * Interpolation (LERP) calculated in JavaScript.
- * - cubic-bezier(0.16, 1, 0.3, 1): Custom deceleration curve for springy expansion.
- */
 .vault-cursor-ring {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(212, 188, 145, 0.55);
-  background: rgba(212, 188, 145, 0.03);
-  pointer-events: none;
-  z-index: 100000;
-  transform: translate3d(-50%, -50%, 0);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 16px rgba(212, 188, 145, 0.18);
-  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.2s ease,
-              background 0.2s ease,
-              opacity 0.2s ease,
-              box-shadow 0.2s ease;
-  will-change: transform, width, height;
+  position: fixed; top: 0; left: 0; width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid rgba(212, 188, 145, 0.55); background: rgba(212, 188, 145, 0.03);
+  pointer-events: none; z-index: 100000; transform: translate3d(-50%, -50%, 0);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 16px rgba(212, 188, 145, 0.18); will-change: transform, width, height;
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease, background 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* --------------------------------------------------------------------------
-   Interactive Cursor Morphing States
-   -------------------------------------------------------------------------- */
+.vault-cursor-ring.is-hovering { width: 48px; height: 48px; border-color: rgba(212, 188, 145, 0.9); background: rgba(212, 188, 145, 0.08); box-shadow: 0 0 24px rgba(212, 188, 145, 0.25); }
+.vault-cursor-ring.is-button { width: 44px; height: 44px; border-color: #d4bc91; background: rgba(212, 188, 145, 0.22); box-shadow: 0 0 20px rgba(212, 188, 145, 0.35); }
+.vault-cursor-ring.is-card { width: 60px; height: 60px; border-color: #d4bc91; background: rgba(212, 188, 145, 0.95); box-shadow: 0 10px 32px rgba(0, 0, 0, 0.28); }
 
-/* Hovering regular links: Ring gently expands to 48px */
-.vault-cursor-ring.is-hovering {
-  width: 48px;
-  height: 48px;
-  border-color: rgba(212, 188, 145, 0.9);
-  background: rgba(212, 188, 145, 0.08);
-  box-shadow: 0 0 24px rgba(212, 188, 145, 0.25);
-}
-
-/* Hovering buttons: Ring tightens and fills with a gold tint */
-.vault-cursor-ring.is-button {
-  width: 44px;
-  height: 44px;
-  border-color: #d4bc91;
-  background: rgba(212, 188, 145, 0.22);
-  box-shadow: 0 0 20px rgba(212, 188, 145, 0.35);
-}
-
-/* Hovering auction lot cards: Ring morphs into a solid gold badge (60px) displaying "VIEW" */
-.vault-cursor-ring.is-card {
-  width: 60px;
-  height: 60px;
-  border-color: #d4bc91;
-  background: rgba(212, 188, 145, 0.95);
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.28);
-}
-
-/* The "VIEW" label inside the card cursor */
 .vault-cursor-label {
-  font: 8px/1 'DM Mono', monospace;
-  letter-spacing: 0.14em;
-  color: #191a18;
-  font-weight: 600;
-  text-transform: uppercase;
-  opacity: 0;
-  transform: scale(0.6);
+  font: 8px/1 'DM Mono', monospace; letter-spacing: 0.14em; color: #191a18; font-weight: 600;
+  text-transform: uppercase; opacity: 0; transform: scale(0.6); pointer-events: none; user-select: none;
   transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: none;
-  user-select: none;
 }
+.vault-cursor-ring.is-card .vault-cursor-label { opacity: 1; transform: scale(1); }
+.vault-cursor-dot.is-card { opacity: 0; }
+.vault-cursor-dot.is-hidden, .vault-cursor-ring.is-hidden { opacity: 0 !important; transform: translate3d(-50%, -50%, 0) scale(0.2) !important; }
 
-.vault-cursor-ring.is-card .vault-cursor-label {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* Hide center dot when ring is in card badge mode */
-.vault-cursor-dot.is-card {
-  opacity: 0;
-}
-
-/* Hidden state when cursor exits the browser window */
-.vault-cursor-dot.is-hidden,
-.vault-cursor-ring.is-hidden {
-  opacity: 0 !important;
-  transform: translate3d(-50%, -50%, 0) scale(0.2) !important;
-}
-
-/* ==========================================================================
-   2. Active Theory Inspired Cinematic Loading Overlay
-   ========================================================================== */
-
-/**
- * FULLSCREEN PRELOADER CONTAINER (z-index: 9999999):
- * --------------------------------------------------
- * Sits at the highest possible layer in the DOM, concealing the page while fonts,
- * images, and 3D models load into browser memory.
- * - inset: 0: Modern shorthand for top: 0; right: 0; bottom: 0; left: 0;
- * - transition: Provides the smooth fade-out and slide-up dismissal.
- */
+/* 2. Cinematic Preloader */
 .vault-loader {
-  position: fixed;
-  inset: 0;
-  background: #141513;
-  z-index: 9999999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  pointer-events: auto;
-  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
-              visibility 0.75s;
-  user-select: none;
+  position: fixed; inset: 0; background: #141513; z-index: 9999999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  pointer-events: auto; user-select: none;
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.75s;
 }
+.vault-loader.is-hidden { opacity: 0; transform: translateY(-26px); pointer-events: none; visibility: hidden; }
+.vault-loader-frame { position: absolute; inset: clamp(20px, 3.5vw, 48px); pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; }
+.vault-loader-frame-row { display: flex; justify-content: space-between; font: 8px/1 'DM Mono', monospace; color: #77766f; letter-spacing: 0.18em; text-transform: uppercase; }
+.vault-loader-center { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px; }
+.vault-loader-brand { font: normal clamp(38px, 6vw, 68px)/0.9 'Instrument Serif', Georgia, serif; letter-spacing: -0.04em; color: #f1efe8; margin: 0; }
+.vault-loader-brand span { color: #b89b6c; }
+.vault-loader-divider { width: 44px; height: 1px; background: rgba(184, 155, 108, 0.4); margin: 4px 0; }
+.vault-loader-status { display: flex; align-items: center; font: 9px/1 'DM Mono', monospace; letter-spacing: 0.22em; color: #aaa69c; text-transform: uppercase; }
+.vault-loader-caret { display: inline-block; width: 1px; height: 11px; background: #b89b6c; margin-left: 6px; animation: vaultCaretBlink 0.9s infinite steps(1); }
+@keyframes vaultCaretBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 
-/* Dismissed state triggered by JavaScript when loading finishes */
-.vault-loader.is-hidden {
-  opacity: 0;
-  transform: translateY(-26px);
-  pointer-events: none;
-  visibility: hidden;
-}
-
-/* Architectural Framing Elements (Corner coordinates & date) */
-.vault-loader-frame {
-  position: absolute;
-  inset: clamp(20px, 3.5vw, 48px);
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.vault-loader-frame-row {
-  display: flex;
-  justify-content: space-between;
-  font: 8px/1 'DM Mono', monospace;
-  color: #77766f;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-/* Central Cinematic Typography & Pulse */
-.vault-loader-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 18px;
-}
-
-.vault-loader-brand {
-  font: normal clamp(38px, 6vw, 68px)/0.9 'Instrument Serif', Georgia, serif;
-  letter-spacing: -0.04em;
-  color: #f1efe8;
-  margin: 0;
-}
-
-.vault-loader-brand span {
-  color: #b89b6c;
-}
-
-.vault-loader-divider {
-  width: 44px;
-  height: 1px;
-  background: rgba(184, 155, 108, 0.4);
-  margin: 4px 0;
-}
-
-.vault-loader-status {
-  display: flex;
-  align-items: center;
-  font: 9px/1 'DM Mono', monospace;
-  letter-spacing: 0.22em;
-  color: #aaa69c;
-  text-transform: uppercase;
-}
-
-.vault-loader-caret {
-  display: inline-block;
-  width: 1px;
-  height: 11px;
-  background: #b89b6c;
-  margin-left: 6px;
-  animation: vaultCaretBlink 0.9s infinite steps(1);
-}
-
-@keyframes vaultCaretBlink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
-}
-
-/* Three Sequential Pulsing Dots */
-.vault-loader-dots {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin-top: 4px;
-}
-
-.vault-loader-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #363632;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
-  animation: vaultDotPulse 1.4s infinite ease-in-out;
-}
-
-.vault-loader-dot:nth-child(1) {
-  animation-delay: 0s;
-}
-.vault-loader-dot:nth-child(2) {
-  animation-delay: 0.22s;
-}
-.vault-loader-dot:nth-child(3) {
-  animation-delay: 0.44s;
-}
-
+.vault-loader-dots { display: flex; align-items: center; gap: 9px; margin-top: 4px; }
+.vault-loader-dot { width: 4px; height: 4px; border-radius: 50%; background: #363632; transition: background 0.2s ease, box-shadow 0.2s ease; animation: vaultDotPulse 1.4s infinite ease-in-out; }
+.vault-loader-dot:nth-child(1) { animation-delay: 0s; }
+.vault-loader-dot:nth-child(2) { animation-delay: 0.22s; }
+.vault-loader-dot:nth-child(3) { animation-delay: 0.44s; }
 @keyframes vaultDotPulse {
-  0%, 100% {
-    background: #363632;
-    transform: scale(0.9);
-    box-shadow: none;
-  }
-  35% {
-    background: #d4bc91;
-    transform: scale(1.3);
-    box-shadow: 0 0 10px rgba(212, 188, 145, 0.85);
-  }
-  70% {
-    background: #363632;
-    transform: scale(0.9);
-    box-shadow: none;
-  }
+  0%, 70%, 100% { background: #363632; transform: scale(0.9); box-shadow: none; }
+  35% { background: #d4bc91; transform: scale(1.3); box-shadow: 0 0 10px rgba(212, 188, 145, 0.85); }
 }
 
-/* ==========================================================================
-   3. Interactive Firefly Sound Jar (Top-Right Active Theory Floating Pill)
-   ========================================================================== */
-
-/**
- * FLOATING JAR CONTROLLER (z-index: 10000):
- * -----------------------------------------
- * Positioned in the upper-right corner of the website.
- * - backdrop-filter: blur(16px): Glassmorphism background blur effect.
- * - border-radius: 999px: Full capsule pill geometry.
- */
+/* 3. Interactive Firefly Sound Jar */
 .vault-sound-jar {
-  position: fixed;
-  top: 130px;
-  right: clamp(20px, 2.8vw, 36px);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 14px 6px 8px;
-  border-radius: 999px;
-  background: rgba(20, 22, 18, 0.92);
-  border: 1px solid rgba(212, 188, 145, 0.42);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  position: fixed; top: 130px; right: clamp(20px, 2.8vw, 36px); z-index: 10000;
+  display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 8px; border-radius: 999px;
+  background: rgba(20, 22, 18, 0.92); border: 1px solid rgba(212, 188, 145, 0.42);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.32), 0 0 16px rgba(212, 188, 145, 0.1);
-  cursor: pointer;
-  user-select: none;
-  outline: none;
-  transform: translateY(0);
-  opacity: 1;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.25s ease,
-              box-shadow 0.25s ease,
-              background 0.25s ease;
+  cursor: pointer; user-select: none; outline: none; transform: translateY(0); opacity: 1;
   will-change: transform, opacity;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
 }
+.vault-sound-jar:hover { border-color: rgba(212, 188, 145, 0.85); box-shadow: 0 12px 38px rgba(0, 0, 0, 0.42), 0 0 24px rgba(212, 188, 145, 0.32); transform: translateY(-2px); }
+.vault-sound-jar.is-scrolled-hidden { transform: translateY(-100px) !important; opacity: 0 !important; pointer-events: none !important; }
 
-.vault-sound-jar:hover {
-  border-color: rgba(212, 188, 145, 0.85);
-  box-shadow: 0 12px 38px rgba(0, 0, 0, 0.42), 0 0 24px rgba(212, 188, 145, 0.32);
-  transform: translateY(-2px);
-}
-
-/**
- * ACTIVE THEORY SCROLL REACTION:
- * ------------------------------
- * Inspired by Active Theory's portfolio navigation:
- * - Scrolling DOWN hides the button smoothly upward (-100px).
- * - Scrolling UP brings it gliding back down into view.
- */
-.vault-sound-jar.is-scrolled-hidden {
-  transform: translateY(-100px) !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-/* Pure CSS Miniature Glass Bottle */
-.vault-jar-bottle {
-  width: 22px;
-  height: 32px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.vault-jar-cork {
-  width: 9px;
-  height: 4px;
-  background: #b89b6c;
-  border-radius: 2px 2px 0 0;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3);
-}
-
-.vault-jar-neck {
-  width: 13px;
-  height: 3px;
-  background: rgba(212, 188, 145, 0.5);
-  border: 1px solid rgba(212, 188, 145, 0.75);
-  border-radius: 1px;
-}
-
+.vault-jar-bottle { width: 22px; height: 32px; position: relative; display: flex; flex-direction: column; align-items: center; }
+.vault-jar-cork { width: 9px; height: 4px; background: #b89b6c; border-radius: 2px 2px 0 0; box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3); }
+.vault-jar-neck { width: 13px; height: 3px; background: rgba(212, 188, 145, 0.5); border: 1px solid rgba(212, 188, 145, 0.75); border-radius: 1px; }
 .vault-jar-glass {
-  width: 20px;
-  height: 25px;
-  border-radius: 3px 3px 6px 6px;
+  width: 20px; height: 25px; border-radius: 3px 3px 6px 6px; position: relative; overflow: hidden;
   background: radial-gradient(circle at 50% 65%, rgba(224, 196, 140, 0.18), rgba(22, 23, 20, 0.65));
-  border: 1px solid rgba(212, 188, 145, 0.55);
-  box-shadow: inset 0 0 8px rgba(212, 188, 145, 0.2), 0 0 10px rgba(212, 188, 145, 0.12);
-  position: relative;
-  overflow: hidden;
+  border: 1px solid rgba(212, 188, 145, 0.55); box-shadow: inset 0 0 8px rgba(212, 188, 145, 0.2), 0 0 10px rgba(212, 188, 145, 0.12);
   transition: box-shadow 0.35s ease, border-color 0.35s ease, background 0.35s ease;
 }
-
 .vault-sound-jar.is-playing .vault-jar-glass {
   border-color: rgba(212, 188, 145, 0.95);
   background: radial-gradient(circle at 50% 65%, rgba(245, 218, 156, 0.45), rgba(22, 23, 20, 0.65));
   box-shadow: inset 0 0 10px rgba(245, 218, 156, 0.65), 0 0 18px rgba(224, 196, 140, 0.55);
 }
+.vault-jar-reflection { position: absolute; left: 2px; top: 2px; bottom: 2px; width: 2px; background: linear-gradient(to bottom, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.05)); border-radius: 2px; pointer-events: none; }
 
-/* Glass Surface Reflection Sheen */
-.vault-jar-reflection {
-  position: absolute;
-  left: 2px;
-  top: 2px;
-  bottom: 2px;
-  width: 2px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.05));
-  border-radius: 2px;
-  pointer-events: none;
-}
+.vault-jar-ember { position: absolute; border-radius: 50%; background: #fffdf5; box-shadow: 0 0 6px rgba(245, 218, 156, 0.95); pointer-events: none; transition: opacity 0.35s ease; }
+.vault-jar-ember-1 { width: 3.5px; height: 3.5px; left: 7px; top: 11px; animation: vaultEmberDrift1 3.2s infinite ease-in-out; }
+.vault-jar-ember-2 { width: 2.5px; height: 2.5px; left: 13px; top: 15px; animation: vaultEmberDrift2 2.7s infinite ease-in-out 0.4s; }
+.vault-jar-ember-3 { width: 2px; height: 2px; left: 5px; top: 17px; animation: vaultEmberDrift3 3.6s infinite ease-in-out 0.8s; }
+.vault-sound-jar:not(.is-playing) .vault-jar-ember { opacity: 0.38; }
+@keyframes vaultEmberDrift1 { 0%, 100% { transform: translate(0, 0) scale(0.9); } 50% { transform: translate(3px, -4px) scale(1.15); } }
+@keyframes vaultEmberDrift2 { 0%, 100% { transform: translate(0, 0) scale(1.1); } 50% { transform: translate(-3px, -3px) scale(0.85); } }
+@keyframes vaultEmberDrift3 { 0%, 100% { transform: translate(0, 0) scale(0.8); } 50% { transform: translate(4px, -2px) scale(1.2); } }
 
-/* Bioluminescent Dancing Embers Inside Jar */
-.vault-jar-ember {
-  position: absolute;
-  border-radius: 50%;
-  background: #fffdf5;
-  box-shadow: 0 0 6px rgba(245, 218, 156, 0.95);
-  pointer-events: none;
-  transition: opacity 0.35s ease;
-}
+.vault-sound-info { display: flex; align-items: center; gap: 8px; }
+.vault-sound-bars { display: flex; align-items: center; gap: 2.5px; height: 12px; }
+.vault-sound-bar { width: 2px; height: 3px; border-radius: 1px; background: #d4bc91; transition: height 0.25s ease, background-color 0.25s ease; }
+.vault-sound-jar.is-playing .vault-sound-bar:nth-child(1) { animation: vaultSoundWave 0.85s infinite ease-in-out; }
+.vault-sound-jar.is-playing .vault-sound-bar:nth-child(2) { animation: vaultSoundWave 0.65s infinite ease-in-out 0.2s; }
+.vault-sound-jar.is-playing .vault-sound-bar:nth-child(3) { animation: vaultSoundWave 0.95s infinite ease-in-out 0.35s; }
+.vault-sound-jar.is-playing .vault-sound-bar:nth-child(4) { animation: vaultSoundWave 0.75s infinite ease-in-out 0.1s; }
+@keyframes vaultSoundWave { 0%, 100% { height: 3px; } 50% { height: 12px; } }
+.vault-sound-label { font: 8px/1 'DM Mono', monospace; letter-spacing: 0.16em; color: #d4bc91; font-weight: 500; text-transform: uppercase; }
 
-.vault-jar-ember-1 {
-  width: 3.5px;
-  height: 3.5px;
-  left: 7px;
-  top: 11px;
-  animation: vaultEmberDrift1 3.2s infinite ease-in-out;
-}
-
-.vault-jar-ember-2 {
-  width: 2.5px;
-  height: 2.5px;
-  left: 13px;
-  top: 15px;
-  animation: vaultEmberDrift2 2.7s infinite ease-in-out 0.4s;
-}
-
-.vault-jar-ember-3 {
-  width: 2px;
-  height: 2px;
-  left: 5px;
-  top: 17px;
-  animation: vaultEmberDrift3 3.6s infinite ease-in-out 0.8s;
-}
-
-.vault-sound-jar:not(.is-playing) .vault-jar-ember {
-  opacity: 0.38;
-}
-
-@keyframes vaultEmberDrift1 {
-  0%, 100% { transform: translate(0, 0) scale(0.9); }
-  50% { transform: translate(3px, -4px) scale(1.15); }
-}
-
-@keyframes vaultEmberDrift2 {
-  0%, 100% { transform: translate(0, 0) scale(1.1); }
-  50% { transform: translate(-3px, -3px) scale(0.85); }
-}
-
-@keyframes vaultEmberDrift3 {
-  0%, 100% { transform: translate(0, 0) scale(0.8); }
-  50% { transform: translate(4px, -2px) scale(1.2); }
-}
-
-/* Sound Info & Animated Audio Equalizer Bars */
-.vault-sound-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.vault-sound-bars {
-  display: flex;
-  align-items: center;
-  gap: 2.5px;
-  height: 12px;
-}
-
-.vault-sound-bar {
-  width: 2px;
-  height: 3px;
-  border-radius: 1px;
-  background: #d4bc91;
-  transition: height 0.25s ease, background-color 0.25s ease;
-}
-
-.vault-sound-jar.is-playing .vault-sound-bar:nth-child(1) {
-  animation: vaultSoundWave 0.85s infinite ease-in-out;
-}
-.vault-sound-jar.is-playing .vault-sound-bar:nth-child(2) {
-  animation: vaultSoundWave 0.65s infinite ease-in-out 0.2s;
-}
-.vault-sound-jar.is-playing .vault-sound-bar:nth-child(3) {
-  animation: vaultSoundWave 0.95s infinite ease-in-out 0.35s;
-}
-.vault-sound-jar.is-playing .vault-sound-bar:nth-child(4) {
-  animation: vaultSoundWave 0.75s infinite ease-in-out 0.1s;
-}
-
-@keyframes vaultSoundWave {
-  0%, 100% { height: 3px; }
-  50% { height: 12px; }
-}
-
-.vault-sound-label {
-  font: 8px/1 'DM Mono', monospace;
-  letter-spacing: 0.16em;
-  color: #d4bc91;
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-/* ==========================================================================
-   4. Small Screen & Responsive Media Queries
-   ========================================================================== */
-
-@media (max-width: 900px) {
-  .vault-sound-jar {
-    top: 122px;
-    right: 20px;
-  }
-}
-
-@media (max-width: 680px) {
-  .vault-sound-jar {
-    top: 108px;
-    right: 14px;
-    padding: 5px 11px 5px 6px;
-    gap: 8px;
-  }
-}
-
-/**
- * MOBILE TOUCH DETECTION:
- * -----------------------
- * On touchscreens (where mouse pointers do not exist), we completely hide
- * the custom cursor elements and restore native touch taps.
- */
+/* 4. Responsive Overrides */
+@media (max-width: 900px) { .vault-sound-jar { top: 122px; right: 20px; } }
+@media (max-width: 680px) { .vault-sound-jar { top: 108px; right: 14px; padding: 5px 11px 5px 6px; gap: 8px; } }
 @media (max-width: 600px) and (hover: none) {
-  .vault-cursor-dot,
-  .vault-cursor-ring {
-    display: none !important;
-  }
-
-  body.vault-cursor-active,
-  body.vault-cursor-active * {
-    cursor: auto !important;
-  }
+  .vault-cursor-dot, .vault-cursor-ring { display: none !important; }
+  body.vault-cursor-active, body.vault-cursor-active * { cursor: auto !important; }
 }
