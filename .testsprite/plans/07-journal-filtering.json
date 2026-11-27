@@ -5,7 +5,7 @@
   "planSteps": [
     {
       "type": "action",
-      "description": "Navigate to /journal.html and wait for stories to load"
+      "description": "Navigate to /index.html?page=journal and wait for stories to load"
     },
     {
       "type": "assertion",

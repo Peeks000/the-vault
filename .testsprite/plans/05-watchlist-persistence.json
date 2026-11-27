@@ -5,7 +5,7 @@
   "planSteps": [
     {
       "type": "action",
-      "description": "Navigate to /explore.html and wait for lots to render"
+      "description": "Navigate to /index.html?page=explore and wait for lots to render"
     },
     {
       "type": "action",

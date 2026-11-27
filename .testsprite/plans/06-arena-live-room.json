@@ -5,7 +5,7 @@
   "planSteps": [
     {
       "type": "action",
-      "description": "Navigate to /arena.html and wait for the arena floor to load"
+      "description": "Navigate to /index.html?page=arena and wait for the arena floor to load"
     },
     {
       "type": "assertion",

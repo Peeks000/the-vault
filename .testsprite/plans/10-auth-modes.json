@@ -5,7 +5,7 @@
   "planSteps": [
     {
       "type": "action",
-      "description": "Navigate to /auth.html and wait for the authentication panel to load"
+      "description": "Navigate to /index.html?page=auth and wait for the authentication panel to load"
     },
     {
       "type": "assertion",

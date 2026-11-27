@@ -5,7 +5,7 @@
   "planSteps": [
     {
       "type": "action",
-      "description": "Navigate to /explore.html and wait for the auction grid to render"
+      "description": "Navigate to /index.html?page=explore and wait for the auction grid to render"
     },
     {
       "type": "action",

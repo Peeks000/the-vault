@@ -5,7 +5,7 @@
   "planSteps": [
     {
       "type": "action",
-      "description": "Navigate to /lot.html?lot=watch and wait for the bid panel to render"
+      "description": "Navigate to /index.html?page=lot&lot=watch and wait for the bid panel to render"
     },
     {
       "type": "assertion",

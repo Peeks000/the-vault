@@ -5,7 +5,7 @@
   "planSteps": [
     {
       "type": "action",
-      "description": "Navigate to /contact.html and wait for the correspondence form to load"
+      "description": "Navigate to /index.html?page=contact and wait for the correspondence form to load"
     },
     {
       "type": "action",
