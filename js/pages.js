@@ -1,390 +1,608 @@
-// THE VAULT — Page Views (VIEWS), Interactive Controllers & SPA Bootstrapper (All 10 Screens in 1 HTML File)
+// THE VAULT — Page Controllers & SPA View Switcher
+// Attaches interactive behavior to each <section id="view-..."> already present in index.html.
 (function () {
   'use strict';
 
-  // Pull shared utilities and data store attached to window by core.js and data.js.
-  const { q, qa, setText, el, Formatters, money, Watchlist, attachBidDeskUI, CatalogueService, mountShell, navigate, setPageInterval, clearTimers, LEGACY_MAP } = window.VaultCore;
+  const { q, qa, setText, el, Formatters, money, Watchlist, attachBidDeskUI, CatalogueService, syncShell, navigate, setPageInterval, clearTimers, LEGACY_MAP } = window.VaultCore;
   const DATA = window.VAULT_DATA;
 
-  // Helper to generate <option> tags concisely for filter and admin modal <select> elements.
-  const opts = arr => arr.map(([v, t, sel]) => `<option value="${v}"${sel ? ' selected' : ''}>${t}</option>`).join('');
-  const STATUS_OPTS = [['draft', 'Draft'], ['scheduled', 'Scheduled'], ['live', 'Live', true], ['closed', 'Closed'], ['withdrawn', 'Withdrawn']];
-  const CAT_OPTS = ['Timepieces', 'Fine Art', 'Automotive', 'Jewellery', 'Collectibles'].map(c => [c, c]);
-
-  // Fallback architectural SVG rendered behind the Three.js WebGL canvas if WebGL is slow or unavailable.
-  const SPECIMEN_SVG = `<svg class="stage-specimen-svg" viewBox="0 0 400 360" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="200" cy="180" r="140" stroke="rgba(196,166,114,0.22)" stroke-dasharray="4 6"/><circle cx="200" cy="180" r="105" stroke="rgba(196,166,114,0.3)"/><circle cx="200" cy="180" r="65" stroke="rgba(196,166,114,0.38)" stroke-dasharray="2 4"/><line x1="40" y1="180" x2="360" y2="180" stroke="rgba(196,166,114,0.18)"/><line x1="200" y1="20" x2="200" y2="340" stroke="rgba(196,166,114,0.18)"/><ellipse cx="200" cy="275" rx="120" ry="24" fill="rgba(35,37,33,0.12)"/><ellipse cx="200" cy="275" rx="75" ry="14" fill="rgba(35,37,33,0.2)"/><rect x="100" y="130" width="200" height="120" rx="14" fill="#242622" stroke="#c4a672" stroke-width="1.5"/><rect x="108" y="146" width="184" height="96" rx="8" fill="#1b1d19" stroke="rgba(196,166,114,0.3)"/><path d="M100 130 C100 120 108 112 118 112 L282 112 C292 112 300 120 300 130 Z" fill="#c4a672" stroke="#9f824e"/><rect x="122" y="98" width="32" height="14" rx="2" fill="#d9be8c" stroke="#8a7042"/><rect x="160" y="103" width="18" height="9" rx="2" fill="#b0935d"/><rect x="252" y="96" width="28" height="16" rx="3" fill="#d9be8c" stroke="#8a7042"/><circle cx="266" cy="94" r="5" fill="#c4a672"/><rect x="124" y="120" width="24" height="14" rx="2" fill="#0d0e0c" stroke="#c4a672"/><rect x="176" y="122" width="14" height="10" rx="1" fill="#0d0e0c" stroke="rgba(196,166,114,0.6)"/><circle cx="200" cy="192" r="52" fill="#181916" stroke="#c4a672" stroke-width="2.5"/><circle cx="200" cy="192" r="44" fill="#22241f" stroke="rgba(196,166,114,0.7)" stroke-width="1.5"/><circle cx="200" cy="192" r="34" fill="#121310" stroke="#d9be8c"/><circle cx="200" cy="192" r="24" fill="#0b0c09" stroke="rgba(196,166,114,0.85)" stroke-width="1.5"/><circle cx="200" cy="192" r="12" fill="#1a1c18" stroke="#c4a672"/><path d="M188 178 A 20 20 0 0 1 212 178" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/><text x="44" y="44" font-family="'DM Mono',monospace" font-size="8" fill="rgba(165,138,96,0.85)" letter-spacing="0.1em">FIG. 008 // SPECIMEN ARCHIVAL STUDY</text><text x="44" y="56" font-family="'DM Mono',monospace" font-size="7" fill="rgba(140,136,128,0.8)">OPTICAL RANGEFINDER CHASSIS</text><text x="250" y="324" font-family="'DM Mono',monospace" font-size="7" fill="rgba(165,138,96,0.8)" letter-spacing="0.08em">50MM F/1.4 · PBR 3D</text></svg>`;
-
-  // Page metadata lookup: sets document.title, mobile browser bar themeColor, and dark/panel body CSS class.
   const PAGE_META = {
-    home: { title: 'THE VAULT — Where rarity meets competition.', theme: '#f1efe8', cls: '' },
-    explore: { title: 'THE VAULT — Auctions & Curated Catalogue', theme: '#f1efe8', cls: '' },
+    home: { title: 'THE VAULT — Online Auctions for Watches, Art & Classics', theme: '#f1efe8', cls: '' },
+    explore: { title: 'THE VAULT — All Auction Lots', theme: '#f1efe8', cls: '' },
     lot: { title: 'THE VAULT — Lot Details', theme: '#f1efe8', cls: '' },
-    arena: { title: 'THE VAULT — The Arena', theme: '#1b1c19', cls: 'arena-page' },
-    journal: { title: 'THE VAULT — The Journal', theme: '#f1efe8', cls: '' },
-    article: { title: 'THE VAULT — Editorial Story', theme: '#f1efe8', cls: '' },
-    about: { title: 'THE VAULT — The House', theme: '#f1efe8', cls: '' },
-    contact: { title: 'THE VAULT — Private Correspondence', theme: '#f1efe8', cls: '' },
-    auth: { title: 'THE VAULT — Private Access', theme: '#f1efe8', cls: 'auth-page' },
-    admin: { title: 'THE VAULT — Private Administration', theme: '#191a18', cls: 'admin-page' }
+    arena: { title: 'THE VAULT — Live Bidding Room', theme: '#1b1c19', cls: 'arena-page' },
+    journal: { title: 'THE VAULT — Collector Guides', theme: '#f1efe8', cls: '' },
+    article: { title: 'THE VAULT — Article', theme: '#f1efe8', cls: '' },
+    about: { title: 'THE VAULT — About & How It Works', theme: '#f1efe8', cls: '' },
+    contact: { title: 'THE VAULT — Contact Us', theme: '#f1efe8', cls: '' },
+    auth: { title: 'THE VAULT — Member Account', theme: '#f1efe8', cls: 'auth-page' },
+    admin: { title: 'THE VAULT — Admin Dashboard', theme: '#191a18', cls: 'admin-page' }
   };
 
-  // HTML view templates for all 10 routes rendered inside #vault-root by mountShell().
-  const VIEWS = {
-    home: () => `<main><section class="vault-hero page-gutter"><div class="home-meta"><span>ISSUE NO. 01 / 2026</span><span>AN INDEPENDENT EDIT OF RARE OBJECTS</span></div><div class="vault-hero-grid"><div class="vault-hero-copy"><p class="eyebrow"><span class="eyebrow-line"></span> THE VAULT / A CONSIDERED AUCTION</p><h1>Not everything<br>is meant to be<br><em>ordinary.</em></h1><p class="vault-hero-description">Discover exceptional objects, considered collections and auctions shaped by rarity.</p><div class="hero-ctas"><a class="button button-dark" href="?page=explore">Explore auctions <span>↗</span></a><a class="underlined-link" href="#house">Discover the House</a></div><div class="vault-hero-note"><span class="asterisk">✳</span><span>Curated with patience.<br>Presented with intention.</span></div></div><div class="vault-hero-visual"><a class="hero-object" href="?page=lot" aria-label="View featured timepiece"><img src="https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=1200&q=88" alt="Close-up of a mechanical watch dial"><span class="hero-object-index">FIG. 001 / THE ART OF TIME</span></a><div class="hero-object-caption"><span>A LIFE WELL MEASURED</span><span>LOT 024 / VIEW LOT ↗</span></div><span class="hero-object-note">THE CURRENT EDIT / 01</span></div></div><div class="home-rule"><span>OBJECTS WITH A STORY</span><span>SCROLL TO EXPLORE ↓</span></div></section><section class="home-strip" aria-label="The Vault principles"><span>RARE FINDS</span><b>✳</b><span>THOUGHTFUL COLLECTING</span><b>✳</b><span>LIVE AUCTIONS</span><b>✳</b><span>RARE FINDS</span></section><section class="featured-auction page-gutter" id="featured"><div class="home-section-heading"><div><p class="eyebrow">01 / THE FEATURED AUCTION</p><h2>A closer look at<br><em>something enduring.</em></h2></div><p class="home-heading-note">One object, carefully selected.<br>Follow its story into the room.</p></div><div class="featured-auction-layout"><div class="featured-image-wrap"><a id="featured-link" href="?page=lot"><img id="featured-image" src="" alt=""><span class="lot-number" id="featured-lot-number">LOT 024</span></a><button class="lot-save featured-save" id="featured-save" data-save="lot-watch" type="button" aria-label="Save featured lot">♡</button><span class="featured-image-caption">THE VAULT / OBJECT STUDY</span></div><div class="featured-copy"><div class="featured-topline"><span class="lot-category" id="featured-category">TIMEPIECES / 1960s-70s</span><span class="featured-status"><i class="live-dot"></i><span id="featured-status">CLOSING SOON</span></span></div><h3 id="featured-title">The Heritage Chronograph</h3><p id="featured-subtitle">A considered study in mechanical craft and enduring design.</p><div class="featured-facts"><div><span>ESTIMATE</span><strong id="featured-estimate">₹2,00,000 - ₹3,00,000</strong></div><div><span>CURRENT BID</span><strong id="featured-bid">₹2,40,000</strong></div><div><span>ACTIVITY</span><strong id="featured-bids">07 BIDS</strong></div></div><div class="featured-foot"><span id="featured-closing">Closes today</span><a id="featured-action" href="?page=lot">View auction ↗</a></div></div></div></section><section class="collections-section page-gutter" id="collections"><div class="home-section-heading"><div><p class="eyebrow">02 / CURRENT COLLECTIONS</p><h2>Four ways of<br><em>looking closer.</em></h2></div><p class="home-heading-note">The edit changes often.<br>The standard does not.</p></div><div class="collections-editorial">${DATA.collections.map(([cls, cat, img, alt, idx, t, s]) => `<a class="${cls}" href="?page=explore&category=${cat}"><img src="${img}" alt="${alt}"><span class="collection-index">${idx}</span><span class="collection-overlay"><strong>${t}</strong><small>${s}</small></span></a>`).join('')}</div></section><section class="live-edit page-gutter" id="live"><div class="home-section-heading"><div><p class="eyebrow">03 / LIVE AND UPCOMING</p><h2>The room is<br><em>taking shape.</em></h2></div><div class="live-heading-side"><span><i class="live-dot"></i> AUCTION ROOM OPEN</span><a class="underlined-link" href="?page=explore">View all lots ↗</a></div></div><div class="live-edit-grid" id="home-live-grid"></div></section><section class="house-section" id="house"><div class="house-inner page-gutter"><p class="eyebrow light-eyebrow">04 / THE HOUSE</p><div class="house-grid"><h2>Some objects are valuable because of what they are.<br><em>Others, because of what they represent.</em></h2><div class="house-copy"><p>THE VAULT brings together exceptional objects, curious collectors and the quiet tension of a competitive auction.</p><p>We look for design, craft, history and the details that reward a second look. Nothing here is here by accident.</p><a class="button button-light" href="?page=about">Read our point of view <span>↗</span></a></div></div><div class="house-footer"><span>THE VAULT / CURRENT EDIT 2026</span><span>COLLECT WITH INTENTION.</span></div></div></section><section class="journal-section home-journal page-gutter" id="journal"><div class="home-section-heading"><div><p class="eyebrow">05 / THE JOURNAL</p><h2>Notes for the<br><em>curious collector.</em></h2></div><span class="home-heading-note">Demonstration editorial.<br>Publication to follow.</span></div><div class="journal-editorial-grid"><article class="journal-lead"><div class="journal-lead-image"><img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=86" alt="Vintage camera as a collector's object"><span>FIELD NOTE / 01</span></div><p class="lot-category">COLLECTING / 5 MIN READ</p><h3>Learning to look a little closer.</h3><p class="journal-excerpt">Why the most enduring collections begin with attention rather than acquisition.</p><a class="underlined-link" href="?page=explore">Read the note ↗</a></article><article class="journal-quote"><p class="eyebrow">THE COLLECTOR'S PERSPECTIVE</p><blockquote>"The best collections are not built in a day. They are built one considered decision at a time."</blockquote><span>THE VAULT EDITORIAL / DEMONSTRATION</span></article><div class="journal-list"><a href="?page=explore"><span>02 / ART &amp; PROVENANCE</span><strong>What an object carries with it ↗</strong></a><a href="?page=explore"><span>03 / WATCHES</span><strong>The patience of a mechanical thing ↗</strong></a><a href="?page=explore"><span>04 / RARE OBJECTS</span><strong>A history worth keeping ↗</strong></a></div></div></section><section class="closing-cta page-gutter" id="closing-cta"><div class="closing-cta-grid"><div class="closing-cta-copy"><div class="closing-cta-topline"><p class="eyebrow"><span class="eyebrow-line"></span> THE NEXT OBJECT IS OUT THERE</p><span class="closing-badge"><i class="live-dot"></i> 3D ARTIFACT STUDY</span></div><h2>Make room for<br><em>the exceptional.</em></h2><p class="closing-description">Step directly into the inspection gallery. Rotate, inspect, and experience curated objects preserved through mechanical precision and historical craft before they enter the auction floor.</p><div class="closing-actions"><a class="button button-dark" href="?page=explore">Enter the auctions <span>↗</span></a><a class="underlined-link" href="?page=explore">Discover all lots <span>↗</span></a></div><div class="closing-lot-specs">${[['OBJECT NO.', 'FIG. 008 / MECHANICAL ARTIFACT'], ['ESTIMATE', '₹3,50,000 – ₹5,00,000'], ['CHASSIS &amp; OPTICS', 'Hand-finished Brass &amp; Steel'], ['INSPECTION', 'Interactive 360° Real-time Model']].map(([k, v]) => `<div class="closing-spec-item"><span class="spec-label">${k}</span><strong class="spec-val">${v}</strong></div>`).join('')}</div><div class="closing-note"><span class="asterisk">✳</span><span>Rendered live in real-time WebGL. Touch or drag the object to examine the chassis and lens mechanics.</span></div></div><div class="closing-3d-stage-container" id="closingStageContainer"><div class="closing-3d-frame"><div class="stage-hud-top"><span class="stage-hud-badge">FIG. 008 / LOT INSPECTION</span><span class="stage-hud-hint">DRAG TO ROTATE · PINCH TO ZOOM</span></div><div class="closing-3d-canvas-wrap" id="closing3dWrap"><div class="stage-specimen-backdrop" id="stageSpecimenBackdrop" aria-hidden="true">${SPECIMEN_SVG}</div><canvas id="vault3dCanvas" aria-label="Interactive 3D model of mechanical artifact"></canvas><div class="stage-loading-overlay" id="stageLoadingOverlay"><div class="stage-loader-spinner"><div class="spinner-ring"></div><span class="spinner-icon">✳</span></div><p class="stage-loading-text">LOADING 3D SPECIMEN</p><span class="stage-loading-progress" id="stageLoadingProgress">0%</span></div></div><div class="stage-hud-bottom"><div class="stage-hud-status"><span class="status-pulse-dot"></span><span id="rotationStatusLabel">ROTATING (SLOW)</span></div><div class="stage-controls-group"><button type="button" class="stage-ctrl-btn" id="btnToggleRotate"><span class="ctrl-icon">↺</span><span class="ctrl-label">Auto-Rotate</span></button><button type="button" class="stage-ctrl-btn" id="btnResetView"><span class="ctrl-icon">⛶</span><span class="ctrl-label">Reset</span></button><button type="button" class="stage-ctrl-btn ctrl-btn-icon" id="btnZoomIn">+</button><button type="button" class="stage-ctrl-btn ctrl-btn-icon" id="btnZoomOut">−</button></div></div></div></div></div></section></main>`,
-    explore: () => `<main class="page-gutter explore-main"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><span>AUCTIONS</span></nav><section class="explore-heading"><div><p class="eyebrow">A CONSIDERED COLLECTION / 2026</p><h1>Objects of <em>interest.</em></h1><p class="section-intro">A changing edit of exceptional pieces, selected for their character, craft and story.</p><p class="demo-notice">Illustrative auction figures for this prototype. Production listings would include verified estimates, provenance and condition reports.</p></div><div class="explore-note"><span>THE CURRENT EDIT</span><strong id="explore-edit-count">08</strong><span>LOTS IN THIS DEMO COLLECTION</span></div></section><section class="filter-bar" aria-label="Auction filters"><div class="filter-categories"><button class="filter-chip active" data-filter="All" type="button">All lots <span>08</span></button>${['Timepieces', 'Fine Art', 'Jewellery', 'Automotive'].map(c => `<button class="filter-chip" data-filter="${c}" type="button">${c === 'Fine Art' ? 'Fine art' : c}</button>`).join('')}<button class="filter-chip saved-filter" id="saved-filter" type="button">Saved lots <span id="saved-filter-count">00</span></button></div><div class="filter-tools"><label class="search-box"><span>⌕</span><input id="lot-search" type="search" placeholder="Search the collection" aria-label="Search auctions"></label><label class="sort-select"><span>SORT</span><select id="lot-sort" aria-label="Sort auctions"><option value="curated">Curated</option><option value="ending">Ending soon</option><option value="bid-low">Bid: low to high</option><option value="bid-high">Bid: high to low</option></select></label></div></section><div class="results-line"><span id="results-count">SHOWING 08 SELECTED LOTS</span><span>ALL PRICES IN INR</span></div><section class="explore-grid" id="auction-grid" aria-live="polite"></section><div class="empty-state" id="empty-state" hidden><span>✳</span><h2>Nothing in this corner just yet.</h2><p>Try another category or search term.</p><button class="button button-dark" id="clear-filters" type="button">Clear filters</button></div><section class="explore-note-band"><span class="eyebrow">A NOTE ON THE COLLECTION</span><p>Every lot in this prototype uses illustrative product information and demonstration prices. Provenance, condition reports and authenticity checks would be verified before a real auction is published.</p></section></main>`,
-    lot: () => `<main class="page-gutter lot-main"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><a href="?page=explore">AUCTIONS</a><span>/</span><span id="lot-breadcrumb">LOT 024</span></nav><div class="lot-detail-grid"><section class="lot-gallery"><div class="lot-main-image" id="lot-main-image"><button class="image-expand" id="image-expand" type="button" aria-label="Enlarge lot image">↗</button><img id="lot-image" src="" alt=""><span class="gallery-stamp">THE VAULT / LOT 024</span></div><div class="gallery-thumbs" id="gallery-thumbs"><span>SELECT AN IMAGE TO VIEW</span></div><div class="lot-story"><p class="eyebrow">THE STORY / LOT NOTES</p><h2 id="lot-story-heading">Objects, <em>considered.</em></h2><p id="lot-story-copy"></p><p class="disclaimer">This is a fictional demonstration listing. The description is illustrative and does not certify the authenticity, ownership or provenance of any real item.</p></div></section><aside class="lot-sidebar"><div class="lot-sidebar-top"><span class="eyebrow" id="lot-category">TIMEPIECES / LOT 024</span><button class="save-detail" id="save-detail" type="button" aria-label="Save this lot">♡ <span>Save lot</span></button></div><h1 id="lot-title">The Heritage<br><em>Chronograph.</em></h1><p class="lot-subtitle" id="lot-subtitle"></p><div class="lot-estimate"><span>ESTIMATE</span><strong id="lot-estimate"></strong></div><div class="bid-panel"><div class="bid-panel-top"><span><i class="live-dot"></i> <span id="lot-status-label">LIVE AUCTION</span></span><span id="lot-number">LOT 024</span></div><div class="current-bid-label">CURRENT HIGHEST BID</div><div class="current-bid" id="current-bid"></div><div class="bid-stats"><div><span>TIME REMAINING</span><strong id="countdown">02:34:18</strong></div><div><span>VALID BIDS</span><strong id="bid-count">07</strong></div></div><label class="bid-input-label" for="bid-amount">YOUR BID <span>MINIMUM INCREMENT <b id="bid-increment">₹5,000</b></span></label><div class="bid-input-wrap"><span>₹</span><input id="bid-amount" type="number" min="245000" step="5000" value="245000" inputmode="numeric"></div><button class="button button-brass bid-button" id="place-bid" type="button">Place a bid <span>↗</span></button><p class="bid-feedback" id="bid-feedback" role="status">Demonstration mode — bids are simulated in this browser.</p><p class="bid-terms">By placing a bid, you confirm that you understand the auction rules. This prototype does not process payments or create a binding purchase.</p></div><div class="bid-history"><div class="history-heading"><h3>Bid activity</h3><span>DEMONSTRATION</span></div><div id="bid-history-list"></div></div><div class="lot-facts"><div><span>PERIOD</span><strong id="lot-period"></strong></div>${['CONDITION', 'MATERIALS', 'DIMENSIONS', 'PROVENANCE'].map(k => `<div><span>${k}</span><strong>Unavailable in demo data</strong></div>`).join('')}<div><span>LOCATION</span><strong>India / demonstration</strong></div></div></aside></div><section class="article-not-found lot-not-found" id="lot-not-found" hidden><p class="eyebrow">THE AUCTIONS / LOT NOT FOUND</p><h1>This lot is<br><em>not in the edit.</em></h1><p>The requested lot is not part of the current demonstration collection.</p><a class="button button-dark" href="?page=explore">Return to the auctions <span>↗</span></a></section><section class="lot-details-section"><div class="detail-section-heading"><p class="eyebrow">OBJECT / INFORMATION</p><h2>What we can <em>tell you.</em></h2><p>Production listings would be supported by verified condition reports, provenance and specialist notes.</p></div><div class="object-details-grid"><div><h3>Description</h3><p id="detail-description"></p></div><dl><div><dt>Materials</dt><dd>Unavailable in demonstration data</dd></div><div><dt>Period / year</dt><dd id="detail-period"></dd></div><div><dt>Dimensions</dt><dd>Unavailable in demonstration data</dd></div><div><dt>Condition</dt><dd>Unavailable in demonstration data</dd></div><div><dt>Provenance</dt><dd>Unavailable in demonstration data</dd></div></dl></div></section><section class="similar-lots-section"><div class="detail-section-heading"><p class="eyebrow">THE CURRENT EDIT / RELATED LOTS</p><h2>Continue <em>looking.</em></h2><a class="underlined-link" href="?page=explore">View all lots ↗</a></div><div class="similar-lots-grid" id="similar-lots-grid"></div></section><div class="image-lightbox" id="image-lightbox" hidden><button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close enlarged image">×</button><img id="lightbox-image" src="" alt=""></div></main>`,
-    arena: () => `<main class="arena-main page-gutter"><nav class="arena-breadcrumb" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><span>THE ARENA</span></nav><section class="arena-entrance"><div><p class="arena-kicker"><i class="live-dot"></i> LIVE ROOM / DEMONSTRATION</p><h1>The room is <em>open.</em></h1><p class="arena-intro-copy">Selected lots are being considered, watched and bid on inside a simulated auction room. Step in when something catches your eye.</p></div><div class="arena-session-meta"><span>ACTIVE LOTS</span><strong id="arena-active-count">00</strong><span>SESSION STATUS</span><b><i class="live-dot"></i> OPEN / SIMULATED</b></div></section><section class="arena-featured" aria-labelledby="arena-featured-title"><div class="arena-featured-object"><a id="arena-featured-link" href="?page=lot"><img id="arena-featured-image" src="" alt=""><span class="arena-object-index" id="arena-featured-number">LOT 024</span></a><button class="arena-save" id="arena-featured-save" data-save="lot-watch" type="button" aria-label="Save featured lot">♡</button><span class="arena-object-caption">THE CURRENT ROOM / <span id="arena-featured-category">TIMEPIECES</span></span></div><div class="arena-featured-copy"><div class="arena-featured-top"><span id="arena-featured-status">CLOSING SOON</span><span id="arena-featured-closing">CLOSING IN 02:35:40</span></div><h2 id="arena-featured-title">The Heritage Chronograph</h2><p id="arena-featured-subtitle">A considered study in mechanical craft and enduring design.</p><div class="arena-featured-facts"><div><span>CURRENT BID</span><strong id="arena-featured-bid">₹2,40,000</strong></div><div><span>ESTIMATE</span><strong id="arena-featured-estimate">₹2,00,000 – ₹3,00,000</strong></div><div><span>VALID BIDS</span><strong id="arena-featured-bids">07</strong></div></div><a class="arena-detail-link" id="arena-featured-action" href="?page=lot">Enter lot detail ↗</a></div><section class="arena-bid-panel" aria-label="Simulated bidding panel"><div class="arena-panel-heading"><span>THE BID DESK</span><b>SIMULATED ACTIVITY</b></div><p class="arena-panel-current">CURRENT HIGHEST BID<strong id="arena-current-bid">₹2,40,000</strong></p><div class="arena-next-bid"><span>MINIMUM NEXT BID</span><strong id="arena-min-bid">₹2,45,000</strong></div><label for="arena-bid-amount">YOUR BID <span>INCREMENTS OF <b id="arena-increment">₹5,000</b></span></label><div class="arena-input-wrap"><span>₹</span><input id="arena-bid-amount" type="number" inputmode="numeric" step="5000"></div><button class="button button-brass" id="arena-place-bid" type="button">Place a bid <span>↗</span></button><p class="arena-feedback" id="arena-feedback" role="status">No bid is transmitted. This room is a frontend demonstration.</p><div class="arena-history"><div><span>RECENT BID ACTIVITY</span><span id="arena-history-label">DEMONSTRATION</span></div><div id="arena-history-list"></div></div></section></section><section class="arena-floor-section"><div class="arena-section-heading"><div><p class="arena-kicker">01 / THE ACTIVE FLOOR</p><h2>Objects in the <em>room.</em></h2></div><p>Choose another lot to make it the room's featured object.</p></div><div class="arena-floor" id="arena-floor"></div><div class="arena-empty" id="arena-empty" hidden><span>✳</span><p>No lots are currently eligible for the room.</p><a href="?page=explore">Browse the collection ↗</a></div></section><section class="arena-activity-section"><div class="arena-section-heading"><div><p class="arena-kicker">02 / ROOM SIGNALS</p><h2>A quiet record of <em>movement.</em></h2></div><p>Illustrative events generated from the existing demonstration data.</p></div><div class="arena-activity-grid" id="arena-activity"></div></section><section class="arena-closing-section"><div class="arena-section-heading"><div><p class="arena-kicker">03 / CLOSING SOON</p><h2>The last <em>look.</em></h2></div><a class="arena-detail-link" href="?page=explore">View all lots ↗</a></div><div class="arena-closing-grid" id="arena-closing"></div></section></main>`,
-    journal: () => `<main class="journal-main page-gutter"><nav class="journal-breadcrumb" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><span>THE JOURNAL</span></nav><section class="journal-masthead"><div><p class="eyebrow">THE JOURNAL / EDITORIAL NOTES</p><h1>THE<br><em>JOURNAL.</em></h1></div><div><p class="journal-masthead-line">Notes on rarity, craft and the objects worth keeping.</p><span class="journal-demo-note">A considered editorial demonstration.<br>Publication history to follow.</span></div></section><section class="journal-cover" aria-labelledby="journal-cover-title"><div class="journal-cover-image"><a href="?page=article&story=mechanical-watchmaking"><img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1500&q=88" alt="Mechanical watch in close detail"><span>THE JOURNAL / COVER STUDY</span></a></div><div class="journal-cover-copy"><div class="journal-story-meta"><span>WATCHES / FEATURED STORY</span><span>6 MIN READ</span></div><h2 id="journal-cover-title"><a href="?page=article&story=mechanical-watchmaking">The Measure<br>of <em>Time.</em></a></h2><p>Why mechanical watchmaking continues to fascinate collectors — not only for what it measures, but for the patience and precision it makes visible.</p><a class="button button-dark" href="?page=article&story=mechanical-watchmaking">Read the cover story <span>↗</span></a></div></section><section class="journal-latest"><div class="journal-section-heading"><div><p class="eyebrow">01 / LATEST STORIES</p><h2>Look a little<br><em>closer.</em></h2></div><span id="journal-results">05 STORIES</span></div><div class="journal-filters" aria-label="Filter Journal stories">${['All Stories', 'Watches', 'Art', 'Jewellery', 'Collecting', 'Automobiles'].map((c, i) => `<button class="${i === 0 ? 'active' : ''}" type="button" data-journal-filter="${c}">${c === 'All Stories' ? 'All stories' : c}</button>`).join('')}</div><div class="journal-story-grid" id="journal-story-grid"></div><div class="journal-empty" id="journal-empty" hidden><span>✳</span><h3>No notes in this corner just yet.</h3><p>Try another editorial category.</p></div></section><section class="journal-closing"><p class="eyebrow">THE JOURNAL / A PAUSE FOR ATTENTION</p><h2>Keep looking.<br><em>There is more to see.</em></h2><a class="underlined-link" href="?page=explore">Return to the auctions ↗</a></section></main>`,
-    article: () => `<main id="article-root" class="article-main page-gutter"></main>`,
-    about: () => `<main class="about-main"><nav class="about-breadcrumb page-gutter" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><span>THE HOUSE</span></nav><section class="about-introduction page-gutter"><div class="about-intro-copy"><p class="eyebrow">THE HOUSE / A POINT OF VIEW</p><h1>Not everything rare is meant to be <em>found.</em></h1><p class="about-lead">THE VAULT is a curated digital auction destination for exceptional objects: fine watches, jewellery, art, classic automobiles and rare collectibles.</p><p class="about-small-note"><span>✳</span> An independent student demonstration project, shaped as an editorial study in collecting and competition.</p></div><figure class="about-intro-figure"><img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1400&q=88" alt="Mechanical watch resting on a warm surface"><figcaption><span>FIG. 001 / AN OBJECT OF ATTENTION</span><span>THE VAULT / 2026</span></figcaption></figure></section><section class="about-philosophy"><div class="about-philosophy-inner page-gutter"><p class="eyebrow light-eyebrow">01 / OUR PHILOSOPHY</p><h2>Rarity deserves<br>a different kind of <em>room.</em></h2><div class="about-principles">${DATA.about.principles.map(([n, t, p]) => `<article><span>${n}</span><h3>${t}</h3><p>${p}</p></article>`).join('')}</div></div></section><section class="about-categories page-gutter"><div class="about-section-heading"><div><p class="eyebrow">02 / WHAT BELONGS IN THE VAULT</p><h2>Five ways of<br><em>looking closer.</em></h2></div><p>Different objects ask for different kinds of attention. The edit is broad; the standard is considered.</p></div><div class="about-category-grid">${DATA.about.categories.map(([c, href, img, alt, num, lbl]) => `<a class="about-category about-category-${c}" href="${href}"><img src="${img}" alt="${alt}"><span>${num}</span><strong>${lbl} <b>↗</b></strong></a>`).join('')}</div></section><section class="about-experience page-gutter"><div class="about-experience-intro"><p class="eyebrow">03 / THE AUCTION EXPERIENCE</p><h2>Look carefully.<br><em>Then step in.</em></h2><p>The route through THE VAULT is intentionally simple: find an object, understand its place in the edit, then decide whether to enter the room.</p><div class="about-experience-links"><a class="button button-dark" href="?page=explore">Explore auctions <span>↗</span></a><a class="underlined-link" href="?page=arena">Enter The Arena ↗</a></div></div><div class="about-steps">${DATA.about.steps.map(([n, t, p]) => `<article><span>${n}</span><div><h3>${t}</h3><p>${p}</p></div></article>`).join('')}</div></section><section class="about-closing page-gutter"><p class="eyebrow">THE VAULT / A CONSIDERED BEGINNING</p><h2>Some things are<br>worth competing <em>for.</em></h2><a class="button button-dark" href="?page=explore">Enter the auctions <span>↗</span></a></section></main>`,
-    contact: () => `<main class="contact-main page-gutter"><nav class="contact-breadcrumb" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><span>CORRESPONDENCE</span></nav><section class="contact-introduction"><div><p class="eyebrow">CORRESPONDENCE / THE VAULT</p><h1>Every exceptional object begins a <em>conversation.</em></h1></div><div class="contact-intro-side"><p>Whether you're exploring a lot, considering a consignment, or need assistance with an auction, we're here to help.</p><span>THE VAULT IS CURRENTLY A STUDENT DEMONSTRATION PROJECT. THIS FORM DOES NOT SEND EMAIL.</span></div></section><section class="contact-workspace"><div class="contact-context"><p class="eyebrow">01 / CHOOSE A DIRECTION</p><h2>Start with the<br><em>right question.</em></h2><div class="contact-categories">${DATA.contactDirs.map(([n, t, p]) => `<button type="button" data-contact-type="${t}"><span>${n}</span><strong>${t} <b>↗</b></strong><p>${p}</p></button>`).join('')}</div><div class="contact-useful-links"><span class="eyebrow">USEFUL PLACES</span><a href="?page=explore">Explore auctions ↗</a><a href="?page=arena">Enter The Arena ↗</a><a href="?page=about">About the House ↗</a><a href="?page=journal">Read The Journal ↗</a></div></div><div class="contact-form-wrap"><div class="contact-form-heading"><p class="eyebrow">02 / WRITE TO THE HOUSE</p><span>ALL FIELDS MARKED * ARE REQUIRED</span></div><form id="contact-form" novalidate>${[['name', 'Full name', 'text', 'name'], ['email', 'Email address', 'email', 'email']].map(([k, l, t, a]) => `<div class="contact-field"><label for="contact-${k}">${l} <b>*</b></label><input id="contact-${k}" name="${k}" type="${t}" autocomplete="${a}" aria-describedby="${k}-error"><small id="${k}-error" class="contact-error" hidden></small></div>`).join('')} <div class="contact-field"><label for="contact-type">Enquiry type <b>*</b></label><select id="contact-type" name="type" aria-describedby="type-error"><option value="">Select a direction</option>${DATA.contactDirs.map(([, t]) => `<option value="${t}">${t}</option>`).join('')}</select><small id="type-error" class="contact-error" hidden></small></div><div class="contact-field"><label for="contact-subject">Subject <b>*</b></label><input id="contact-subject" name="subject" type="text" aria-describedby="subject-error"><small id="subject-error" class="contact-error" hidden></small></div><div class="contact-field contact-message-field"><label for="contact-message">Message <b>*</b></label><textarea id="contact-message" name="message" rows="7" aria-describedby="message-error"></textarea><small id="message-error" class="contact-error" hidden></small></div><div class="contact-form-actions"><button class="button button-dark" type="submit">Record enquiry <span>↗</span></button><button class="contact-reset" type="reset">Clear form</button></div><p class="contact-confirmation" id="contact-confirmation" role="status" hidden>Your demonstration enquiry has been recorded in this session. No message has been transmitted.</p></form></div></section><section class="contact-closing"><p class="eyebrow">THE VAULT / PRIVATE CORRESPONDENCE</p><h2>Some conversations are worth <em>beginning.</em></h2></section></main>`,
-    auth: () => `<main class="auth-main page-gutter"><nav class="auth-breadcrumb" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><span>PRIVATE ACCESS</span></nav><section class="auth-layout"><div class="auth-introduction"><p class="eyebrow">THE VAULT / PRIVATE ACCESS</p><h1>Enter the<br><em>room.</em></h1><p>Save considered objects, follow the auction room and keep your place in the edit.</p><span class="auth-demo-note">Authentication is optional. The collection remains open to every visitor.</span></div><section class="auth-panel" aria-labelledby="auth-panel-title"><div class="auth-panel-heading"><p class="eyebrow">ACCOUNT / <span id="auth-mode-label">SIGN IN</span></p><h2 id="auth-panel-title">Welcome <em>back.</em></h2></div><div class="auth-modes" role="tablist"><button type="button" class="active" data-auth-mode="login" role="tab">Sign in</button><button type="button" data-auth-mode="register" role="tab">Create account</button></div><p id="auth-status" class="auth-status" role="status" hidden></p><form id="auth-login-form" class="auth-form" novalidate><label for="login-email">Email address</label><input id="login-email" type="email" autocomplete="email" required><label for="login-password">Password</label><input id="login-password" type="password" autocomplete="current-password" required><button class="button button-dark auth-submit" type="submit">Enter the house <span>↗</span></button><button class="auth-google" type="button" id="google-login">Continue with Google <span>↗</span></button><button class="auth-text-button" type="button" data-auth-mode="recovery">Forgot your password?</button></form><form id="auth-register-form" class="auth-form" hidden novalidate><label for="register-email">Email address</label><input id="register-email" type="email" autocomplete="email" required><label for="register-password">Password</label><input id="register-password" type="password" autocomplete="new-password" required><label for="register-confirm">Confirm password</label><input id="register-confirm" type="password" autocomplete="new-password" required><small class="auth-hint">Use at least 8 characters, including one letter and one number.</small><button class="button button-dark auth-submit" type="submit">Create account <span>↗</span></button><button class="auth-google" type="button" id="google-register">Continue with Google <span>↗</span></button></form><form id="auth-recovery-form" class="auth-form" hidden novalidate><p class="auth-form-intro">Enter your email and Supabase will send a password recovery link.</p><label for="recovery-email">Email address</label><input id="recovery-email" type="email" autocomplete="email" required><button class="button button-dark auth-submit" type="submit">Send recovery link <span>↗</span></button><button class="auth-text-button" type="button" data-auth-mode="login">Return to sign in</button></form><form id="auth-reset-form" class="auth-form" hidden novalidate><p class="auth-form-intro">Choose a new password for your account.</p><label for="reset-password">New password</label><input id="reset-password" type="password" autocomplete="new-password" required><label for="reset-confirm">Confirm new password</label><input id="reset-confirm" type="password" autocomplete="new-password" required><button class="button button-dark auth-submit" type="submit">Update password <span>↗</span></button></form><div id="auth-account" class="auth-account" hidden><p class="auth-form-intro">Your session is active on this browser.</p><button class="button button-dark auth-submit" id="auth-logout" type="button">Sign out <span>↗</span></button></div><p class="auth-disclosure">THE VAULT is a demonstration platform. Authentication enables account features only; it does not create bidding or payment access.</p></section></section></main>`,
-    admin: () => `<div id="admin-access-state" class="admin-access-state" role="status"><span class="admin-loading-mark">✳</span><p>PRIVATE ROOM / ACCESS CHECK</p><h1>Verifying authority.</h1><span>Checking your session and database role…</span></div><div id="admin-dashboard" class="admin-shell" hidden><aside id="admin-sidebar" class="admin-sidebar"><div><a class="admin-wordmark" href="?page=home">THE VAULT<span>.</span></a><p class="admin-sidebar-label">PRIVATE ADMINISTRATION</p></div><nav class="admin-nav">${[['overview', '01', 'Overview'], ['lots', '02', 'Lots'], ['live-auctions', '03', 'Live auctions'], ['bids', '04', 'Bids'], ['members', '05', 'Members'], ['journal', '06', 'Journal'], ['enquiries', '07', 'Enquiries'], ['settings', '08', 'Settings']].map(([k, n, l], i) => `<a class="${i === 0 ? 'active' : ''}" href="#${k}" data-admin-section="${k}" data-section-label="${l}"><span>${n}</span>${l}</a>`).join('')}</nav><div class="admin-sidebar-bottom"><p class="admin-sidebar-label">CURRENT ACCOUNT</p><p id="admin-sidebar-email" class="admin-sidebar-email">Verified super-admin</p><button id="admin-sidebar-logout" class="admin-logout-link" type="button">Log out <span>↗</span></button></div></aside><div class="admin-main"><header class="admin-topbar"><button id="admin-menu-toggle" class="admin-menu-toggle" type="button"><span>☰</span><span>Menu</span></button><div class="admin-topbar-title"><p class="admin-kicker">THE VAULT / PRIVATE ROOM</p><h1 id="admin-section-title">Overview</h1></div><div class="admin-topbar-meta"><span id="admin-connection" class="admin-connection is-loading"><i></i>Checking connection</span><span id="admin-account-email" class="admin-account-email">Super-admin</span><button id="admin-top-logout" class="admin-top-logout" type="button">Log out ↗</button></div></header><main class="admin-content"><section id="admin-overview" class="admin-section"><div class="admin-section-intro"><div><p class="admin-kicker">01 / CURRENT PICTURE</p><h2>The house, <em>at a glance.</em></h2></div><p class="admin-section-note">Read-only figures from the connected Supabase project.</p></div><div class="admin-stats-grid">${[['Total lots', 'stat-total-lots', 'Recorded in auction_lots'], ['Published lots', 'stat-published-lots', 'Visible to public browse'], ['Live auctions', 'stat-live-auctions', 'Status set to live'], ['Closed auctions', 'stat-closed-auctions', 'Status set to closed'], ['Total bids', 'stat-total-bids', 'Permanent bid records'], ['Registered members', 'stat-members', 'Profiles created by Auth'], ['Unread enquiries', 'stat-unread-enquiries', 'No unread field in schema']].map(([l, id, n]) => `<article class="admin-stat-card"><span class="admin-stat-label">${l}</span><strong id="${id}">${id === 'stat-unread-enquiries' ? 'Unavailable' : '—'}</strong><small>${n}</small></article>`).join('')}</div><div class="admin-activity-grid">${[['recent-lots', 'RECENTLY ADDED', 'Lots', 'lots', 'View all ↗'], ['recent-bids', 'RECENTLY RECORDED', 'Bids', 'bids', 'Review ↗'], ['recent-enquiries', 'INCOMING CORRESPONDENCE', 'Enquiries', 'enquiries', 'Review ↗']].map(([id, k, h, s, lnk]) => `<section class="admin-activity-panel"><div class="admin-panel-heading"><div><p class="admin-kicker">${k}</p><h3>${h}</h3></div><a href="#${s}" data-admin-section="${s}" data-section-label="${h}">${lnk}</a></div><div id="${id}" class="admin-activity-list"><p class="admin-list-status">Loading…</p></div></section>`).join('')}</div><section class="admin-diagnostics" id="admin-diagnostics" hidden><div class="admin-panel-heading"><div><p class="admin-kicker">DATABASE RESPONSE</p><h3>Read diagnostics</h3></div><span>NO CREDENTIALS SHOWN</span></div><div id="admin-diagnostics-list"></div></section></section><section id="admin-lots" class="admin-section" hidden><div class="admin-section-intro"><div><p class="admin-kicker">02 / CATALOGUE MANAGEMENT</p><h2>Auction listings, <em>curated.</em></h2></div><div class="admin-lots-controls"><button id="admin-add-lot-btn" class="button button-dark admin-btn-action" type="button">Add new lot <span>+</span></button><button id="admin-refresh-lots-btn" class="admin-btn-outline" type="button">↻ Refresh</button><button id="admin-seed-lots-btn" class="admin-btn-outline" type="button">Seed demo lots ↗</button></div></div><div class="admin-table-filters"><div class="admin-search-wrap"><span>⌕</span><input id="admin-lots-search" type="search" placeholder="Search by title, lot number, or category…"></div><div class="admin-filter-group"><label for="admin-status-filter">Status:</label><select id="admin-status-filter"><option value="all">All statuses</option>${opts(STATUS_OPTS.map(([v, t]) => [v, t]))}</select></div><div class="admin-filter-group"><label for="admin-category-filter">Category:</label><select id="admin-category-filter"><option value="all">All categories</option>${opts(CAT_OPTS)}</select></div></div><div class="admin-table-wrap"><table class="admin-table" id="admin-lots-table"><thead><tr><th>LOT #</th><th>ITEM &amp; DETAILS</th><th>CATEGORY</th><th>CURRENT BID</th><th>ESTIMATE</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="admin-lots-tbody"></tbody></table><div id="admin-lots-status" class="admin-list-status">Loading auction lots…</div></div></section><div id="admin-lot-modal" class="admin-modal-backdrop" hidden><div class="admin-modal-dialog" role="dialog" aria-modal="true"><div class="admin-modal-header"><div><p class="admin-kicker">02 / CATALOGUE MANAGEMENT</p><h3 id="modal-lot-title">Add auction listing</h3></div><button id="admin-lot-modal-close" class="admin-modal-close" type="button">×</button></div><form id="admin-lot-form" class="admin-modal-form" novalidate><input type="hidden" id="lot-form-id"><input type="hidden" id="lot-form-mode" value="add"><div id="modal-lot-feedback" class="admin-modal-feedback" hidden></div><div class="admin-form-grid"><div class="admin-form-field"><label for="lot-form-title">Product title <b>*</b></label><input id="lot-form-title" type="text" required></div><div class="admin-form-field"><label for="lot-form-number">Lot number <b>*</b></label><input id="lot-form-number" type="text" required></div><div class="admin-form-field"><label for="lot-form-category">Category <b>*</b></label><select id="lot-form-category">${opts(CAT_OPTS)}</select></div><div class="admin-form-field"><label for="lot-form-status">Auction status <b>*</b></label><select id="lot-form-status">${opts(STATUS_OPTS)}</select></div><div class="admin-form-field full-width"><label for="lot-form-subtitle">Subtitle</label><input id="lot-form-subtitle" type="text"></div><div class="admin-form-field full-width"><label for="lot-form-description">Description / story</label><textarea id="lot-form-description" rows="3"></textarea></div><div class="admin-form-field"><label for="lot-form-period">Period / year</label><input id="lot-form-period" type="text"></div><div class="admin-form-field"><label for="lot-form-price">Starting / current bid (INR) <b>*</b></label><input id="lot-form-price" type="number" min="0" step="1000" required></div><div class="admin-form-field"><label for="lot-form-est-low">Estimate minimum (INR)</label><input id="lot-form-est-low" type="number" min="0" step="1000"></div><div class="admin-form-field"><label for="lot-form-est-high">Estimate maximum (INR)</label><input id="lot-form-est-high" type="number" min="0" step="1000"></div><div class="admin-form-field full-width"><label for="lot-form-image">Primary image URL</label><input id="lot-form-image" type="url"></div><div class="admin-form-field full-width"><label class="admin-checkbox-label"><input id="lot-form-published" type="checkbox" checked><span>Publish immediately (visible to public catalogue)</span></label></div></div><div class="admin-modal-actions"><button id="lot-form-submit" class="button button-dark" type="submit">Save listing <span>↗</span></button><button id="lot-form-cancel" class="admin-btn-outline" type="button">Cancel</button></div></form></div></div><div id="admin-delete-modal" class="admin-modal-backdrop" hidden><div class="admin-modal-dialog admin-dialog-sm" role="dialog" aria-modal="true"><div class="admin-modal-header"><div><p class="admin-kicker">CONFIRM REMOVAL</p><h3>Delete auction lot?</h3></div><button id="admin-delete-modal-close" class="admin-modal-close" type="button">×</button></div><div class="admin-modal-body"><p id="delete-modal-copy"></p><div id="delete-modal-feedback" class="admin-modal-feedback error" hidden></div></div><div class="admin-modal-actions"><button id="confirm-delete-btn" class="button admin-btn-danger" type="button">Delete lot permanently</button><button id="withdraw-instead-btn" class="button button-dark" type="button" hidden>Withdraw lot instead ↗</button><button id="cancel-delete-btn" class="admin-btn-outline" type="button">Cancel</button></div></div></div><section id="admin-placeholder" class="admin-placeholder" hidden><p class="admin-kicker">PRIVATE ROOM / LATER PHASE</p><h2 id="admin-placeholder-title">This room is being prepared.</h2><p id="admin-placeholder-copy"></p><a class="admin-return-overview" href="#overview" data-admin-section="overview" data-section-label="Overview">Return to overview ↗</a></section></main></div></div>`
-  };
-
-  // --- Page Controllers ---
-
-  // 1. Home: binds featured timepiece details, renders top 3 live cards, and ensures the 3D stage is mounted.
+  // 1. Home Controller: populates featured lot & live preview grid, and ensures 3D viewer resumes.
   function initHome() {
-    const f = DATA.lots[0], url = `?page=lot&lot=${encodeURIComponent(f.id)}`;
-    ['#featured-link', '.hero-object', '#featured-action'].forEach(s => { if (q(s)) q(s).href = url; });
-    if (q('#featured-image')) { q('#featured-image').src = f.image; q('#featured-image').alt = f.title; }
-    if (q('#featured-save')) q('#featured-save').dataset.save = f.key;
-    setText('#featured-status', Formatters.status(f.ends)); setText('#featured-lot-number', `LOT ${f.number}`);
-    setText('#featured-category', `${f.category.toUpperCase()} / ${f.period}`); setText('#featured-title', f.title);
-    setText('#featured-subtitle', f.subtitle); setText('#featured-estimate', f.estimate);
-    setText('#featured-bid', money(f.price)); setText('#featured-bids', `${String(f.bids).padStart(2, '0')} BIDS`); setText('#featured-closing', Formatters.closing(f.ends));
-    q('#home-live-grid').innerHTML = DATA.lots.slice(1, 4).map(l => {
-      const st = Formatters.status(l.ends), u = `?page=lot&lot=${encodeURIComponent(l.id)}`;
-      return `<article class="home-live-card"><div class="home-live-image"><a href="${u}"><img src="${l.image}" alt="${l.title}" loading="lazy"></a><span class="lot-number">LOT ${l.number}</span><span class="lot-status ${st === 'CLOSING SOON' ? 'urgent' : ''}">${st}</span><button class="lot-save" data-save="${l.key}" aria-label="Save ${l.title}">♡</button></div><div class="home-live-info"><p class="lot-category">${l.category.toUpperCase()} / ${l.period}</p><h3><a href="${u}">${l.title}</a></h3><div class="home-live-data"><span>CURRENT BID<strong>${money(l.price)}</strong></span><span>ESTIMATE<strong>${l.estimate}</strong></span></div><div class="home-live-foot"><span>${l.bids} BIDS / ${Formatters.closing(l.ends)}</span><a href="${u}">View lot ↗</a></div></div></article>`;
+    const featured = DATA.lots[0];
+    const lotUrl = `?page=lot&lot=${encodeURIComponent(featured.id)}`;
+    ['#featured-link', '.hero-object', '#featured-action'].forEach(sel => { if (q(sel)) q(sel).href = lotUrl; });
+    if (q('#featured-image')) { q('#featured-image').src = featured.image; q('#featured-image').alt = featured.title; }
+    if (q('#featured-save')) q('#featured-save').dataset.save = featured.key;
+    setText('#featured-status', Formatters.status(featured.ends));
+    setText('#featured-lot-number', `LOT ${featured.number}`);
+    setText('#featured-category', `${featured.category.toUpperCase()} / ${featured.period}`);
+    setText('#featured-title', featured.title);
+    setText('#featured-subtitle', featured.subtitle);
+    setText('#featured-estimate', featured.estimate);
+    setText('#featured-bid', money(featured.price));
+    setText('#featured-bids', `${String(featured.bids).padStart(2, '0')} BIDS`);
+    setText('#featured-closing', Formatters.closing(featured.ends));
+
+    q('#home-live-grid').innerHTML = DATA.lots.slice(1, 4).map(lot => {
+      const status = Formatters.status(lot.ends);
+      const url = `?page=lot&lot=${encodeURIComponent(lot.id)}`;
+      return `<article class="home-live-card"><div class="home-live-image"><a href="${url}"><img src="${lot.image}" alt="${lot.title}" loading="lazy"></a><span class="lot-number">LOT ${lot.number}</span><span class="lot-status ${status === 'CLOSING SOON' ? 'urgent' : ''}">${status}</span><button class="lot-save" data-save="${lot.key}" aria-label="Save ${lot.title}">♡</button></div><div class="home-live-info"><p class="lot-category">${lot.category.toUpperCase()} / ${lot.period}</p><h3><a href="${url}">${lot.title}</a></h3><div class="home-live-data"><span>CURRENT BID<strong>${money(lot.price)}</strong></span><span>ESTIMATE<strong>${lot.estimate}</strong></span></div><div class="home-live-foot"><span>${lot.bids} BIDS / ${Formatters.closing(lot.ends)}</span><a href="${url}">View lot ↗</a></div></div></article>`;
     }).join('');
-    Watchlist.bindButtons();
     window.__vault3DShowcase?.remount?.();
   }
 
-  // 2. Explore: handles URL pre-filters (?category=, ?saved=true), live search, sorting, and DB hydration.
-  let savedSub = null;
-  async function initExplore() {
-    const p = new URLSearchParams(window.location.search);
-    let cat = p.get('category') || 'All', savedOnly = p.get('saved') === 'true', query = '', sort = 'curated', list = DATA.lots;
-    const btns = qa('[data-filter]'), searchEl = q('#lot-search'), sortEl = q('#lot-sort'), savedBtn = q('#saved-filter');
-    if (savedOnly) savedBtn?.scrollIntoView({ block: 'center' });
-    function draw() {
-      const grid = q('#auction-grid'); if (!grid) return;
-      const saved = Watchlist.getAll();
-      let vis = list.filter(l => (cat === 'All' || l.category.toLowerCase() === cat.toLowerCase()) && (!savedOnly || saved.includes(l.key)) && `${l.title} ${l.category} ${l.period} ${l.number}`.toLowerCase().includes(query.toLowerCase()));
-      if (sort === 'ending') vis.sort((a, b) => a.ends - b.ends); else if (sort === 'bid-low') vis.sort((a, b) => a.price - b.price); else if (sort === 'bid-high') vis.sort((a, b) => b.price - a.price);
-      grid.innerHTML = vis.map((l, i) => {
-        const st = Formatters.status(l.ends), isS = saved.includes(l.key), u = `?page=lot&lot=${encodeURIComponent(l.id)}`;
-        return `<article class="lot-card editorial-lot editorial-lot-${i + 1}"><a class="lot-image" href="${u}"><img src="${l.image}" alt="${l.title}" loading="lazy"><span class="lot-number">LOT ${l.number}</span><span class="lot-status ${st === 'CLOSING SOON' ? 'urgent' : ''}">${st}</span><button class="lot-save ${isS ? 'saved' : ''}" data-save="${l.key}" aria-label="${isS ? 'Remove' : 'Save'} ${l.title}">${isS ? '♥' : '♡'}</button></a><div class="lot-copy"><div class="lot-info"><div><p class="lot-category">${l.category.toUpperCase()} / ${l.period.toUpperCase()}</p><h3><a href="${u}">${l.title}</a></h3></div><div class="lot-price"><span>Current bid</span><strong>${money(l.price)}</strong></div></div><div class="lot-meta"><span>${l.bids} bids</span><span>${Formatters.closing(l.ends)}</span><span>Est. ${l.estimate}</span></div><div class="lot-card-foot"><span>LOT ${l.number}</span><a href="${u}">View lot ↗</a></div></div></article>`;
+  // 2. Explore Controller: category chips, search input, price/time sorting & saved filter.
+  let savedListener = null;
+  function initExplore() {
+    const params = new URLSearchParams(window.location.search);
+    let selectedCat = params.get('category') || 'All';
+    let savedOnly = params.get('saved') === 'true';
+    let searchQuery = '';
+    let sortBy = 'curated';
+    let lots = DATA.lots;
+
+    const filterBtns = qa('[data-filter]');
+    const searchInput = q('#lot-search');
+    const sortSelect = q('#lot-sort');
+    const savedFilterBtn = q('#saved-filter');
+    if (searchInput) searchInput.value = '';
+    if (sortSelect) sortSelect.value = 'curated';
+    if (savedOnly) savedFilterBtn?.scrollIntoView({ block: 'center' });
+
+    function renderGrid() {
+      const grid = q('#auction-grid');
+      if (!grid) return;
+      const savedKeys = Watchlist.getAll();
+      const filtered = lots.filter(lot => {
+        const matchesCat = selectedCat === 'All' || lot.category.toLowerCase() === selectedCat.toLowerCase();
+        const matchesSaved = !savedOnly || savedKeys.includes(lot.key);
+        const searchable = `${lot.title} ${lot.category} ${lot.period} ${lot.number}`.toLowerCase();
+        return matchesCat && matchesSaved && searchable.includes(searchQuery.toLowerCase());
+      });
+      if (sortBy === 'ending') filtered.sort((a, b) => a.ends - b.ends);
+      else if (sortBy === 'bid-low') filtered.sort((a, b) => a.price - b.price);
+      else if (sortBy === 'bid-high') filtered.sort((a, b) => b.price - a.price);
+
+      grid.innerHTML = filtered.map((lot, idx) => {
+        const status = Formatters.status(lot.ends);
+        const isSaved = savedKeys.includes(lot.key);
+        const lotUrl = `?page=lot&lot=${encodeURIComponent(lot.id)}`;
+        return `<article class="lot-card editorial-lot editorial-lot-${idx + 1}"><a class="lot-image" href="${lotUrl}"><img src="${lot.image}" alt="${lot.title}" loading="lazy"><span class="lot-number">LOT ${lot.number}</span><span class="lot-status ${status === 'CLOSING SOON' ? 'urgent' : ''}">${status}</span><button class="lot-save ${isSaved ? 'saved' : ''}" data-save="${lot.key}" aria-label="${isSaved ? 'Remove' : 'Save'} ${lot.title}">${isSaved ? '♥' : '♡'}</button></a><div class="lot-copy"><div class="lot-info"><div><p class="lot-category">${lot.category.toUpperCase()} / ${lot.period.toUpperCase()}</p><h3><a href="${lotUrl}">${lot.title}</a></h3></div><div class="lot-price"><span>Current bid</span><strong>${money(lot.price)}</strong></div></div><div class="lot-meta"><span>${lot.bids} bids</span><span>${Formatters.closing(lot.ends)}</span><span>Est. ${lot.estimate}</span></div><div class="lot-card-foot"><span>LOT ${lot.number}</span><a href="${lotUrl}">View lot ↗</a></div></div></article>`;
       }).join('');
-      setText('#results-count', `SHOWING ${String(vis.length).padStart(2, '0')} ${savedOnly ? 'SAVED ' : 'SELECTED '}${vis.length === 1 ? 'LOT' : 'LOTS'}`);
-      setText('#explore-edit-count', String(list.length).padStart(2, '0')); setText('#saved-filter-count', String(saved.length).padStart(2, '0'));
-      q('#empty-state').hidden = vis.length > 0;
-      q('#empty-state p').textContent = savedOnly ? 'Save a lot from the collection to begin building your edit.' : 'Try another category or search term.';
-      savedBtn?.classList.toggle('active', savedOnly); Watchlist.bindButtons();
+
+      setText('#results-count', `SHOWING ${String(filtered.length).padStart(2, '0')} ${savedOnly ? 'SAVED ' : 'SELECTED '}${filtered.length === 1 ? 'LOT' : 'LOTS'}`);
+      setText('#explore-edit-count', String(lots.length).padStart(2, '0'));
+      setText('#saved-filter-count', String(savedKeys.length).padStart(2, '0'));
+      q('#empty-state').hidden = filtered.length > 0;
+      savedFilterBtn?.classList.toggle('active', savedOnly);
+      Watchlist.bindButtons();
     }
-    if (savedSub) document.removeEventListener('vault:saved-change', savedSub);
-    savedSub = () => { if (savedOnly && q('#auction-grid')) draw(); };
-    document.addEventListener('vault:saved-change', savedSub);
-    btns.forEach(b => { b.classList.toggle('active', b.dataset.filter === cat); b.addEventListener('click', () => { cat = b.dataset.filter; savedOnly = false; btns.forEach(x => x.classList.toggle('active', x === b)); draw(); }); });
-    searchEl?.addEventListener('input', e => { query = e.target.value; draw(); });
-    sortEl?.addEventListener('change', e => { sort = e.target.value; draw(); });
-    savedBtn?.addEventListener('click', () => { savedOnly = !savedOnly; cat = 'All'; btns.forEach(x => x.classList.toggle('active', x.dataset.filter === 'All')); draw(); });
-    q('#clear-filters')?.addEventListener('click', () => { cat = 'All'; savedOnly = false; query = ''; sort = 'curated'; searchEl.value = ''; sortEl.value = 'curated'; btns.forEach(x => x.classList.toggle('active', x.dataset.filter === 'All')); draw(); });
-    draw();
-    CatalogueService.getLots().then(lots => { if (lots?.length && q('#auction-grid')) { list = lots; draw(); } });
+
+    if (savedListener) document.removeEventListener('vault:saved-change', savedListener);
+    savedListener = () => { if (savedOnly && !q('#view-explore')?.hidden) renderGrid(); };
+    document.addEventListener('vault:saved-change', savedListener);
+
+    filterBtns.forEach(btn => {
+      btn.classList.toggle('active', !savedOnly && btn.dataset.filter === selectedCat);
+      btn.onclick = () => {
+        selectedCat = btn.dataset.filter;
+        savedOnly = false;
+        filterBtns.forEach(b => b.classList.toggle('active', b === btn));
+        renderGrid();
+      };
+    });
+    if (searchInput) searchInput.oninput = e => { searchQuery = e.target.value; renderGrid(); };
+    if (sortSelect) sortSelect.onchange = e => { sortBy = e.target.value; renderGrid(); };
+    if (savedFilterBtn) savedFilterBtn.onclick = () => { savedOnly = !savedOnly; selectedCat = 'All'; filterBtns.forEach(b => b.classList.toggle('active', b.dataset.filter === 'All')); renderGrid(); };
+    if (q('#clear-filters')) q('#clear-filters').onclick = () => {
+      selectedCat = 'All'; savedOnly = false; searchQuery = ''; sortBy = 'curated';
+      if (searchInput) searchInput.value = '';
+      if (sortSelect) sortSelect.value = 'curated';
+      filterBtns.forEach(b => b.classList.toggle('active', b.dataset.filter === 'All'));
+      renderGrid();
+    };
+
+    renderGrid();
+    CatalogueService.getLots().then(dbLots => { if (dbLots?.length && !q('#view-explore')?.hidden) { lots = dbLots; renderGrid(); } });
   }
 
-  // 3. Lot Details: gallery thumbnails, fullscreen lightbox, simulated bid validation, countdown, & related lots.
+  // 3. Lot Detail Controller: image thumbnails, zoom lightbox, simulated bidding & countdown timer.
   async function initLot() {
     const lot = await CatalogueService.getLotById(new URLSearchParams(window.location.search).get('lot'));
-    if (!q('.lot-main')) return;
-    if (!lot) { document.title = 'Lot not found — THE VAULT'; ['.lot-detail-grid', '.lot-details-section', '.similar-lots-section'].forEach(s => { if (q(s)) q(s).hidden = true; }); q('#lot-not-found').hidden = false; return; }
-    const gallery = lot.gallery?.length ? lot.gallery : (lot.id === 'watch' ? [lot.image, 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=1400&q=90', 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=1400&q=90'] : [lot.image]);
+    if (q('#view-lot')?.hidden) return;
+    ['.lot-detail-grid', '.lot-details-section', '.similar-lots-section'].forEach(sel => { if (q(sel)) q(sel).hidden = !lot; });
+    q('#lot-not-found').hidden = Boolean(lot);
+    if (!lot) { document.title = 'Lot not found — THE VAULT'; return; }
+
+    const gallery = lot.gallery?.length ? lot.gallery : (lot.id === 'watch'
+      ? [lot.image, 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=1400&q=90', 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=1400&q=90']
+      : [lot.image]);
+
     document.title = `${lot.title} — THE VAULT`;
-    q('#lot-title').innerHTML = `${lot.title.replace(' ', '<br>')}<em>.</em>`; q('#lot-story-heading').innerHTML = `${lot.category}, <em>considered.</em>`;
-    setText('#lot-breadcrumb', `LOT ${lot.number}`); setText('#lot-category', `${lot.category.toUpperCase()} / LOT ${lot.number}`); setText('#lot-subtitle', lot.subtitle); setText('#lot-estimate', lot.estimate); setText('#lot-number', `LOT ${lot.number}`);
-    setText('#lot-period', lot.period); setText('#detail-period', lot.period); setText('#lot-story-copy', lot.story); setText('#detail-description', lot.story); setText('#lot-status-label', Formatters.status(lot.ends)); setText('.gallery-stamp', `THE VAULT / LOT ${lot.number}`);
-    const mainImg = q('#lot-image'); mainImg.src = gallery[0]; mainImg.alt = lot.title;
-    const thumbs = q('#gallery-thumbs');
-    thumbs.innerHTML = gallery.map((s, i) => `<button class="thumb${i === 0 ? ' active' : ''}" data-image="${s}" aria-label="View image ${i + 1}"><img src="${s.replace('w=1400', 'w=250')}" alt="${lot.title}, view ${i + 1}"></button>`).join('') + '<span>SELECT AN IMAGE TO VIEW</span>';
-    thumbs.querySelectorAll('.thumb').forEach(b => b.addEventListener('click', () => { thumbs.querySelectorAll('.thumb').forEach(x => x.classList.remove('active')); b.classList.add('active'); mainImg.src = b.dataset.image; }));
-    const lb = q('#image-lightbox'), lbImg = q('#lightbox-image'), closeLb = () => { lb.hidden = true; document.body.classList.remove('lightbox-open'); };
-    q('#image-expand')?.addEventListener('click', () => { lbImg.src = mainImg.src; lbImg.alt = lot.title; lb.hidden = false; document.body.classList.add('lightbox-open'); });
-    q('#lightbox-close')?.addEventListener('click', closeLb); lb?.addEventListener('click', e => { if (e.target === lb) closeLb(); });
-    attachBidDeskUI({
-      lot, inputEl: q('#bid-amount'), buttonEl: q('#place-bid'), feedbackEl: q('#bid-feedback'), historyEl: q('#bid-history-list'), feedbackBaseClass: 'bid-feedback',
-      onUpdate: (p, c, d) => { setText('#current-bid', money(p)); setText('#bid-count', String(c).padStart(2, '0')); setText('#bid-increment', money(d.getIncrement())); },
-      formatHistoryRow: (v, n, ago) => `<div class="history-row"><span><b>Bidder ${n}</b><small>${ago} · simulated</small></span><strong>${money(v)}</strong></div>`,
-      userRowHtml: amt => `<div class="history-row"><span><b>You (session bidder)</b><small>Just now · demonstration</small></span><strong>${money(amt)}</strong></div>`
+    q('#lot-title').innerHTML = `${lot.title.replace(' ', '<br>')}<em>.</em>`;
+    q('#lot-story-heading').textContent = `About this ${lot.category}`;
+    setText('#lot-breadcrumb', `LOT ${lot.number}`);
+    setText('#lot-category', `${lot.category.toUpperCase()} / LOT ${lot.number}`);
+    setText('#lot-subtitle', lot.subtitle);
+    setText('#lot-estimate', lot.estimate);
+    setText('#lot-number', `LOT ${lot.number}`);
+    setText('#lot-period', lot.period);
+    setText('#detail-period', lot.period);
+    setText('#detail-category', lot.category);
+    setText('#lot-story-copy', lot.story);
+    setText('#detail-description', lot.story);
+    setText('#lot-status-label', Formatters.status(lot.ends));
+    setText('.gallery-stamp', `THE VAULT / LOT ${lot.number}`);
+
+    const mainImg = q('#lot-image');
+    mainImg.src = gallery[0];
+    mainImg.alt = lot.title;
+    const thumbsWrap = q('#gallery-thumbs');
+    thumbsWrap.innerHTML = gallery.map((src, i) => `<button class="thumb${i === 0 ? ' active' : ''}" data-image="${src}" aria-label="View image ${i + 1}"><img src="${src.replace('w=1400', 'w=250')}" alt="${lot.title}, view ${i + 1}"></button>`).join('') + '<span>SELECT AN IMAGE TO VIEW</span>';
+    thumbsWrap.querySelectorAll('.thumb').forEach(btn => {
+      btn.onclick = () => {
+        thumbsWrap.querySelectorAll('.thumb').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        mainImg.src = btn.dataset.image;
+      };
     });
-    const saveBtn = q('#save-detail'), syncS = () => { const on = Watchlist.has(lot.key); saveBtn.classList.toggle('saved', on); saveBtn.innerHTML = on ? '♥ <span>Saved</span>' : '♡ <span>Save lot</span>'; };
-    saveBtn?.addEventListener('click', () => { Watchlist.toggle(lot.key); syncS(); }); syncS(); Watchlist.updateBadges();
+
+    const lightbox = q('#image-lightbox'), lightboxImg = q('#lightbox-image');
+    const closeLightbox = () => { lightbox.hidden = true; document.body.classList.remove('lightbox-open'); };
+    if (q('#image-expand')) q('#image-expand').onclick = () => { lightboxImg.src = mainImg.src; lightboxImg.alt = lot.title; lightbox.hidden = false; document.body.classList.add('lightbox-open'); };
+    if (q('#lightbox-close')) q('#lightbox-close').onclick = closeLightbox;
+    if (lightbox) lightbox.onclick = e => { if (e.target === lightbox) closeLightbox(); };
+
+    attachBidDeskUI({
+      lot, inputEl: q('#bid-amount'), buttonEl: q('#place-bid'), feedbackEl: q('#bid-feedback'), historyEl: q('#bid-history-list'),
+      feedbackBaseClass: 'bid-feedback',
+      onUpdate: (price, bids, desk) => { setText('#current-bid', money(price)); setText('#bid-count', String(bids).padStart(2, '0')); setText('#bid-increment', money(desk.getIncrement())); },
+      formatHistoryRow: (val, num, ago) => `<div class="history-row"><span><b>Bidder ${num}</b><small>${ago} · simulated</small></span><strong>${money(val)}</strong></div>`,
+      userRowHtml: val => `<div class="history-row"><span><b>You (session bidder)</b><small>Just now · demo</small></span><strong>${money(val)}</strong></div>`
+    });
+
+    const saveBtn = q('#save-detail');
+    const syncSaveBtn = () => {
+      const saved = Watchlist.has(lot.key);
+      saveBtn.classList.toggle('saved', saved);
+      saveBtn.innerHTML = saved ? '♥ <span>Saved</span>' : '♡ <span>Save lot</span>';
+    };
+    if (saveBtn) saveBtn.onclick = () => { Watchlist.toggle(lot.key); syncSaveBtn(); };
+    syncSaveBtn();
+
     CatalogueService.getLots().then(all => {
-      if (!q('#similar-lots-grid')) return;
-      q('#similar-lots-grid').innerHTML = all.filter(i => i.id !== lot.id && i.category.toLowerCase() === lot.category.toLowerCase()).slice(0, 3)
-        .map(i => `<article class="similar-lot"><a href="?page=lot&lot=${encodeURIComponent(i.id)}"><img src="${i.image}" alt="${i.title}" loading="lazy"><span>LOT ${i.number} / ${i.category.toUpperCase()}</span></a><h3><a href="?page=lot&lot=${encodeURIComponent(i.id)}">${i.title}</a></h3><p>${money(i.price)} / ${i.bids} bids</p></article>`).join('');
+      if (q('#view-lot')?.hidden) return;
+      q('#similar-lots-grid').innerHTML = all.filter(item => item.id !== lot.id && item.category.toLowerCase() === lot.category.toLowerCase()).slice(0, 3)
+        .map(item => `<article class="similar-lot"><a href="?page=lot&lot=${encodeURIComponent(item.id)}"><img src="${item.image}" alt="${item.title}" loading="lazy"><span>LOT ${item.number} / ${item.category.toUpperCase()}</span></a><h3><a href="?page=lot&lot=${encodeURIComponent(item.id)}">${item.title}</a></h3><p>${money(item.price)} / ${item.bids} bids</p></article>`).join('');
     });
-    let left = lot.ends; const tick = () => { setText('#countdown', Formatters.clock(left)); if (left > 0) left -= 1; }; tick(); setPageInterval(tick, 1000);
+
+    let remaining = lot.ends;
+    const tick = () => { setText('#countdown', Formatters.clock(remaining)); if (remaining > 0) remaining -= 1; };
+    tick();
+    setPageInterval(tick, 1000);
   }
 
-  // 4. Arena: dark live-auction simulator with featured lot swap (?page=arena&lot=...), floor grid, & room signals.
+  // 4. Arena Controller: spotlight lot bid desk, floor cards with "Make featured", & live ticker.
   function initArena() {
-    const live = DATA.lots.filter(l => l.ends > 0 && l.ends < 86400).sort((a, b) => a.ends - b.ends), active = DATA.lots.filter(l => l.ends > 0);
-    const f = DATA.lots.find(l => l.id === new URLSearchParams(window.location.search).get('lot')) || live[0] || active[0], url = `?page=lot&lot=${encodeURIComponent(f.id)}`;
-    setText('#arena-active-count', String(live.length).padStart(2, '0'));
-    q('#arena-featured-link').href = q('#arena-featured-action').href = url; q('#arena-featured-image').src = f.image; q('#arena-featured-image').alt = f.title; q('#arena-featured-save').dataset.save = f.key;
-    setText('#arena-featured-number', `LOT ${f.number}`); setText('#arena-featured-category', f.category.toUpperCase()); setText('#arena-featured-status', Formatters.status(f.ends));
-    setText('#arena-featured-title', f.title); setText('#arena-featured-subtitle', f.subtitle); setText('#arena-featured-estimate', f.estimate);
+    const liveLots = DATA.lots.filter(l => l.ends > 0 && l.ends < 86400).sort((a, b) => a.ends - b.ends);
+    const activeLots = DATA.lots.filter(l => l.ends > 0);
+    const selectedId = new URLSearchParams(window.location.search).get('lot');
+    const featured = DATA.lots.find(l => l.id === selectedId) || liveLots[0] || activeLots[0];
+
+    setText('#arena-active-count', String(liveLots.length).padStart(2, '0'));
+    q('#arena-featured-link').href = q('#arena-featured-action').href = `?page=lot&lot=${encodeURIComponent(featured.id)}`;
+    q('#arena-featured-image').src = featured.image;
+    q('#arena-featured-image').alt = featured.title;
+    q('#arena-featured-save').dataset.save = featured.key;
+    setText('#arena-featured-number', `LOT ${featured.number}`);
+    setText('#arena-featured-category', featured.category.toUpperCase());
+    setText('#arena-featured-status', Formatters.status(featured.ends));
+    setText('#arena-featured-title', featured.title);
+    setText('#arena-featured-subtitle', featured.subtitle);
+    setText('#arena-featured-estimate', featured.estimate);
+
     attachBidDeskUI({
-      lot: f, inputEl: q('#arena-bid-amount'), buttonEl: q('#arena-place-bid'), feedbackEl: q('#arena-feedback'), historyEl: q('#arena-history-list'), feedbackBaseClass: 'arena-feedback',
-      onUpdate: (p, c, d) => { setText('#arena-featured-bid', money(p)); setText('#arena-current-bid', money(p)); setText('#arena-featured-bids', String(c).padStart(2, '0')); setText('#arena-min-bid', money(d.getMinimumBid())); setText('#arena-increment', money(d.getIncrement())); },
-      formatHistoryRow: (v, n, ago) => `<div><span>Bidder ${n}<small>${ago} · simulated</small></span><strong>${money(v)}</strong></div>`,
-      userRowHtml: amt => `<div><span>You / demo bidder<small>Just now · session active</small></span><strong>${money(amt)}</strong></div>`
+      lot: featured, inputEl: q('#arena-bid-amount'), buttonEl: q('#arena-place-bid'), feedbackEl: q('#arena-feedback'), historyEl: q('#arena-history-list'),
+      feedbackBaseClass: 'arena-feedback',
+      onUpdate: (price, bids, desk) => { setText('#arena-featured-bid', money(price)); setText('#arena-current-bid', money(price)); setText('#arena-featured-bids', String(bids).padStart(2, '0')); setText('#arena-min-bid', money(desk.getMinimumBid())); setText('#arena-increment', money(desk.getIncrement())); },
+      formatHistoryRow: (val, num, ago) => `<div><span>Bidder ${num}<small>${ago} · simulated</small></span><strong>${money(val)}</strong></div>`,
+      userRowHtml: val => `<div><span>You / demo bidder<small>Just now · session</small></span><strong>${money(val)}</strong></div>`
     });
-    const room = active.filter(l => l.id !== f.id);
-    q('#arena-floor').innerHTML = room.map((l, i) => {
-      const st = Formatters.status(l.ends), enc = encodeURIComponent(l.id);
-      return `<article class="arena-floor-lot arena-floor-lot-${i + 1}"><div class="arena-floor-image"><a href="?page=lot&lot=${enc}"><img src="${l.image}" alt="${l.title}" loading="lazy"></a><span>LOT ${l.number}</span><b class="${st === 'CLOSING SOON' ? 'urgent' : ''}">${st}</b><button class="arena-save" data-save="${l.key}" aria-label="Save ${l.title}">♡</button></div><div class="arena-floor-copy"><p>${l.category.toUpperCase()} / ${l.period}</p><h3><a href="?page=lot&lot=${enc}">${l.title}</a></h3><div><strong>${money(l.price)}</strong><span>${String(l.bids).padStart(2, '0')} BIDS / ${l.ends < 86400 ? Formatters.clock(l.ends) : 'UPCOMING'}</span></div><a class="arena-select-link" href="?page=arena&lot=${enc}">Make featured ↗</a></div></article>`;
+
+    const floorLots = activeLots.filter(l => l.id !== featured.id);
+    q('#arena-floor').innerHTML = floorLots.map((lot, idx) => {
+      const status = Formatters.status(lot.ends), enc = encodeURIComponent(lot.id);
+      return `<article class="arena-floor-lot arena-floor-lot-${idx + 1}"><div class="arena-floor-image"><a href="?page=lot&lot=${enc}"><img src="${lot.image}" alt="${lot.title}" loading="lazy"></a><span>LOT ${lot.number}</span><b class="${status === 'CLOSING SOON' ? 'urgent' : ''}">${status}</b><button class="arena-save" data-save="${lot.key}" aria-label="Save ${lot.title}">♡</button></div><div class="arena-floor-copy"><p>${lot.category.toUpperCase()} / ${lot.period}</p><h3><a href="?page=lot&lot=${enc}">${lot.title}</a></h3><div><strong>${money(lot.price)}</strong><span>${String(lot.bids).padStart(2, '0')} BIDS / ${lot.ends < 86400 ? Formatters.clock(lot.ends) : 'UPCOMING'}</span></div><a class="arena-select-link" href="?page=arena&lot=${enc}">Make featured ↗</a></div></article>`;
     }).join('');
-    q('#arena-empty').hidden = room.length > 0;
-    q('#arena-activity').innerHTML = active.slice(0, 3).map((l, i) => `<article><span>0${i + 1}</span><p>${i === 0 ? `A bid was recorded on <strong>${l.title}</strong>.` : `The room is watching <strong>${l.title}</strong>.`}</p><small>${i === 0 ? `SIMULATED BID / ${money(l.price)}` : `${Formatters.status(l.ends)} / DEMONSTRATION`}</small></article>`).join('');
-    q('#arena-closing').innerHTML = DATA.lots.filter(l => l.ends < 86400).slice(0, 3).map(l => `<a href="?page=lot&lot=${encodeURIComponent(l.id)}"><span>LOT ${l.number} / ${Formatters.status(l.ends)}</span><strong>${l.title}</strong><small>${Formatters.clock(l.ends)} remaining ↗</small></a>`).join('');
-    let left = f.ends; const tick = () => { setText('#arena-featured-closing', left > 0 ? `CLOSING IN ${Formatters.clock(left)}` : 'CLOSED / DEMONSTRATION'); if (left > 0) left -= 1; }; tick(); setPageInterval(tick, 1000); Watchlist.bindButtons();
+    q('#arena-empty').hidden = floorLots.length > 0;
+    q('#arena-activity').innerHTML = activeLots.slice(0, 3).map((lot, idx) => `<article><span>0${idx + 1}</span><p>${idx === 0 ? `New bid placed on <strong>${lot.title}</strong>.` : `Collectors watching <strong>${lot.title}</strong>.`}</p><small>${idx === 0 ? `DEMO BID / ${money(lot.price)}` : `${Formatters.status(lot.ends)} / LIVE FLOOR`}</small></article>`).join('');
+    q('#arena-closing').innerHTML = DATA.lots.filter(l => l.ends < 86400).slice(0, 3).map(lot => `<a href="?page=lot&lot=${encodeURIComponent(lot.id)}"><span>LOT ${lot.number} / ${Formatters.status(lot.ends)}</span><strong>${lot.title}</strong><small>${Formatters.clock(lot.ends)} left ↗</small></a>`).join('');
+
+    let remaining = featured.ends;
+    const tick = () => { setText('#arena-featured-closing', remaining > 0 ? `CLOSING IN ${Formatters.clock(remaining)}` : 'CLOSED / DEMO'); if (remaining > 0) remaining -= 1; };
+    tick();
+    setPageInterval(tick, 1000);
   }
 
-  // Shared card template for Journal index and Article related stories.
-  const storyCard = (a, feat) => {
-    const u = `?page=article&story=${encodeURIComponent(a.id)}`;
-    return `<article class="journal-story${feat ? ' journal-story-featured' : ''}"><a class="journal-story-image" href="${u}"><img src="${a.image}" alt="${a.title}" loading="lazy"><span>${a.category.toUpperCase()}</span></a><div class="journal-story-copy"><div class="journal-story-meta"><span>${a.category.toUpperCase()}</span><span>${a.readingTime.toUpperCase()}</span></div><h2><a href="${u}">${a.title}</a></h2><p>${a.subtitle}</p><a class="underlined-link" href="${u}">Read the story ↗</a></div></article>`;
+  // 5. Journal & 6. Article Controllers
+  const buildStoryCard = (article, isFeatured) => {
+    const url = `?page=article&story=${encodeURIComponent(article.id)}`;
+    return `<article class="journal-story${isFeatured ? ' journal-story-featured' : ''}"><a class="journal-story-image" href="${url}"><img src="${article.image}" alt="${article.title}" loading="lazy"><span>${article.category.toUpperCase()}</span></a><div class="journal-story-copy"><div class="journal-story-meta"><span>${article.category.toUpperCase()}</span><span>${article.readingTime.toUpperCase()}</span></div><h2><a href="${url}">${article.title}</a></h2><p>${article.subtitle}</p><a class="underlined-link" href="${url}">Read article ↗</a></div></article>`;
   };
 
-  // 5. Journal & 6. Article Reader: category tabs + dynamic long-form reader via ?story=<id>.
   function initJournal() {
-    const btns = qa('[data-journal-filter]');
-    const show = (cat = 'All Stories') => {
+    const tabs = qa('[data-journal-filter]');
+    const showCategory = (cat = 'All Stories') => {
       const items = cat === 'All Stories' ? DATA.articles : DATA.articles.filter(a => a.category === cat);
-      q('#journal-story-grid').innerHTML = items.map((a, i) => storyCard(a, i === 0 && cat === 'All Stories')).join('');
-      q('#journal-empty').hidden = items.length > 0; setText('#journal-results', `${String(items.length).padStart(2, '0')} ${items.length === 1 ? 'STORY' : 'STORIES'}`);
-      btns.forEach(b => b.classList.toggle('active', b.dataset.journalFilter === cat));
+      q('#journal-story-grid').innerHTML = items.map((a, idx) => buildStoryCard(a, idx === 0 && cat === 'All Stories')).join('');
+      q('#journal-empty').hidden = items.length > 0;
+      setText('#journal-results', `${String(items.length).padStart(2, '0')} ${items.length === 1 ? 'STORY' : 'STORIES'}`);
+      tabs.forEach(t => t.classList.toggle('active', t.dataset.journalFilter === cat));
     };
-    btns.forEach(b => b.addEventListener('click', () => show(b.dataset.journalFilter))); show('All Stories');
+    tabs.forEach(tab => { tab.onclick = () => showCategory(tab.dataset.journalFilter); });
+    showCategory('All Stories');
   }
+
   function initArticle() {
-    const root = q('#article-root'), req = new URLSearchParams(window.location.search).get('story'), a = DATA.articles.find(x => x.id === req || (req && req.startsWith(x.id)));
-    if (!a) { document.title = 'Story not found — THE VAULT'; root.innerHTML = `<section class="article-not-found"><p class="eyebrow">THE JOURNAL / STORY NOT FOUND</p><h1>This page is<br><em>still unwritten.</em></h1><p>That story is not part of the current editorial edit.</p><a class="button button-dark" href="?page=journal">Return to The Journal <span>↗</span></a></section>`; return; }
-    document.title = `${a.title} — THE VAULT`;
-    root.innerHTML = `<div class="article-breadcrumb"><a href="?page=home">HOME</a><span>/</span><a href="?page=journal">THE JOURNAL</a><span>/</span><span>${a.category.toUpperCase()}</span></div><article class="journal-article"><header class="article-header"><div class="article-header-meta"><span>${a.category.toUpperCase()}</span><span>${a.readingTime.toUpperCase()}</span></div><h1>${a.title}</h1><p class="article-subtitle">${a.subtitle}</p></header><figure class="article-hero"><img src="${a.image}" alt="${a.title}"><figcaption>${a.caption} / THE VAULT EDITORIAL DEMONSTRATION</figcaption></figure><div class="article-body">${a.body.map(s => `<section><h2>${s.heading}</h2>${s.paragraphs.map(p => `<p>${p}</p>`).join('')}</section>`).join('')}</div></article><section class="article-related"><div class="journal-section-heading"><p class="eyebrow">THE JOURNAL / CONTINUE READING</p><a class="underlined-link" href="?page=journal">View all stories ↗</a></div><div class="article-related-grid">${a.related.map(id => DATA.articles.find(x => x.id === id)).filter(Boolean).map(x => storyCard(x, false)).join('')}</div></section>`;
+    const root = q('#article-root');
+    const storyId = new URLSearchParams(window.location.search).get('story');
+    const article = DATA.articles.find(x => x.id === storyId || (storyId && storyId.startsWith(x.id)));
+    if (!article) {
+      document.title = 'Article not found — THE VAULT';
+      root.innerHTML = `<section class="article-not-found"><p class="eyebrow">THE JOURNAL / NOT FOUND</p><h1>Article<br><em>not found.</em></h1><p>This guide could not be found in the current edition.</p><a class="button button-dark" href="?page=journal">Back to The Journal <span>↗</span></a></section>`;
+      return;
+    }
+    document.title = `${article.title} — THE VAULT`;
+    root.innerHTML = `<div class="article-breadcrumb"><a href="?page=home">HOME</a><span>/</span><a href="?page=journal">THE JOURNAL</a><span>/</span><span>${article.category.toUpperCase()}</span></div><article class="journal-article"><header class="article-header"><div class="article-header-meta"><span>${article.category.toUpperCase()}</span><span>${article.readingTime.toUpperCase()}</span></div><h1>${article.title}</h1><p class="article-subtitle">${article.subtitle}</p></header><figure class="article-hero"><img src="${article.image}" alt="${article.title}"><figcaption>${article.caption} · THE VAULT</figcaption></figure><div class="article-body">${article.body.map(sec => `<section><h2>${sec.heading}</h2>${sec.paragraphs.map(p => `<p>${p}</p>`).join('')}</section>`).join('')}</div></article><section class="article-related"><div class="journal-section-heading"><p class="eyebrow">CONTINUE READING</p><a class="underlined-link" href="?page=journal">All guides ↗</a></div><div class="article-related-grid">${article.related.map(id => DATA.articles.find(x => x.id === id)).filter(Boolean).map(x => buildStoryCard(x, false)).join('')}</div></section>`;
   }
 
-  // 7. Contact: direction shortcut buttons + client-side validation + aria-invalid accessibility errors.
+  // 7. Contact Controller: topic shortcuts + accessible client-side form validation.
   function initContact() {
-    const form = q('#contact-form'), fields = { name: q('#contact-name'), email: q('#contact-email'), type: q('#contact-type'), subject: q('#contact-subject'), message: q('#contact-message') };
-    const errs = { name: q('#name-error'), email: q('#email-error'), type: q('#type-error'), subject: q('#subject-error'), message: q('#message-error') }, conf = q('#contact-confirmation');
-    const setErr = (k, m) => { if (errs[k]) { errs[k].textContent = m; errs[k].hidden = !m; } if (fields[k]) { fields[k].setAttribute('aria-invalid', String(Boolean(m))); fields[k].classList.toggle('has-error', Boolean(m)); } };
-    const validate = () => {
-      const e = {}; if (!fields.name.value.trim()) e.name = 'Please enter your full name.'; if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.value.trim())) e.email = 'Enter a valid email address.';
-      if (!fields.type.value) e.type = 'Choose an enquiry type.'; if (!fields.subject.value.trim()) e.subject = 'Add a subject for your enquiry.'; if (!fields.message.value.trim()) e.message = 'Tell us a little more about your enquiry.';
-      Object.keys(fields).forEach(k => setErr(k, e[k] || '')); return e;
+    const form = q('#contact-form'), confirmation = q('#contact-confirmation');
+    const fields = { name: q('#contact-name'), email: q('#contact-email'), type: q('#contact-type'), subject: q('#contact-subject'), message: q('#contact-message') };
+    const errs = { name: q('#name-error'), email: q('#email-error'), type: q('#type-error'), subject: q('#subject-error'), message: q('#message-error') };
+
+    const setFieldError = (key, message) => {
+      if (errs[key]) { errs[key].textContent = message; errs[key].hidden = !message; }
+      if (fields[key]) { fields[key].setAttribute('aria-invalid', String(Boolean(message))); fields[key].classList.toggle('has-error', Boolean(message)); }
     };
-    qa('[data-contact-type]').forEach(b => b.addEventListener('click', () => {
-      fields.type.value = b.dataset.contactType;
-      Array.from(fields.type.options).forEach(o => { o.selected = o.value === b.dataset.contactType; o[o.selected ? 'setAttribute' : 'removeAttribute']('selected', 'selected'); });
-      fields.type.dispatchEvent(new Event('change', { bubbles: true })); fields.type.dispatchEvent(new Event('input', { bubbles: true })); setErr('type', ''); fields.type.focus();
-    }));
-    Object.keys(fields).forEach(k => fields[k]?.addEventListener('input', () => { if (fields[k].getAttribute('aria-invalid') === 'true') validate(); }));
-    form?.addEventListener('submit', e => { e.preventDefault(); conf.hidden = true; const er = validate(), ks = Object.keys(er); if (ks.length) return fields[ks[0]]?.focus(); conf.hidden = false; conf.classList.add('visible'); });
-    form?.addEventListener('reset', () => setTimeout(() => { Object.keys(fields).forEach(k => setErr(k, '')); conf.hidden = true; conf.classList.remove('visible'); }, 0));
+    const validate = () => {
+      const issues = {};
+      if (!fields.name.value.trim()) issues.name = 'Please enter your full name.';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.value.trim())) issues.email = 'Enter a valid email address.';
+      if (!fields.type.value) issues.type = 'Choose an enquiry topic.';
+      if (!fields.subject.value.trim()) issues.subject = 'Enter a subject for your enquiry.';
+      if (!fields.message.value.trim()) issues.message = 'Write a short message.';
+      Object.keys(fields).forEach(k => setFieldError(k, issues[k] || ''));
+      return issues;
+    };
+    qa('[data-contact-type]').forEach(btn => {
+      btn.onclick = () => {
+        fields.type.value = btn.dataset.contactType;
+        setFieldError('type', '');
+        fields.type.focus();
+      };
+    });
+    Object.keys(fields).forEach(k => { if (fields[k]) fields[k].oninput = () => { if (fields[k].getAttribute('aria-invalid') === 'true') validate(); }; });
+    if (form) {
+      form.onsubmit = event => {
+        event.preventDefault();
+        confirmation.hidden = true;
+        const issues = validate(), keys = Object.keys(issues);
+        if (keys.length) return fields[keys[0]]?.focus();
+        confirmation.hidden = false;
+      };
+      form.onreset = () => setTimeout(() => { Object.keys(fields).forEach(k => setFieldError(k, '')); confirmation.hidden = true; }, 0);
+    }
   }
 
-  // 8. Auth: Supabase Sign-In, Create Account, Password Recovery, Password Reset, Google OAuth & ?next=admin redirect.
+  // 8. Auth Controller: Sign In, Create Account, Password Recovery, Reset & Admin Redirect
   function initAuth() {
-    const auth = window.vaultAuth; if (!auth) return;
+    const auth = window.vaultAuth;
+    if (!auth) return;
     const forms = { login: q('#auth-login-form'), register: q('#auth-register-form'), recovery: q('#auth-recovery-form'), reset: q('#auth-reset-form') };
-    const params = new URLSearchParams(window.location.search), status = q('#auth-status');
+    const params = new URLSearchParams(window.location.search), statusEl = q('#auth-status');
     let mode = (window.location.hash.includes('type=recovery') || params.get('mode') === 'reset') ? 'reset' : 'login';
-    const msg = (m, t = '') => { status.textContent = m; status.className = `auth-status ${t}`.trim(); status.hidden = !m; };
-    const okEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()), okPw = v => v.length >= 8 && /[A-Za-z]/.test(v) && /\d/.test(v);
-    const hasCfg = () => auth.configured || (msg('Authentication is not configured yet. Add the Supabase project URL and publishable key before using this form.', 'error'), false);
-    const run = async fn => { try { return await fn(); } catch { msg('The authentication service could not be reached. Please try again.', 'error'); return null; } };
-    const switchMode = m => {
-      mode = m; Object.entries(forms).forEach(([k, f]) => { if (f) f.hidden = k !== m; });
-      qa('[data-auth-mode]').forEach(b => b.classList.toggle('active', b.dataset.authMode === m));
-      setText('#auth-mode-label', m === 'register' ? 'CREATE ACCOUNT' : m.toUpperCase());
-      q('#auth-panel-title').innerHTML = m === 'register' ? 'Make an <em>entrance.</em>' : m === 'reset' ? 'A fresh <em>start.</em>' : 'Welcome <em>back.</em>';
-      msg('', '');
+
+    const showStatus = (text, kind = '') => { statusEl.textContent = text; statusEl.className = `auth-status ${kind}`.trim(); statusEl.hidden = !text; };
+    const validEmail = val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
+    const validPass = val => val.length >= 8 && /[A-Za-z]/.test(val) && /\d/.test(val);
+    const switchMode = nextMode => {
+      mode = nextMode;
+      Object.entries(forms).forEach(([k, form]) => { if (form) form.hidden = k !== nextMode; });
+      qa('[data-auth-mode]').forEach(btn => btn.classList.toggle('active', btn.dataset.authMode === nextMode));
+      setText('#auth-mode-label', nextMode === 'register' ? 'CREATE ACCOUNT' : nextMode.toUpperCase());
+      q('#auth-panel-title').innerHTML = nextMode === 'register' ? 'Create <em>account.</em>' : nextMode === 'reset' ? 'Reset <em>password.</em>' : 'Welcome <em>back.</em>';
+      showStatus('');
     };
-    const sync = s => {
+    const syncAccountUI = session => {
       if (!q('#auth-account')) return;
-      q('#auth-account').hidden = !s; q('.auth-modes').hidden = Boolean(s);
-      if (s) { Object.values(forms).forEach(f => { f.hidden = true; }); setText('#auth-mode-label', 'SIGNED IN'); q('#auth-panel-title').innerHTML = 'You are <em>inside.</em>'; } else switchMode(mode);
+      q('#auth-account').hidden = !session;
+      q('.auth-modes').hidden = Boolean(session);
+      if (session) { Object.values(forms).forEach(f => { f.hidden = true; }); setText('#auth-mode-label', 'SIGNED IN'); q('#auth-panel-title').innerHTML = 'Signed <em>in.</em>'; }
+      else switchMode(mode);
     };
-    forms.login.addEventListener('submit', async e => { e.preventDefault(); const em = q('#login-email').value, pw = q('#login-password').value; if (!okEmail(em)) return msg('Enter a valid email address.', 'error'); if (!pw) return msg('Enter your password.', 'error'); if (!hasCfg()) return; msg('Entering the room…', 'loading'); const r = await run(() => auth.signIn(em.trim(), pw)); if (!r) return; if (r.error) return msg('We could not sign you in with those details.', 'error'); msg('You are signed in.', 'success'); if (params.get('next') === 'admin') navigate('?page=admin'); });
-    forms.register.addEventListener('submit', async e => { e.preventDefault(); const em = q('#register-email').value, pw = q('#register-password').value, cf = q('#register-confirm').value; if (!okEmail(em)) return msg('Enter a valid email address.', 'error'); if (!okPw(pw)) return msg('Use at least 8 characters, including one letter and one number.', 'error'); if (pw !== cf) return msg('The passwords do not match.', 'error'); if (!hasCfg()) return; msg('Preparing your account…', 'loading'); const r = await run(() => auth.signUp(em.trim(), pw)); if (!r) return; if (r.error) return msg('We could not create that account. The email may already be registered.', 'error'); msg(r.data?.session ? 'Your account is ready.' : 'Check your email to verify your account before signing in.', 'success'); });
-    forms.recovery.addEventListener('submit', async e => { e.preventDefault(); const em = q('#recovery-email').value; if (!okEmail(em)) return msg('Enter a valid email address.', 'error'); if (!hasCfg()) return; msg('Sending a recovery link…', 'loading'); const r = await run(() => auth.requestPasswordReset(em.trim())); if (r) msg(r.error ? 'We could not send a recovery link for that address.' : 'If an account exists for that address, a recovery link has been sent.', r.error ? 'error' : 'success'); });
-    forms.reset.addEventListener('submit', async e => { e.preventDefault(); const pw = q('#reset-password').value, cf = q('#reset-confirm').value; if (!okPw(pw)) return msg('Use at least 8 characters, including one letter and one number.', 'error'); if (pw !== cf) return msg('The passwords do not match.', 'error'); if (!hasCfg()) return; msg('Updating your password…', 'loading'); const r = await run(() => auth.updatePassword(pw)); if (!r) return; if (r.error) return msg('The password could not be updated. Request a new recovery link and try again.', 'error'); switchMode('login'); msg('Your password has been updated. You can now sign in.', 'success'); });
-    const google = async () => { if (!hasCfg()) return; msg('Opening Google sign-in…', 'loading'); const r = await run(() => auth.signInWithGoogle()); if (r?.error) msg('Google sign-in is not available until its Supabase and Google Cloud settings are configured.', 'error'); };
-    qa('[data-auth-mode]').forEach(b => b.addEventListener('click', () => switchMode(b.dataset.authMode)));
-    q('#google-login')?.addEventListener('click', google); q('#google-register')?.addEventListener('click', google);
-    q('#auth-logout')?.addEventListener('click', async () => { const r = await run(() => auth.signOut()); if (r && !r.error) { msg('You have been signed out.', 'success'); switchMode('login'); } });
-    auth.onAuthStateChange((ev, s) => { sync(s); if (ev === 'PASSWORD_RECOVERY') switchMode('reset'); });
-    auth.getSession().then(r => { sync(r.session); if (r.error && auth.configured) msg('Your session could not be restored. Please sign in again.', 'error'); }).catch(() => msg('Your session could not be restored. Please sign in again.', 'error'));
+
+    forms.login.onsubmit = async e => {
+      e.preventDefault();
+      const email = q('#login-email').value, password = q('#login-password').value;
+      if (!validEmail(email)) return showStatus('Enter a valid email address.', 'error');
+      if (!password) return showStatus('Enter your password.', 'error');
+      showStatus('Signing in…', 'loading');
+      const res = await auth.signIn(email.trim(), password);
+      if (res?.error) return showStatus('Invalid email or password.', 'error');
+      showStatus('You are signed in.', 'success');
+      if (params.get('next') === 'admin') navigate('?page=admin');
+    };
+    forms.register.onsubmit = async e => {
+      e.preventDefault();
+      const email = q('#register-email').value, password = q('#register-password').value, confirm = q('#register-confirm').value;
+      if (!validEmail(email)) return showStatus('Enter a valid email address.', 'error');
+      if (!validPass(password)) return showStatus('Use at least 8 characters with 1 letter and 1 number.', 'error');
+      if (password !== confirm) return showStatus('Passwords do not match.', 'error');
+      showStatus('Creating account…', 'loading');
+      const res = await auth.signUp(email.trim(), password);
+      if (res?.error) return showStatus('Could not create account. Email may already be registered.', 'error');
+      showStatus(res?.data?.session ? 'Account created and signed in.' : 'Check your email to verify your account.', 'success');
+    };
+    forms.recovery.onsubmit = async e => {
+      e.preventDefault();
+      const email = q('#recovery-email').value;
+      if (!validEmail(email)) return showStatus('Enter a valid email address.', 'error');
+      showStatus('Sending recovery email…', 'loading');
+      const res = await auth.requestPasswordReset(email.trim());
+      showStatus(res?.error ? 'Unable to send recovery email.' : 'If an account exists, a recovery link was sent.', res?.error ? 'error' : 'success');
+    };
+    forms.reset.onsubmit = async e => {
+      e.preventDefault();
+      const pw = q('#reset-password').value, cf = q('#reset-confirm').value;
+      if (!validPass(pw)) return showStatus('Use at least 8 characters with 1 letter and 1 number.', 'error');
+      if (pw !== cf) return showStatus('Passwords do not match.', 'error');
+      const res = await auth.updatePassword(pw);
+      if (res?.error) return showStatus('Could not update password.', 'error');
+      switchMode('login');
+      showStatus('Password updated. Please sign in.', 'success');
+    };
+    qa('[data-auth-mode]').forEach(btn => { btn.onclick = () => switchMode(btn.dataset.authMode); });
+    const googleSignIn = async () => { const res = await auth.signInWithGoogle(); if (res?.error) showStatus('Google login requires Supabase OAuth configuration.', 'error'); };
+    if (q('#google-login')) q('#google-login').onclick = googleSignIn;
+    if (q('#google-register')) q('#google-register').onclick = googleSignIn;
+    if (q('#auth-logout')) q('#auth-logout').onclick = async () => { await auth.signOut(); showStatus('Signed out.', 'success'); switchMode('login'); };
+
+    auth.onAuthStateChange((ev, session) => { syncAccountUI(session); if (ev === 'PASSWORD_RECOVERY') switchMode('reset'); });
+    auth.getSession().then(res => syncAccountUI(res.session));
     switchMode(mode);
   }
 
-  // 9. Admin: protected super-admin RPC gate, live overview metrics, diagnostics, & Lot CRUD modals.
+  // 9. Admin Controller: RPC super-admin check, database metrics & Lots CRUD modals.
   async function initAdmin() {
-    const auth = window.vaultAuth, access = q('#admin-access-state'), dash = q('#admin-dashboard');
-    const showErr = m => access.replaceChildren(el('p', 'admin-kicker', 'PRIVATE ROOM / ACCESS ISSUE'), el('h1', '', 'Entry could not be verified.'), el('span', '', m), Object.assign(el('a', 'admin-return-overview', 'Return to the house ↗'), { href: '?page=home' }));
-    if (!auth?.configured || !auth.client) return showErr('Supabase authentication is not configured for this environment.');
+    const auth = window.vaultAuth, accessBox = q('#admin-access-state'), dashboard = q('#admin-dashboard');
+    const showAccessError = msg => accessBox.replaceChildren(
+      el('p', 'admin-kicker', 'ADMIN ACCESS ISSUE'),
+      el('h1', '', 'Access denied.'),
+      el('span', '', msg),
+      Object.assign(el('a', 'admin-return-overview', 'Return home ↗'), { href: '?page=home' })
+    );
+    if (!auth?.configured || !auth.client) return showAccessError('Supabase is not configured.');
     try {
-      const ses = await auth.getSession(); if (ses.error) return showErr('Your session could not be restored. Please sign in again.');
+      const ses = await auth.getSession();
+      if (ses.error) return showAccessError('Session could not be verified.');
       if (!ses.session) return navigate('?page=auth&next=admin', true);
-      const adm = await auth.isSuperAdmin(); if (adm.error) return showErr('The database could not verify administrator authority. No dashboard data was loaded.');
-      if (!adm.authorized) return showErr('Access denied. This account is not the designated super-admin.');
-      const uid = ses.session.user.id, errs = []; let lots = [], pendingDel = null;
-      setText('#admin-account-email', ses.session.user.email || 'Verified super-admin'); setText('#admin-sidebar-email', ses.session.user.email || 'Verified super-admin');
-      access.hidden = true; dash.hidden = false;
-      const setConn = (t, c) => { const n = q('#admin-connection'); n.className = `admin-connection ${c}`; n.replaceChildren(el('i'), document.createTextNode(t)); };
-      const fmtD = v => !v ? 'Date unavailable' : new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(v));
-      const fmtA = v => v == null ? 'Amount unavailable' : money(v);
-      const cnt = async (t, qn, fn) => { try { let r = auth.client.from(t).select('*', { count: 'exact', head: true }); if (fn) r = fn(r); const { count, error } = await r; return { t, qn, v: error ? null : (count || 0), e: error }; } catch (e) { return { t, qn, v: null, e }; } };
+      const roleCheck = await auth.isSuperAdmin();
+      if (roleCheck.error || !roleCheck.authorized) return showAccessError('This account does not have super-admin permissions.');
+
+      const userId = ses.session.user.id;
+      let adminLots = [], pendingDelete = null;
+      setText('#admin-account-email', ses.session.user.email || 'Super-admin');
+      setText('#admin-sidebar-email', ses.session.user.email || 'Super-admin');
+      accessBox.hidden = true;
+      dashboard.hidden = false;
+
+      const formatDate = v => !v ? 'N/A' : new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(v));
+      const countRows = async (table, filterFn) => {
+        let query = auth.client.from(table).select('*', { count: 'exact', head: true });
+        if (filterFn) query = filterFn(query);
+        const { count, error } = await query;
+        return { table, value: error ? null : (count || 0), error };
+      };
+
       async function loadOverview() {
-        errs.length = 0;
-        const ms = await Promise.all([cnt('auction_lots', 'total'), cnt('auction_lots', 'published', x => x.not('published_at', 'is', null)), cnt('auction_lots', 'live', x => x.eq('status', 'live')), cnt('auction_lots', 'closed', x => x.eq('status', 'closed')), cnt('bids', 'total'), cnt('profiles', 'members')]);
-        ['stat-total-lots', 'stat-published-lots', 'stat-live-auctions', 'stat-closed-auctions', 'stat-total-bids', 'stat-members'].forEach((id, i) => { setText(`#${id}`, ms[i].v === null ? 'Unavailable' : Number(ms[i].v).toLocaleString('en-IN')); if (ms[i].e) errs.push({ table: ms[i].t, query: ms[i].qn, code: ms[i].e.code || 'ERR', message: ms[i].e.message }); });
-        const [lR, bR, eR] = await Promise.all([auth.client.from('auction_lots').select('id,lot_number,title,status,created_at').order('created_at', { ascending: false }).limit(5), auth.client.from('bids').select('id,lot_id,amount,created_at').order('created_at', { ascending: false }).limit(5), auth.client.from('contact_messages').select('id,full_name,enquiry_type,subject,status,created_at').order('created_at', { ascending: false }).limit(5)]);
-        [[lR, 'recent-lots', 'auction_lots', l => [l.status.toUpperCase(), l.title, `LOT ${l.lot_number} / ${fmtD(l.created_at)}`]], [bR, 'recent-bids', 'bids', b => ['RECORDED BID', fmtA(b.amount), `LOT ${String(b.lot_id).slice(0, 8)} / ${fmtD(b.created_at)}`]], [eR, 'recent-enquiries', 'contact_messages', e => [e.status.toUpperCase(), e.subject, `${e.enquiry_type} / ${fmtD(e.created_at)}`]]].forEach(([res, id, tbl, map]) => {
-          const box = q(`#${id}`); box.replaceChildren();
-          if (res.error) { errs.push({ table: tbl, query: id, code: res.error.code || 'ERR', message: res.error.message }); box.append(el('p', 'admin-list-status is-error', 'Unavailable from database.')); }
+        const errors = [];
+        const metrics = await Promise.all([
+          countRows('auction_lots'),
+          countRows('auction_lots', r => r.not('published_at', 'is', null)),
+          countRows('auction_lots', r => r.eq('status', 'live')),
+          countRows('auction_lots', r => r.eq('status', 'closed')),
+          countRows('bids'),
+          countRows('profiles')
+        ]);
+        ['stat-total-lots', 'stat-published-lots', 'stat-live-auctions', 'stat-closed-auctions', 'stat-total-bids', 'stat-members'].forEach((id, i) => {
+          setText(`#${id}`, metrics[i].value === null ? 'Unavailable' : Number(metrics[i].value).toLocaleString('en-IN'));
+          if (metrics[i].error) errors.push(metrics[i]);
+        });
+        const [lotsRes, bidsRes, msgRes] = await Promise.all([
+          auth.client.from('auction_lots').select('id,lot_number,title,status,created_at').order('created_at', { ascending: false }).limit(5),
+          auth.client.from('bids').select('id,lot_id,amount,created_at').order('created_at', { ascending: false }).limit(5),
+          auth.client.from('contact_messages').select('id,enquiry_type,subject,status,created_at').order('created_at', { ascending: false }).limit(5)
+        ]);
+        [
+          [lotsRes, 'recent-lots', r => [r.status.toUpperCase(), r.title, `LOT ${r.lot_number} · ${formatDate(r.created_at)}`]],
+          [bidsRes, 'recent-bids', r => ['BID', money(r.amount), `LOT ${String(r.lot_id).slice(0, 8)} · ${formatDate(r.created_at)}`]],
+          [msgRes, 'recent-enquiries', r => [r.status.toUpperCase(), r.subject, `${r.enquiry_type} · ${formatDate(r.created_at)}`]]
+        ].forEach(([res, boxId, mapRow]) => {
+          const box = q(`#${boxId}`); box.replaceChildren();
+          if (res.error) box.append(el('p', 'admin-list-status is-error', 'Unavailable from database.'));
           else if (!res.data?.length) box.append(el('p', 'admin-list-status', 'No records yet.'));
-          else res.data.forEach(r => { const [k, t, d] = map(r); box.append(el('div', 'admin-activity-row', '', el('div', '', '', el('span', 'admin-row-kicker', k), el('strong', '', t), el('small', '', d)))); });
+          else res.data.forEach(item => {
+            const [kicker, title, detail] = mapRow(item);
+            box.append(el('div', 'admin-activity-row', '', el('span', 'admin-row-kicker', kicker), el('strong', '', title), el('small', '', detail)));
+          });
         });
-        const dl = q('#admin-diagnostics-list'); dl.replaceChildren(); q('#admin-diagnostics').hidden = !errs.length;
-        errs.forEach(e => dl.append(el('article', 'admin-diagnostic-row', '', el('strong', '', `${e.table} / ${e.query}`), el('span', '', e.code), el('p', '', e.message))));
-        setConn(errs.length ? 'Connected with limitations' : 'Supabase connected', errs.length ? 'is-limited' : 'is-connected');
+        const connBadge = q('#admin-connection');
+        connBadge.className = `admin-connection ${errors.length ? 'is-limited' : 'is-connected'}`;
+        connBadge.replaceChildren(el('i'), document.createTextNode(errors.length ? 'Connected (partial)' : 'Supabase connected'));
       }
-      async function loadLots() {
-        const st = q('#admin-lots-status'), tb = q('#admin-lots-tbody');
-        st.hidden = false; st.className = 'admin-list-status'; st.textContent = 'Loading auction listings from Supabase…'; tb.replaceChildren();
-        const { data, error } = await auth.client.from('auction_lots').select('id,legacy_id,lot_number,category,period,title,subtitle,description,estimate_low,estimate_high,current_bid,bid_count,status,published_at,created_at,lot_images(id,image_url,is_primary,sort_order)').order('created_at', { ascending: false });
-        if (error) { st.textContent = `Unable to fetch lots: ${error.message}`; st.className = 'admin-list-status is-error'; return; }
-        lots = data || []; drawLots();
+
+      async function loadAdminLots() {
+        const statusEl = q('#admin-lots-status'), tbody = q('#admin-lots-tbody');
+        statusEl.hidden = false; statusEl.textContent = 'Loading lots…'; tbody.replaceChildren();
+        const { data, error } = await auth.client.from('auction_lots').select('id,legacy_id,lot_number,category,period,title,subtitle,description,estimate_low,estimate_high,current_bid,status,published_at,lot_images(id,image_url,is_primary,sort_order)').order('created_at', { ascending: false });
+        if (error) { statusEl.textContent = `Error: ${error.message}`; return; }
+        adminLots = data || [];
+        renderAdminTable();
       }
-      function drawLots() {
-        const tb = q('#admin-lots-tbody'), st = q('#admin-lots-status'), sr = (q('#admin-lots-search')?.value || '').trim().toLowerCase(), sf = q('#admin-status-filter')?.value || 'all', cf = q('#admin-category-filter')?.value || 'all';
-        const vis = lots.filter(l => (sf === 'all' || l.status === sf) && (cf === 'all' || l.category === cf) && (!sr || `${l.lot_number} ${l.title} ${l.category} ${l.subtitle}`.toLowerCase().includes(sr)));
-        tb.replaceChildren();
-        if (!lots.length || !vis.length) { st.hidden = false; st.className = 'admin-list-status'; st.textContent = !lots.length ? 'No auction lots recorded in Supabase yet.' : 'No lots matched the current filter.'; return; }
-        st.hidden = true;
-        vis.forEach(lot => {
-          const imgs = lot.lot_images || [], img = (imgs.find(i => i.is_primary) || imgs[0])?.image_url || 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=150&q=80';
-          const sel = el('select', `admin-action-btn admin-status-select status-${lot.status}`);
-          ['draft', 'scheduled', 'live', 'closed', 'withdrawn'].forEach(s => sel.append(Object.assign(el('option', '', s[0].toUpperCase() + s.slice(1)), { value: s, selected: lot.status === s })));
-          sel.addEventListener('change', () => setStatus(lot.id, sel.value));
-          const bEdit = Object.assign(el('button', 'admin-action-btn btn-edit', 'Edit'), { type: 'button' }); bEdit.addEventListener('click', () => openModal(lot));
-          const bDel = Object.assign(el('button', 'admin-action-btn btn-delete', 'Delete'), { type: 'button' }); bDel.addEventListener('click', () => { pendingDel = lot; setText('#delete-modal-copy', `Permanently delete LOT ${lot.lot_number} ("${lot.title}")?`); q('#delete-modal-feedback').hidden = true; q('#withdraw-instead-btn').hidden = true; q('#confirm-delete-btn').disabled = false; q('#admin-delete-modal').hidden = false; });
-          tb.append(el('tr', '', '', el('td', '', '', el('strong', '', `LOT ${lot.lot_number || '—'}`)), el('td', '', '', el('div', 'admin-lot-cell', '', Object.assign(el('img', 'admin-lot-thumb'), { src: img, alt: lot.title }), el('div', '', '', el('strong', 'admin-lot-meta-title', lot.title), el('span', 'admin-lot-meta-subtitle', lot.subtitle || lot.period || '')))), el('td', '', lot.category), el('td', '', '', el('strong', '', fmtA(lot.current_bid))), el('td', '', '', el('small', '', lot.estimate_low && lot.estimate_high ? `${fmtA(lot.estimate_low)} – ${fmtA(lot.estimate_high)}` : 'Upon request')), el('td', '', '', sel), el('td', 'admin-actions-cell', '', el('div', 'admin-row-actions', '', bEdit, bDel))));
+
+      function renderAdminTable() {
+        const tbody = q('#admin-lots-tbody'), statusEl = q('#admin-lots-status');
+        const query = (q('#admin-lots-search')?.value || '').trim().toLowerCase();
+        const stFilter = q('#admin-status-filter')?.value || 'all', catFilter = q('#admin-category-filter')?.value || 'all';
+        const visible = adminLots.filter(l => (stFilter === 'all' || l.status === stFilter) && (catFilter === 'all' || l.category === catFilter) && (!query || `${l.lot_number} ${l.title} ${l.category}`.toLowerCase().includes(query)));
+        tbody.replaceChildren();
+        if (!visible.length) { statusEl.hidden = false; statusEl.textContent = adminLots.length ? 'No matching lots.' : 'No lots in database yet.'; return; }
+        statusEl.hidden = true;
+        visible.forEach(lot => {
+          const imgs = lot.lot_images || [];
+          const thumb = (imgs.find(i => i.is_primary) || imgs[0])?.image_url || DATA.lots[0].image;
+          const statusSel = el('select', 'admin-action-btn');
+          ['draft', 'scheduled', 'live', 'closed', 'withdrawn'].forEach(st => statusSel.append(Object.assign(el('option', '', st), { value: st, selected: lot.status === st })));
+          statusSel.onchange = () => updateStatus(lot.id, statusSel.value);
+          const editBtn = Object.assign(el('button', 'admin-action-btn', 'Edit'), { type: 'button', onclick: () => openLotModal(lot) });
+          const delBtn = Object.assign(el('button', 'admin-action-btn', 'Delete'), { type: 'button', onclick: () => { pendingDelete = lot; setText('#delete-modal-copy', `Delete LOT ${lot.lot_number} ("${lot.title}")?`); q('#delete-modal-feedback').hidden = true; q('#withdraw-instead-btn').hidden = true; q('#confirm-delete-btn').disabled = false; q('#admin-delete-modal').hidden = false; } });
+          tbody.append(el('tr', '', '', el('td', '', `LOT ${lot.lot_number}`), el('td', '', '', el('div', 'admin-lot-cell', '', Object.assign(el('img', 'admin-lot-thumb'), { src: thumb, alt: lot.title }), el('strong', '', lot.title))), el('td', '', lot.category), el('td', '', money(lot.current_bid || 0)), el('td', '', lot.estimate_low ? `${money(lot.estimate_low)} – ${money(lot.estimate_high || lot.estimate_low)}` : 'Upon request'), el('td', '', '', statusSel), el('td', '', '', el('div', 'admin-row-actions', '', editBtn, delBtn))));
         });
       }
-      const openModal = lot => {
-        q('#admin-lot-form').reset(); q('#modal-lot-feedback').hidden = true; q('#lot-form-mode').value = lot ? 'edit' : 'add'; q('#lot-form-id').value = lot?.id || '';
-        setText('#modal-lot-title', lot ? `Edit auction listing (LOT ${lot.lot_number})` : 'Add new auction listing');
+
+      const updateStatus = async (id, status) => {
+        const payload = { status, updated_at: new Date().toISOString() };
+        if (status === 'live' || status === 'scheduled') payload.published_at = payload.updated_at;
+        await auth.client.from('auction_lots').update(payload).eq('id', id);
+        loadAdminLots(); loadOverview();
+      };
+
+      const openLotModal = lot => {
+        q('#admin-lot-form').reset(); q('#modal-lot-feedback').hidden = true;
+        q('#lot-form-mode').value = lot ? 'edit' : 'add'; q('#lot-form-id').value = lot?.id || '';
+        setText('#modal-lot-title', lot ? `Edit LOT ${lot.lot_number}` : 'Add auction listing');
         if (lot) {
           const pri = (lot.lot_images || []).find(i => i.is_primary) || lot.lot_images?.[0];
-          q('#lot-form-title').value = lot.title || ''; q('#lot-form-number').value = (lot.lot_number || '').replace(/^LOT\s*/i, ''); q('#lot-form-category').value = lot.category || 'Timepieces';
-          q('#lot-form-status').value = lot.status || 'live'; q('#lot-form-subtitle').value = lot.subtitle || ''; q('#lot-form-description').value = lot.description || '';
-          q('#lot-form-period').value = lot.period || ''; q('#lot-form-price').value = lot.current_bid ?? 0; q('#lot-form-est-low').value = lot.estimate_low ?? '';
-          q('#lot-form-est-high').value = lot.estimate_high ?? ''; q('#lot-form-image').value = pri?.image_url || ''; q('#lot-form-published').checked = Boolean(lot.published_at);
-        } else { q('#lot-form-status').value = 'live'; q('#lot-form-published').checked = true; }
+          q('#lot-form-title').value = lot.title || ''; q('#lot-form-number').value = lot.lot_number || '';
+          q('#lot-form-category').value = lot.category || 'Timepieces'; q('#lot-form-status').value = lot.status || 'live';
+          q('#lot-form-subtitle').value = lot.subtitle || ''; q('#lot-form-description').value = lot.description || '';
+          q('#lot-form-period').value = lot.period || ''; q('#lot-form-price').value = lot.current_bid ?? 0;
+          q('#lot-form-est-low').value = lot.estimate_low ?? ''; q('#lot-form-est-high').value = lot.estimate_high ?? '';
+          q('#lot-form-image').value = pri?.image_url || ''; q('#lot-form-published').checked = Boolean(lot.published_at);
+        }
         q('#admin-lot-modal').hidden = false;
       };
-      const setStatus = async (id, status) => {
-        const up = { status, updated_at: new Date().toISOString() }; if (status === 'live' || status === 'scheduled') up.published_at = up.updated_at;
-        const { error } = await auth.client.from('auction_lots').update(up).eq('id', id);
-        if (error) { alert(error.message); return loadLots(); }
-        const t = lots.find(i => i.id === id); if (t) t.status = status; drawLots(); loadOverview();
-      };
-      q('#admin-lot-form').addEventListener('submit', async e => {
-        e.preventDefault(); const fb = q('#modal-lot-feedback'), msg = (m, t) => { fb.textContent = m; fb.className = `admin-modal-feedback ${t}`; fb.hidden = !m; };
-        const title = q('#lot-form-title').value.trim(), num = q('#lot-form-number').value.trim(), price = Number(q('#lot-form-price').value) || 0, eL = q('#lot-form-est-low').value ? Number(q('#lot-form-est-low').value) : null, eH = q('#lot-form-est-high').value ? Number(q('#lot-form-est-high').value) : null, img = q('#lot-form-image').value.trim();
-        if (!title || !num || price < 0 || (eL != null && eH != null && eH < eL)) return msg('Check required title, lot number, and non-negative estimates.', 'error');
-        msg('Saving listing…', 'loading');
-        const now = new Date().toISOString(), pay = { lot_number: num, category: q('#lot-form-category').value, period: q('#lot-form-period').value.trim() || null, title, subtitle: q('#lot-form-subtitle').value.trim() || null, description: q('#lot-form-description').value.trim() || null, estimate_low: eL, estimate_high: eH, current_bid: price, status: q('#lot-form-status').value, published_at: q('#lot-form-published').checked ? now : null, updated_at: now };
+
+      q('#admin-lot-form').onsubmit = async e => {
+        e.preventDefault();
+        const title = q('#lot-form-title').value.trim(), num = q('#lot-form-number').value.trim(), price = Number(q('#lot-form-price').value) || 0;
+        if (!title || !num) { q('#modal-lot-feedback').hidden = false; q('#modal-lot-feedback').textContent = 'Title and lot number are required.'; return; }
+        const now = new Date().toISOString(), payload = {
+          lot_number: num, category: q('#lot-form-category').value, period: q('#lot-form-period').value.trim() || null,
+          title, subtitle: q('#lot-form-subtitle').value.trim() || null, description: q('#lot-form-description').value.trim() || null,
+          estimate_low: q('#lot-form-est-low').value ? Number(q('#lot-form-est-low').value) : null,
+          estimate_high: q('#lot-form-est-high').value ? Number(q('#lot-form-est-high').value) : null,
+          current_bid: price, status: q('#lot-form-status').value, published_at: q('#lot-form-published').checked ? now : null, updated_at: now
+        };
+        const imgUrl = q('#lot-form-image').value.trim();
         if (q('#lot-form-mode').value === 'add') {
-          pay.legacy_id = `lot-${Date.now().toString(36)}`; pay.created_by = uid;
-          const { data, error } = await auth.client.from('auction_lots').insert(pay).select().single(); if (error) return msg(error.message, 'error');
-          if (img && data) await auth.client.from('lot_images').insert({ lot_id: data.id, image_url: img, alt_text: title, is_primary: true, sort_order: 0 });
+          payload.legacy_id = `lot-${Date.now().toString(36)}`; payload.created_by = userId;
+          const { data } = await auth.client.from('auction_lots').insert(payload).select().single();
+          if (imgUrl && data) await auth.client.from('lot_images').insert({ lot_id: data.id, image_url: imgUrl, alt_text: title, is_primary: true, sort_order: 0 });
         } else {
-          const id = q('#lot-form-id').value, { error } = await auth.client.from('auction_lots').update(pay).eq('id', id); if (error) return msg(error.message, 'error');
-          if (img) { const { data: imgs } = await auth.client.from('lot_images').select('id').eq('lot_id', id).eq('is_primary', true); if (imgs?.length) await auth.client.from('lot_images').update({ image_url: img, alt_text: title }).eq('id', imgs[0].id); else await auth.client.from('lot_images').insert({ lot_id: id, image_url: img, alt_text: title, is_primary: true, sort_order: 0 }); }
+          const id = q('#lot-form-id').value;
+          await auth.client.from('auction_lots').update(payload).eq('id', id);
         }
-        msg('✓ Saved successfully.', 'success'); setTimeout(() => { q('#admin-lot-modal').hidden = true; loadLots(); loadOverview(); }, 500);
-      });
-      q('#confirm-delete-btn').addEventListener('click', async () => {
-        if (!pendingDel) return; const fb = q('#delete-modal-feedback'), btn = q('#confirm-delete-btn'); btn.disabled = true;
-        const { error } = await auth.client.from('auction_lots').delete().eq('id', pendingDel.id);
-        // Postgres 23503 = foreign-key constraint (bids exist), so we offer safe "Withdraw" instead of hard-delete.
-        if (error) { fb.hidden = false; fb.className = 'admin-modal-feedback error'; fb.textContent = (error.code === '23503') ? 'Permanent bids exist. Withdraw the lot instead.' : error.message; if (error.code === '23503') q('#withdraw-instead-btn').hidden = false; btn.disabled = false; return; }
-        q('#admin-delete-modal').hidden = true; loadLots(); loadOverview();
-      });
-      q('#withdraw-instead-btn').addEventListener('click', async () => { if (pendingDel) await setStatus(pendingDel.id, 'withdrawn'); q('#admin-delete-modal').hidden = true; });
-      q('#admin-seed-lots-btn').addEventListener('click', async () => {
-        if (!confirm('Seed the 8 demonstration lots into Supabase?')) return;
+        q('#admin-lot-modal').hidden = true; loadAdminLots(); loadOverview();
+      };
+
+      q('#confirm-delete-btn').onclick = async () => {
+        if (!pendingDelete) return;
+        const { error } = await auth.client.from('auction_lots').delete().eq('id', pendingDelete.id);
+        if (error) {
+          q('#delete-modal-feedback').hidden = false;
+          q('#delete-modal-feedback').textContent = error.code === '23503' ? 'Bids exist on this lot. Mark it as withdrawn instead.' : error.message;
+          if (error.code === '23503') q('#withdraw-instead-btn').hidden = false;
+          return;
+        }
+        q('#admin-delete-modal').hidden = true; loadAdminLots(); loadOverview();
+      };
+      q('#withdraw-instead-btn').onclick = async () => { if (pendingDelete) await updateStatus(pendingDelete.id, 'withdrawn'); q('#admin-delete-modal').hidden = true; };
+      q('#admin-seed-lots-btn').onclick = async () => {
+        if (!confirm('Insert the 8 sample lots into Supabase?')) return;
         for (const item of DATA.lots) {
-          const { data: l } = await auth.client.from('auction_lots').upsert({ legacy_id: item.id, lot_number: item.number, category: item.category, period: item.period, title: item.title, subtitle: item.subtitle, description: item.story, current_bid: item.price, status: 'live', published_at: new Date().toISOString(), created_by: uid }, { onConflict: 'legacy_id' }).select().single();
-          if (l) await auth.client.from('lot_images').upsert({ lot_id: l.id, image_url: item.image, alt_text: item.title, is_primary: true, sort_order: 0 }, { onConflict: 'lot_id,sort_order' });
+          const { data: row } = await auth.client.from('auction_lots').upsert({ legacy_id: item.id, lot_number: item.number, category: item.category, period: item.period, title: item.title, subtitle: item.subtitle, description: item.story, current_bid: item.price, status: 'live', published_at: new Date().toISOString(), created_by: userId }, { onConflict: 'legacy_id' }).select().single();
+          if (row) await auth.client.from('lot_images').upsert({ lot_id: row.id, image_url: item.image, alt_text: item.title, is_primary: true, sort_order: 0 }, { onConflict: 'lot_id,sort_order' });
         }
-        loadLots(); loadOverview();
-      });
-      const switchSec = (k, lbl) => {
-        setText('#admin-section-title', lbl); qa('[data-admin-section]').forEach(l => l.classList.toggle('active', l.dataset.adminSection === k));
-        q('#admin-overview').hidden = k !== 'overview'; q('#admin-lots').hidden = k !== 'lots'; q('#admin-placeholder').hidden = k === 'overview' || k === 'lots';
-        if (k === 'lots') loadLots(); else if (k !== 'overview') { setText('#admin-placeholder-title', `${lbl} is being prepared.`); setText('#admin-placeholder-copy', `${lbl} management is planned for a later phase.`); }
+        loadAdminLots(); loadOverview();
+      };
+
+      const switchSection = (key, label) => {
+        setText('#admin-section-title', label);
+        qa('[data-admin-section]').forEach(a => a.classList.toggle('active', a.dataset.adminSection === key));
+        q('#admin-overview').hidden = key !== 'overview';
+        q('#admin-lots').hidden = key !== 'lots';
+        q('#admin-placeholder').hidden = key === 'overview' || key === 'lots';
+        if (key === 'lots') loadAdminLots();
+        else if (key !== 'overview') { setText('#admin-placeholder-title', label); setText('#admin-placeholder-copy', `${label} module is planned for a future update.`); }
         q('#admin-sidebar').classList.remove('is-open');
       };
-      qa('[data-admin-section]').forEach(l => l.addEventListener('click', e => { e.preventDefault(); switchSec(l.dataset.adminSection, l.dataset.sectionLabel); history.replaceState(null, '', `${window.location.pathname}?page=admin#${l.dataset.adminSection}`); }));
-      q('#admin-menu-toggle').addEventListener('click', () => q('#admin-sidebar').classList.toggle('is-open'));
-      qa('#admin-top-logout,#admin-sidebar-logout').forEach(b => b.addEventListener('click', async () => { await auth.signOut(); navigate('?page=auth', true); }));
-      q('#admin-add-lot-btn').addEventListener('click', () => openModal(null)); q('#admin-refresh-lots-btn').addEventListener('click', loadLots);
-      ['#admin-lots-search', '#admin-status-filter', '#admin-category-filter'].forEach(s => q(s)?.addEventListener(s.includes('search') ? 'input' : 'change', drawLots));
-      ['#admin-lot-modal-close', '#lot-form-cancel'].forEach(s => q(s)?.addEventListener('click', () => { q('#admin-lot-modal').hidden = true; }));
-      ['#admin-delete-modal-close', '#cancel-delete-btn'].forEach(s => q(s)?.addEventListener('click', () => { q('#admin-delete-modal').hidden = true; }));
-      const initK = window.location.hash.slice(1), m = q(`[data-admin-section="${initK}"]`);
-      switchSec(m ? initK : 'overview', m ? m.dataset.sectionLabel : 'Overview');
+      qa('[data-admin-section]').forEach(a => { a.onclick = e => { e.preventDefault(); switchSection(a.dataset.adminSection, a.dataset.sectionLabel); }; });
+      q('#admin-menu-toggle').onclick = () => q('#admin-sidebar').classList.toggle('is-open');
+      qa('#admin-top-logout, #admin-sidebar-logout').forEach(b => { b.onclick = async () => { await auth.signOut(); navigate('?page=auth', true); }; });
+      q('#admin-add-lot-btn').onclick = () => openLotModal(null);
+      q('#admin-refresh-lots-btn').onclick = loadAdminLots;
+      ['#admin-lots-search', '#admin-status-filter', '#admin-category-filter'].forEach(sel => { if (q(sel)) q(sel)[sel.includes('search') ? 'oninput' : 'onchange'] = renderAdminTable; });
+      ['#admin-lot-modal-close', '#lot-form-cancel'].forEach(sel => { if (q(sel)) q(sel).onclick = () => { q('#admin-lot-modal').hidden = true; }; });
+      ['#admin-delete-modal-close', '#cancel-delete-btn'].forEach(sel => { if (q(sel)) q(sel).onclick = () => { q('#admin-delete-modal').hidden = true; }; });
+      switchSection('overview', 'Overview');
       await loadOverview();
-      auth.onAuthStateChange((ev, s) => { if (ev === 'SIGNED_OUT' || !s) navigate('?page=auth', true); });
-    } catch { showErr('The administration room could not be loaded.'); }
+    } catch {
+      showAccessError('Admin dashboard could not be loaded.');
+    }
   }
 
-  // Controller dispatch table: About has no interactive JS controller (it's rendered statically from VIEWS.about).
+  // Controller Lookup & Master Page Switcher
   const CONTROLLERS = { home: initHome, explore: initExplore, lot: initLot, arena: initArena, journal: initJournal, article: initArticle, contact: initContact, auth: initAuth, admin: initAdmin };
 
-  // Determines the active SPA route from ?page=..., falls back to legacy filename or default 'home'.
   function resolvePage() {
     const qp = new URLSearchParams(window.location.search).get('page');
-    if (qp && VIEWS[qp]) return qp;
+    if (qp && PAGE_META[qp]) return qp;
     const file = window.location.pathname.split('/').pop().toLowerCase();
-    return LEGACY_MAP[file] || document.body.dataset.page || 'home';
+    return LEGACY_MAP[file] || 'home';
   }
 
-  // Master SPA boot/transition entry point: clears old timers, updates theme/title, renders view, runs controller.
-  function bootPage() {
+  function showPage() {
     clearTimers();
     const page = resolvePage(), meta = PAGE_META[page] || PAGE_META.home;
+    qa('.page-view').forEach(section => { section.hidden = section.id !== `view-${page}`; });
     document.body.dataset.page = page;
     document.body.classList.remove('arena-page', 'auth-page', 'admin-page', 'lightbox-open');
     if (meta.cls) document.body.classList.add(meta.cls);
     document.title = meta.title;
-    const tc = q('meta[name="theme-color"]'); if (tc) tc.content = meta.theme;
-    if (VIEWS[page]) mountShell(page, VIEWS[page]());
+    const themeMeta = q('meta[name="theme-color"]');
+    if (themeMeta) themeMeta.content = meta.theme;
+    syncShell(page);
     CONTROLLERS[page]?.();
     Watchlist.bindButtons();
   }
 
-  // Expose public API & backward-compatible globals for quick browser debugging or viva inspection.
-  window.VaultApp = Object.freeze({ lots: DATA.lots, sampleLots: DATA.lots, catalogue: CatalogueService, articles: DATA.articles, formatters: Formatters, watchlist: Watchlist, init: bootPage });
-  window.auctionLots = DATA.lots; window.journalArticles = DATA.articles; window.money = money;
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootPage); else bootPage();
+  window.VaultApp = Object.freeze({ lots: DATA.lots, sampleLots: DATA.lots, catalogue: CatalogueService, articles: DATA.articles, formatters: Formatters, watchlist: Watchlist, init: showPage });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', showPage);
+  else showPage();
 })();

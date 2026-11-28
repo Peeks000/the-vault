@@ -9,7 +9,7 @@
     },
     {
       "type": "assertion",
-      "description": "Verify the arena entrance displays 'The room is open.' and status 'OPEN / SIMULATED'"
+      "description": "Verify the arena entrance displays 'Live Bidding Room.' and status 'OPEN / SIMULATED'"
     },
     {
       "type": "assertion",

@@ -1,64 +1,136 @@
-// THE VAULT — Supabase Connection Config & Read-Only Static Demo Catalogue
-// Public browser keys are safe here because database access is strictly controlled by Supabase RLS policies.
+// THE VAULT — Supabase Configuration & Sample Auction Catalogue
+// Note: The publishable key is safe in browser code because PostgreSQL Row Level Security protects all tables.
 window.VAULT_SUPABASE_CONFIG = Object.freeze({
   url: "https://mscwxwvpqlwffzlxmrxv.supabase.co",
   publishableKey: "sb_publishable_4mlmczRNadcRnkcWsfooZQ_tFd85lsK"
 });
 
-// Object.freeze() locks top-level properties so demo arrays cannot be accidentally overwritten at runtime.
-// Used immediately for offline/instant rendering and as a fallback if Supabase database queries return empty.
+// Read-only sample catalogue used for instant load and offline fallback when Supabase is unreachable.
 window.VAULT_DATA = Object.freeze({
-  // 8 demonstration auction lots (prices in INR, ends = seconds left for simulated countdowns).
   lots: [
-    {"id":"watch","key":"lot-watch","number":"024","category":"Timepieces","period":"1960s–70s","title":"The Heritage Chronograph","subtitle":"A considered study in mechanical craft and enduring design.","price":240000,"bids":7,"estimate":"₹2,00,000 – ₹3,00,000","ends":9340,"image":"https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85","story":"There is a particular pleasure in a well-made mechanical object. The measured sweep of its hands, the tactility of its details and the quiet engineering beneath the dial make this a piece to be appreciated slowly."},
-    {"id":"art","key":"lot-art","number":"031","category":"Fine Art","period":"Contemporary","title":"A Study in Stillness","subtitle":"A quiet composition that rewards a longer look.","price":85000,"bids":4,"estimate":"₹65,000 – ₹1,10,000","ends":65520,"image":"https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1000&q=85","story":"An artwork changes with the room around it and the attention it receives. This demonstration lot is presented as a study in colour, composition and the personal connection between an object and its collector."},
-    {"id":"car","key":"lot-car","number":"042","category":"Automotive","period":"Classic","title":"The Open-Road Icon","subtitle":"A sculptural expression of performance and proportion.","price":1850000,"bids":12,"estimate":"₹16,00,000 – ₹22,00,000","ends":86400,"image":"https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=85","story":"The appeal of a classic automobile lives in its stance, its surfaces and the feeling of a different era of design. This sample listing shows how an auction lot could present a vehicle to an informed audience."},
-    {"id":"jewel","key":"lot-jewel","number":"056","category":"Jewellery","period":"Modern heirloom","title":"The Quiet Brilliance","subtitle":"A study in proportion, detail and considered making.","price":125000,"bids":5,"estimate":"₹1,00,000 – ₹1,60,000","ends":129600,"image":"https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1000&q=85","story":"Fine jewellery is often appreciated in the details: the finish, the balance and the way it catches light. This fictional lot demonstrates the editorial format for describing a piece without making unsupported claims."},
-    {"id":"camera","key":"lot-camera","number":"063","category":"Timepieces","period":"Mid-century","title":"The Photographer’s Companion","subtitle":"An enduring instrument for seeing the world differently.","price":42000,"bids":3,"estimate":"₹35,000 – ₹60,000","ends":172800,"image":"https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=85","story":"Mechanical cameras are a reminder that the process of making an image can be as satisfying as the image itself. This demonstration entry would be accompanied by verified technical details in a production auction."},
-    {"id":"sculpture","key":"lot-sculpture","number":"071","category":"Fine Art","period":"Contemporary","title":"Form in Conversation","subtitle":"An expressive object for a thoughtful space.","price":67000,"bids":6,"estimate":"₹50,000 – ₹90,000","ends":216000,"image":"https://images.unsplash.com/photo-1577083552431-6e5fd01aa342?auto=format&fit=crop&w=1000&q=85","story":"Sculpture asks us to move around an object and notice how its form changes with perspective. This sample description demonstrates the kind of context that could accompany a verified artwork."},
-    {"id":"car-detail","key":"lot-car-detail","number":"084","category":"Automotive","period":"Modern classic","title":"The Grand Touring Line","subtitle":"Long-distance elegance with a distinctly purposeful shape.","price":920000,"bids":9,"estimate":"₹8,00,000 – ₹12,00,000","ends":259200,"image":"https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1000&q=85","story":"The grand touring tradition is built around comfort, performance and design that ages with grace. This illustrative entry would require a full inspection and documentation before a real auction."},
-    {"id":"jewel-detail","key":"lot-jewel-detail","number":"092","category":"Jewellery","period":"Artisan collection","title":"A Line of Light","subtitle":"A restrained piece with an unmistakable presence.","price":98000,"bids":2,"estimate":"₹80,000 – ₹1,25,000","ends":302400,"image":"https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1000&q=85","story":"A well-considered piece of jewellery balances material, proportion and wearability. This fictional listing shows how a product story can be useful without implying a verified maker or gemstone specification."}
+    {
+      id: "watch", key: "lot-watch", number: "024", category: "Timepieces", period: "1960s–70s",
+      title: "The Heritage Chronograph",
+      subtitle: "1960s stainless-steel mechanical chronograph with manual winding and tachymeter dial.",
+      price: 240000, bids: 7, estimate: "₹2,00,000 – ₹3,00,000", ends: 9340,
+      image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85",
+      story: "A vintage 38mm stainless-steel chronograph powered by a hand-wound column-wheel movement. Includes clear sub-dials, original patina hands, and stitched leather strap."
+    },
+    {
+      id: "art", key: "lot-art", number: "031", category: "Fine Art", period: "Contemporary",
+      title: "A Study in Stillness",
+      subtitle: "Framed acrylic and oil work on linen canvas exploring muted warm light.",
+      price: 85000, bids: 4, estimate: "₹65,000 – ₹1,10,000", ends: 65520,
+      image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1000&q=85",
+      story: "Large-format gallery canvas finished with layered brushwork and natural mineral pigments, suited for residential or studio spaces."
+    },
+    {
+      id: "car", key: "lot-car", number: "042", category: "Automotive", period: "Classic",
+      title: "The Open-Road Icon",
+      subtitle: "1970s European grand touring coupe in restored driver condition.",
+      price: 1850000, bids: 12, estimate: "₹16,00,000 – ₹22,00,000", ends: 86400,
+      image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=85",
+      story: "Rear-engine classic coupe featuring restored leather upholstery, matching-numbers drivetrain, and documented mechanical servicing."
+    },
+    {
+      id: "jewel", key: "lot-jewel", number: "056", category: "Jewellery", period: "Modern heirloom",
+      title: "The Quiet Brilliance",
+      subtitle: "18k yellow-gold collar necklace set with brilliant-cut diamonds.",
+      price: 125000, bids: 5, estimate: "₹1,00,000 – ₹1,60,000", ends: 129600,
+      image: "https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1000&q=85",
+      story: "Hand-finished 18k gold pendant necklace balanced for everyday evening wear, supplied with a sample appraisal summary."
+    },
+    {
+      id: "camera", key: "lot-camera", number: "063", category: "Timepieces", period: "Mid-century",
+      title: "The Photographer’s Companion",
+      subtitle: "All-mechanical 35mm rangefinder camera with fast 50mm f/1.4 prime lens.",
+      price: 42000, bids: 3, estimate: "₹35,000 – ₹60,000", ends: 172800,
+      image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=85",
+      story: "Classic rangefinder camera built from machined brass and vulcanite wrap, featuring clean viewfinder optics and crisp mechanical shutter speeds."
+    },
+    {
+      id: "sculpture", key: "lot-sculpture", number: "071", category: "Fine Art", period: "Contemporary",
+      title: "Form in Conversation",
+      subtitle: "Cast bronze & travertine tabletop sculpture with hand-rubbed patina.",
+      price: 67000, bids: 6, estimate: "₹50,000 – ₹90,000", ends: 216000,
+      image: "https://images.unsplash.com/photo-1577083552431-6e5fd01aa342?auto=format&fit=crop&w=1000&q=85",
+      story: "Abstract figurative bronze study mounted on a solid natural stone plinth, designed to catch directional room lighting."
+    },
+    {
+      id: "car-detail", key: "lot-car-detail", number: "084", category: "Automotive", period: "Modern classic",
+      title: "The Grand Touring Line",
+      subtitle: "Two-door performance coupe with naturally aspirated inline engine.",
+      price: 920000, bids: 9, estimate: "₹8,00,000 – ₹12,00,000", ends: 259200,
+      image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1000&q=85",
+      story: "Well-preserved grand tourer maintained by long-term enthusiasts, offering factory alloys, clean interior trim, and service records."
+    },
+    {
+      id: "jewel-detail", key: "lot-jewel-detail", number: "092", category: "Jewellery", period: "Artisan",
+      title: "A Line of Light",
+      subtitle: "Minimalist gold chain and bar bracelet in satin brushed finish.",
+      price: 98000, bids: 2, estimate: "₹80,000 – ₹1,25,000", ends: 302400,
+      image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1000&q=85",
+      story: "Contemporary fine jewelry piece combining hallmarked solid gold links with a concealed box clasp."
+    }
   ],
-  // 5 long-form editorial Journal stories linked by id in ?page=article&story=<id>.
   articles: [
-    {"id":"mechanical-watchmaking","category":"Watches","title":"The Art of Mechanical Watchmaking","subtitle":"Why the measured movement of a mechanical watch continues to fascinate collectors.","image":"https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1400&q=88","readingTime":"6 min read","caption":"A mechanical object, considered in close detail.","related":["collector-eye","jewellery-material"],"body":[{"heading":"A slower measure","paragraphs":["A mechanical watch is a small argument for patience. Beneath the dial, a sequence of springs, wheels and levers turns the passing of time into something visible and tactile. Its appeal is not simply precision; it is the feeling that precision has been made by hand and made legible.","For collectors, that intimacy matters. The object asks to be wound, adjusted and looked at. It does not disappear into a phone or a notification. It remains present on the wrist, carrying a little of its making with it."]},{"heading":"The pleasure of the mechanism","paragraphs":["The most compelling details are often the least immediate: the resistance of a crown, the balance of a case, the way a dial holds its typography. These are qualities discovered gradually, rather than announced at first glance.","That gradual discovery is what gives a watch a life beyond its function. The object becomes a record of choices about proportion, material and movement, each one contributing to a character that can be appreciated long after the hour has passed."]},{"heading":"What endures","paragraphs":["Mechanical watchmaking continues to fascinate because it joins engineering with ritual. It is an instrument, but also an object of attention — a reminder that usefulness and beauty can occupy the same small space."]}]},
-    {"id":"fine-art-language","category":"Art","title":"Understanding the Language of Fine Art","subtitle":"A closer look at how colour, scale, surface and silence shape the way a work speaks.","image":"https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1400&q=88","readingTime":"5 min read","caption":"A work begins to speak through the attention brought to it.","related":["collector-eye","classic-automobiles"],"body":[{"heading":"Before the subject","paragraphs":["A painting can begin before its subject becomes clear. Colour establishes a temperature, a mark sets a rhythm and the edge of the canvas decides how much of the world is allowed in. Looking carefully means noticing these decisions before asking what the work is about.","This is one reason the same artwork can change from room to room. Light, distance and the pace of the viewer all become part of the encounter."]},{"heading":"The vocabulary of looking","paragraphs":["Scale can make a work intimate or architectural. Surface can draw us close or hold us at a distance. A restrained palette might create quiet, while a single interruption can make the whole composition feel newly alert.","None of these elements exists alone. They form a language through relationships — between a dark passage and a pale one, a dense mark and an open field, a deliberate silence and a moment of emphasis."]},{"heading":"Making space for a response","paragraphs":["There is no requirement to solve a work immediately. The most rewarding looking often leaves room for uncertainty. Fine art gives attention somewhere to settle, then changes what that attention can see."]}]},
-    {"id":"jewellery-material","category":"Jewellery","title":"Jewellery: Beyond the Precious Material","subtitle":"Why the meaning of a piece is found in proportion, gesture and the life it gathers around itself.","image":"https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1400&q=88","readingTime":"4 min read","caption":"Material is only the beginning of a piece’s presence.","related":["mechanical-watchmaking","collector-eye"],"body":[{"heading":"More than rarity","paragraphs":["The value of jewellery is easy to reduce to a list of materials. Yet a piece becomes memorable through more than what it contains. Its scale, balance and relationship to the body determine how it is worn and how it is remembered.","A small shift in proportion can change the character of a necklace or ring completely. The best pieces allow material to support the gesture rather than overwhelm it."]},{"heading":"The language of wear","paragraphs":["Jewellery lives close to the person who wears it. It catches light, gathers small traces of use and moves through ordinary moments. That proximity gives it a particular emotional register: less object on display, more object in conversation with a life.","This is why restraint can be so powerful. A considered surface or an unexpected line may say more than abundance, because it leaves room for the wearer to become part of the composition."]},{"heading":"An object with a future","paragraphs":["To look beyond the precious material is to notice the decisions that make a piece feel lasting. Craft, proportion and adaptability give jewellery a future beyond its first impression."]}]},
-    {"id":"collector-eye","category":"Collecting","title":"The Collector's Eye: What Makes an Object Timeless?","subtitle":"Timelessness is less about age than the ability to keep rewarding attention.","image":"https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1400&q=88","readingTime":"5 min read","caption":"A useful object can become a lasting one through attention.","related":["fine-art-language","jewellery-material"],"body":[{"heading":"The first encounter","paragraphs":["Some objects are understood immediately. Others become interesting only after a second look. The difference is often not rarity, but density: the number of decisions, details and possibilities held within a form.","A collector’s eye learns to notice that density. It looks for the quality of a surface, the logic of a handle, the way a line continues around an edge."]},{"heading":"Time as a collaborator","paragraphs":["Timelessness is not the absence of a particular period. It is the ability of an object to carry its period without being trapped by it. Materials age, tastes shift and contexts change; a strong object keeps its internal clarity.","That clarity allows it to enter a new room without losing its original voice. It does not need to be neutral. It needs to be specific enough to remain itself."]},{"heading":"Keeping with intention","paragraphs":["Collecting is a form of editing. The objects that stay are usually the ones that continue to offer a question, a sensation or a useful reminder. Their place is earned slowly, through repeated attention."]}]},
-    {"id":"classic-automobiles","category":"Automobiles","title":"The Design Legacy of Classic Automobiles","subtitle":"When proportion, movement and purpose combine, a car becomes more than a machine.","image":"https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=88","readingTime":"6 min read","caption":"A lasting silhouette carries its era without being confined by it.","related":["collector-eye","fine-art-language"],"body":[{"heading":"A silhouette in motion","paragraphs":["The first impression of a classic automobile is often its stance. Before the engine turns or the door opens, proportion has already suggested speed, comfort or intent. The relationship between cabin, bonnet and wheels becomes a kind of visual grammar.","That grammar is why some cars remain recognisable from a distance. Their forms are not decoration added to a machine; they are the expression of what the machine was made to do."]},{"heading":"Purpose made visible","paragraphs":["Good automotive design makes function visible without becoming literal. An intake, curve or crease can be necessary and beautiful at once. The result feels resolved because the practical and the expressive belong to the same decision.","Classic examples are especially revealing because their technologies are no longer invisible to us. We can see how designers balanced limitation and ambition, material and movement."]},{"heading":"The road ahead","paragraphs":["A lasting automobile does not ask to be preserved in stillness. Its design carries the memory of motion. That is part of its appeal as a collectible: it brings an entire idea of travel, craft and possibility into the room."]}]}
-  ],
-  // Homepage 02 / Current Collections grid tuples: [cssClass, urlCategory, imageUrl, altText, indexLabel, title, cta].
-  collections: [
-    ['collection-feature', 'Timepieces', 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=1200&q=86', 'Luxury timepiece on a warm surface', '01 / TIMEPIECES', 'The Art of Time', 'Mechanical objects with a life of their own. ↗'],
-    ['collection-note collection-note-art', 'Fine%20Art', 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=900&q=86', 'Framed fine art painting', '02 / FINE ART', 'Objects of Permanence', 'Works that stay with you. ↗'],
-    ['collection-note collection-note-jewel', 'Jewellery', 'https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=900&q=86', 'Fine jewellery detail', '03 / JEWELLERY', "The Collector's Eye", 'Small things, closely considered. ↗'],
-    ['collection-wide', 'Automotive', 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=86', 'Classic sports car on the road', '04 / AUTOMOTIVE', 'Automotive Icons', 'Form, function and the open road. ↗']
-  ],
-  // About view sections rendered dynamically to eliminate duplicate HTML markup.
-  about: {
-    principles: [
-      ['01', 'Curation', 'Objects are presented with attention to their significance, character and the details that reward a second look.'],
-      ['02', 'Transparency', 'Auction information, estimates and available object details should be easy to find and clear to understand.'],
-      ['03', 'Competition', 'Bidding should feel focused, engaging and respectful of the object at the centre of the room.']
-    ],
-    categories: [
-      ['watch', '?page=explore&category=Timepieces', 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=1100&q=86', 'Close detail of a fine watch', '01 / TIMEPIECES', 'Fine Watches'],
-      ['jewel', '?page=explore&category=Jewellery', 'https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=900&q=86', 'Fine jewellery arranged in warm light', '02 / JEWELLERY', 'Jewellery'],
-      ['art', '?page=explore&category=Fine%20Art', 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1100&q=86', 'Framed fine art painting', '03 / FINE ART', 'Fine Art'],
-      ['car', '?page=explore&category=Automotive', 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=86', 'Classic sports car on the road', '04 / AUTOMOTIVE', 'Classic Automobiles'],
-      ['collectibles', '?page=explore', 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=86', 'Vintage camera as a rare collectible', '05 / OBJECTS', 'Rare Collectibles']
-    ],
-    steps: [
-      ['01', 'Discover', 'Browse a changing edit of objects selected for character, craft and story.'],
-      ['02', 'Look closer', 'Open each lot to explore its images, available details, estimate and auction context.'],
-      ['03', 'Follow the room', 'Watch selected lots move through the Arena and see how a focused auction unfolds.'],
-      ['04', 'Participate', 'Place a demonstration bid when an object feels worth competing for. No payment or real transaction occurs here.']
-    ]
-  },
-  // Quick-select enquiry types shown beside the Contact form.
-  contactDirs: [
-    ['01', 'Consign an Object', 'For an object you would like to submit for consideration. Real consignment services are not currently available.'],
-    ['02', 'Bidding Assistance', 'Questions about auction participation and the demonstration bidding experience.'],
-    ['03', 'General Enquiries', 'For other questions about the project, its objects or its point of view.']
+    {
+      id: "mechanical-watchmaking", category: "Watches",
+      title: "The Art of Mechanical Watchmaking",
+      subtitle: "How hand-wound movements work and what collectors check before bidding on a vintage timepiece.",
+      image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1400&q=88",
+      readingTime: "6 min read", caption: "Close-up of a mechanical chronograph movement.",
+      related: ["collector-eye", "jewellery-material"],
+      body: [
+        { heading: "A slower measure", paragraphs: ["Inside a mechanical watch, mainsprings, gear trains, and escapements turn stored energy into steady second-by-second motion without a battery.", "Collectors value manual and automatic calibres because every component can be serviced and restored decades after manufacture."] },
+        { heading: "What to inspect on a dial", paragraphs: ["Check lume consistency, crisp dial lettering, sharp case bevels, and whether the crown and chronograph pushers feel firm and smooth.", "Original unpolished cases and honest patina generally command stronger estimates than over-restored parts."] }
+      ]
+    },
+    {
+      id: "fine-art-language", category: "Art",
+      title: "How Condition & Provenance Affect Art Value",
+      subtitle: "Key factors art buyers evaluate: canvas condition, framing, signature, and gallery history.",
+      image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1400&q=88",
+      readingTime: "5 min read", caption: "Natural lighting across a textured painted canvas.",
+      related: ["collector-eye", "classic-automobiles"],
+      body: [
+        { heading: "Checking condition first", paragraphs: ["When buying art online, start with high-resolution surface photos. Look for paint stability, clean canvas edges, and uniform framing.", "Provenance—documentation showing where a work was exhibited or previously held—adds confidence to any price estimate."] },
+        { heading: "Understanding estimates", paragraphs: ["Auction estimates reflect recent comparable sales, dimensions, medium, and artist demand. Setting a personal ceiling before bidding helps avoid overpaying."] }
+      ]
+    },
+    {
+      id: "jewellery-material", category: "Jewellery",
+      title: "Buying Estate & Fine Jewelry at Auction",
+      subtitle: "What hallmarks, craftsmanship, and stone settings tell you beyond raw metal weight.",
+      image: "https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1400&q=88",
+      readingTime: "4 min read", caption: "Hand-set gold jewelry under studio light.",
+      related: ["mechanical-watchmaking", "collector-eye"],
+      body: [
+        { heading: "Beyond gold weight", paragraphs: ["Precious metal purity is only the starting point. Fine clasps, stone alignment, and comfortable proportions decide whether a piece lasts for generations.", "Look for official purity hallmarks (such as 18k or 750) alongside clean prong work and secure settings."] }
+      ]
+    },
+    {
+      id: "collector-eye", category: "Collecting",
+      title: "How to Evaluate Any Collectible Before Bidding",
+      subtitle: "Four practical checks for new bidders: estimates, condition notes, rarity, and long-term care.",
+      image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1400&q=88",
+      readingTime: "5 min read", caption: "A classic mechanical rangefinder camera.",
+      related: ["fine-art-language", "jewellery-material"],
+      body: [
+        { heading: "Start with research", paragraphs: ["Compare the auction estimate range against past results for similar years and models before placing a bid.", "Items with intact serial numbers, original accessories, and complete histories hold value best over time."] },
+        { heading: "Plan your maximum bid", paragraphs: ["Use the watchlist to shortlist 2 or 3 favorites, track their countdown timers, and decide your upper budget ahead of closing."] }
+      ]
+    },
+    {
+      id: "classic-automobiles", category: "Automobiles",
+      title: "What Makes a Classic Car Collectible",
+      subtitle: "Why originality, service logs, and balanced engineering keep vintage cars in demand.",
+      image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=88",
+      readingTime: "6 min read", caption: "Profile of a classic grand touring coupe.",
+      related: ["collector-eye", "fine-art-language"],
+      body: [
+        { heading: "Originality & documentation", paragraphs: ["Matching chassis and engine numbers along with stamped maintenance records matter far more to collectors than fresh paint alone.", "Well-documented driver classics offer reliable enjoyment and transparent resale value."] }
+      ]
+    }
   ]
 });

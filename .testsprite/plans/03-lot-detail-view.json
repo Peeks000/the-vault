@@ -29,7 +29,7 @@
     },
     {
       "type": "assertion",
-      "description": "Verify the lot story heading displays 'Timepieces, considered.'"
+      "description": "Verify the lot story heading displays 'About this Timepieces'"
     }
   ]
 }
