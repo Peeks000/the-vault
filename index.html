@@ -10,16 +10,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f1efe8">
-  <meta name="description"
-    content="THE VAULT — Online auction house for vintage watches, fine art, jewelry, and classic cars.">
+  <meta name="description" content="THE VAULT — Online auction house for vintage watches, fine art, jewelry, and classic cars.">
   <title>THE VAULT — Online Auctions for Watches, Art &amp; Classics</title>
 
   <!-- Editorial & UI Fonts: Instrument Serif (Headlines), DM Sans (Body), DM Mono (Labels & Codes) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/vault.css">
 
   <!-- 3D Model Viewer (Three.js + GLTF + OrbitControls) & Supabase Backend SDK -->
@@ -38,10 +35,7 @@
 <body data-page="home">
 
   <!-- Shared Top Announcement Bar -->
-  <div id="top-bar" class="announcement">
-    <span>THE VAULT — ONLINE AUCTION HOUSE</span>
-    <span id="announcement-tag">WATCHES, FINE ART, JEWELRY &amp; CLASSIC CARS <i>↗</i></span>
-  </div>
+  <div id="top-bar" class="announcement">    <span>THE VAULT — ONLINE AUCTION HOUSE</span><span id="announcement-tag">WATCHES, FINE ART, JEWELRY &amp; CLASSIC CARS <i>↗</i></span></div>
 
   <!-- Shared Site Header & Primary Navigation -->
   <header id="site-header" class="site-header">
@@ -57,8 +51,7 @@
     </nav>
     <div class="header-actions">
       <a class="text-link" id="header-context-link" href="?page=explore">Browse lots <span>↗</span></a>
-      <a class="icon-link watchlist-link" href="?page=explore&saved=true" aria-label="Saved lots">♡ <span
-          class="saved-count">0</span></a>
+      <a class="icon-link watchlist-link" href="?page=explore&saved=true" aria-label="Saved lots">♡ <span class="saved-count">0</span></a>
       <a class="account-link" href="?page=auth" aria-label="Sign in">Sign in <span>↗</span></a>
     </div>
     <a class="underlined-link auth-return-link" href="?page=home">Back to home ↗</a>
@@ -67,36 +60,26 @@
   <!-- Main SPA View Container -->
   <main id="vault-root">
 
-    <!-- =========================================================
-         1. HOME VIEW (?page=home)
+    <!-- ========================================================= 1. HOME VIEW (?page=home)
          ========================================================= -->
     <section id="view-home" class="page-view">
       <section class="vault-hero page-gutter">
-        <div class="home-meta">
-          <span>2026 CATALOGUE · LIVE DEMO</span>
-          <span>CURATED ONLINE AUCTIONS (INR)</span>
-        </div>
+        <div class="home-meta">          <span>2026 CATALOGUE · LIVE DEMO</span><span>CURATED ONLINE AUCTIONS (INR)</span></div>
         <div class="vault-hero-grid">
           <div class="vault-hero-copy">
             <p class="eyebrow"><span class="eyebrow-line"></span> THE VAULT / ONLINE AUCTIONS</p>
             <h1>Bid on rare<br><em>watches, art<br>&amp; classics.</em></h1>
-            <p class="vault-hero-description">
-              Browse curated collector pieces, check fair market estimates, save favorites to your watchlist, and place
-              simulated bids in real time.
+            <p class="vault-hero-description"> Browse curated collector pieces, check fair market estimates, save favorites to your watchlist, and place simulated bids in real time.
             </p>
             <div class="hero-ctas">
               <a class="button button-dark" href="?page=explore">Explore auctions <span>↗</span></a>
               <a class="underlined-link" href="#house">How it works</a>
             </div>
-            <div class="vault-hero-note">
-              <span class="asterisk">✳</span>
-              <span>Student demo project.<br>Simulated bids &amp; live timers run in browser.</span>
-            </div>
+            <div class="vault-hero-note">              <span class="asterisk">✳</span><span>Student demo project.<br>Simulated bids &amp; live timers run in browser.</span></div>
           </div>
           <div class="vault-hero-visual">
             <a class="hero-object" href="?page=lot&lot=watch" aria-label="View featured vintage chronograph">
-              <img src="https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=1200&q=88"
-                alt="Close-up of a classic mechanical chronograph watch">
+              <img src="https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=1200&q=88" alt="Close-up of a classic mechanical chronograph watch">
               <span class="hero-object-index">LOT #024 · FEATURED WATCH</span>
             </a>
             <div class="hero-object-caption">
@@ -106,10 +89,7 @@
             <span class="hero-object-note">2026 AUCTION EDIT</span>
           </div>
         </div>
-        <div class="home-rule">
-          <span>WATCHES · FINE ART · JEWELRY · CARS</span>
-          <span>SCROLL TO BROWSE ↓</span>
-        </div>
+        <div class="home-rule">          <span>WATCHES · FINE ART · JEWELRY · CARS</span><span>SCROLL TO BROWSE ↓</span></div>
       </section>
 
       <section class="home-strip" aria-label="Platform highlights">
@@ -122,34 +102,25 @@
       <!-- Featured Auction Highlight -->
       <section class="featured-auction page-gutter" id="featured">
         <div class="home-section-heading">
-          <div>
-            <p class="eyebrow">01 / FEATURED AUCTION</p>
-            <h2>Lot #024:<br><em>Heritage Chronograph.</em></h2>
-          </div>
-          <p class="home-heading-note">Our lead timepiece in today's session.<br>Open the lot to inspect details and
-            bid.</p>
+          <div><p class="eyebrow">01 / FEATURED AUCTION</p><h2>Lot #024:<br><em>Heritage Chronograph.</em></h2></div>
+          <p class="home-heading-note">Our lead timepiece in today's session.<br>Open the lot to inspect details and bid.</p>
         </div>
         <div class="featured-auction-layout">
           <div class="featured-image-wrap">
             <a id="featured-link" href="?page=lot&lot=watch">
-              <img id="featured-image"
-                src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85"
-                alt="The Heritage Chronograph">
+              <img id="featured-image" src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85" alt="The Heritage Chronograph">
               <span class="lot-number" id="featured-lot-number">LOT 024</span>
             </a>
-            <button class="lot-save featured-save" id="featured-save" data-save="lot-watch" type="button"
-              aria-label="Save featured lot">♡</button>
+            <button class="lot-save featured-save" id="featured-save" data-save="lot-watch" type="button" aria-label="Save featured lot">♡</button>
             <span class="featured-image-caption">FEATURED LOT STUDY</span>
           </div>
           <div class="featured-copy">
             <div class="featured-topline">
               <span class="lot-category" id="featured-category">TIMEPIECES / 1960s–70s</span>
-              <span class="featured-status"><i class="live-dot"></i><span id="featured-status">CLOSING
-                  SOON</span></span>
+              <span class="featured-status"><i class="live-dot"></i><span id="featured-status">CLOSING SOON</span></span>
             </div>
             <h3 id="featured-title">The Heritage Chronograph</h3>
-            <p id="featured-subtitle">1960s stainless-steel mechanical chronograph with manual winding and original
-              tachymeter dial.</p>
+            <p id="featured-subtitle">1960s stainless-steel mechanical chronograph with manual winding and original tachymeter dial.</p>
             <div class="featured-facts">
               <div><span>ESTIMATE</span><strong id="featured-estimate">₹2,00,000 – ₹3,00,000</strong></div>
               <div><span>CURRENT BID</span><strong id="featured-bid">₹2,40,000</strong></div>
@@ -166,39 +137,29 @@
       <!-- Four Main Auction Categories -->
       <section class="collections-section page-gutter" id="collections">
         <div class="home-section-heading">
-          <div>
-            <p class="eyebrow">02 / BROWSE BY CATEGORY</p>
-            <h2>Four auction<br><em>categories.</em></h2>
-          </div>
+          <div><p class="eyebrow">02 / BROWSE BY CATEGORY</p><h2>Four auction<br><em>categories.</em></h2></div>
           <p class="home-heading-note">Click any category to filter<br>matching active lots.</p>
         </div>
         <div class="collections-editorial">
           <a class="collection-feature" href="?page=explore&category=Timepieces">
-            <img src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=1200&q=86"
-              alt="Luxury mechanical wristwatch">
+            <img src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=1200&q=86" alt="Luxury mechanical wristwatch">
             <span class="collection-index">01 / TIMEPIECES</span>
-            <span class="collection-overlay"><strong>Vintage Watches &amp; Cameras</strong><small>Browse timepieces
-                ↗</small></span>
+            <span class="collection-overlay"><strong>Vintage Watches &amp; Cameras</strong><small>Browse timepieces ↗</small></span>
           </a>
           <a class="collection-note collection-note-art" href="?page=explore&category=Fine%20Art">
-            <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=900&q=86"
-              alt="Contemporary oil painting">
+            <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=900&q=86" alt="Contemporary oil painting">
             <span class="collection-index">02 / FINE ART</span>
-            <span class="collection-overlay"><strong>Paintings &amp; Sculpture</strong><small>Browse fine art
-                ↗</small></span>
+            <span class="collection-overlay"><strong>Paintings &amp; Sculpture</strong><small>Browse fine art ↗</small></span>
           </a>
           <a class="collection-note collection-note-jewel" href="?page=explore&category=Jewellery">
-            <img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=900&q=86"
-              alt="Gold and gemstone jewelry">
+            <img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=900&q=86" alt="Gold and gemstone jewelry">
             <span class="collection-index">03 / JEWELLERY</span>
             <span class="collection-overlay"><strong>Fine Jewelry</strong><small>Browse jewelry ↗</small></span>
           </a>
           <a class="collection-wide" href="?page=explore&category=Automotive">
-            <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=86"
-              alt="Classic sports car">
+            <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=86" alt="Classic sports car">
             <span class="collection-index">04 / AUTOMOTIVE</span>
-            <span class="collection-overlay"><strong>Classic Collector Cars</strong><small>Browse vehicles
-                ↗</small></span>
+            <span class="collection-overlay"><strong>Classic Collector Cars</strong><small>Browse vehicles ↗</small></span>
           </a>
         </div>
       </section>
@@ -206,14 +167,8 @@
       <!-- Live & Upcoming Lots Grid -->
       <section class="live-edit page-gutter" id="live">
         <div class="home-section-heading">
-          <div>
-            <p class="eyebrow">03 / ACTIVE AUCTIONS</p>
-            <h2>Live &amp; upcoming<br><em>auction lots.</em></h2>
-          </div>
-          <div class="live-heading-side">
-            <span><i class="live-dot"></i> BIDDING OPEN</span>
-            <a class="underlined-link" href="?page=explore">View all 8 lots ↗</a>
-          </div>
+          <div><p class="eyebrow">03 / ACTIVE AUCTIONS</p><h2>Live &amp; upcoming<br><em>auction lots.</em></h2></div>
+          <div class="live-heading-side">            <span><i class="live-dot"></i> BIDDING OPEN</span><a class="underlined-link" href="?page=explore">View all 8 lots ↗</a></div>
         </div>
         <div class="live-edit-grid" id="home-live-grid"></div>
       </section>
@@ -225,10 +180,8 @@
           <div class="house-grid">
             <h2>Clear estimates, real photos, and <em>simple online bidding.</em></h2>
             <div class="house-copy">
-              <p>THE VAULT brings watches, art, jewelry, and classic automobiles into one clean auction platform without
-                confusing clutter.</p>
-              <p>Every item page shows market estimates, countdown timers, bidding history, and instant shortlist
-                saving.</p>
+              <p>THE VAULT brings watches, art, jewelry, and classic automobiles into one clean auction platform without confusing clutter.</p>
+              <p>Every item page shows market estimates, countdown timers, bidding history, and instant shortlist saving.</p>
               <a class="button button-light" href="?page=about">How it works <span>↗</span></a>
             </div>
           </div>
@@ -242,38 +195,29 @@
       <!-- Collector Guides Preview -->
       <section class="journal-section home-journal page-gutter" id="journal">
         <div class="home-section-heading">
-          <div>
-            <p class="eyebrow">05 / COLLECTOR GUIDES</p>
-            <h2>Buying guides for<br><em>smart collecting.</em></h2>
-          </div>
+          <div><p class="eyebrow">05 / COLLECTOR GUIDES</p><h2>Buying guides for<br><em>smart collecting.</em></h2></div>
           <span class="home-heading-note">Short practical notes<br>for first-time bidders.</span>
         </div>
         <div class="journal-editorial-grid">
           <article class="journal-lead">
             <div class="journal-lead-image">
-              <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=86"
-                alt="Vintage rangefinder camera">
+              <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=86" alt="Vintage rangefinder camera">
               <span>GUIDE / 01</span>
             </div>
             <p class="lot-category">COLLECTING / 5 MIN READ</p>
             <h3>How to evaluate a collectible before bidding.</h3>
-            <p class="journal-excerpt">Learn what to check on condition reports, dials, provenance, and price estimates
-              before placing your first bid.</p>
+            <p class="journal-excerpt">Learn what to check on condition reports, dials, provenance, and price estimates before placing your first bid.</p>
             <a class="underlined-link" href="?page=article&story=collector-eye">Read the guide ↗</a>
           </article>
           <article class="journal-quote">
             <p class="eyebrow">BIDDING TIP</p>
-            <blockquote>"Good collecting starts with checking condition, history, and realistic estimates—never rushing
-              into a bid."</blockquote>
+            <blockquote>"Good collecting starts with checking condition, history, and realistic estimates—never rushing into a bid."</blockquote>
             <span>THE VAULT COLLECTOR GUIDE</span>
           </article>
           <div class="journal-list">
-            <a href="?page=article&story=fine-art-language"><span>02 / FINE ART</span><strong>How condition &amp;
-                provenance affect art value ↗</strong></a>
-            <a href="?page=article&story=mechanical-watchmaking"><span>03 / WATCHES</span><strong>Understanding
-                mechanical watch movements ↗</strong></a>
-            <a href="?page=article&story=classic-automobiles"><span>04 / AUTOMOBILES</span><strong>What makes a classic
-                car collectible ↗</strong></a>
+            <a href="?page=article&story=fine-art-language"><span>02 / FINE ART</span><strong>How condition &amp; provenance affect art value ↗</strong></a>
+            <a href="?page=article&story=mechanical-watchmaking"><span>03 / WATCHES</span><strong>Understanding mechanical watch movements ↗</strong></a>
+            <a href="?page=article&story=classic-automobiles"><span>04 / AUTOMOBILES</span><strong>What makes a classic car collectible ↗</strong></a>
           </div>
         </div>
       </section>
@@ -287,9 +231,7 @@
               <span class="closing-badge"><i class="live-dot"></i> INTERACTIVE 3D PREVIEW</span>
             </div>
             <h2>Inspect items in<br><em>360° 3D view.</em></h2>
-            <p class="closing-description">
-              Examine collector items before entering the auction floor. Drag to rotate this Vintage Rangefinder Camera
-              model, scroll or tap +/− to zoom, or reset the view.
+            <p class="closing-description"> Examine collector items before entering the auction floor. Drag to rotate this Vintage Rangefinder Camera model, scroll or tap +/− to zoom, or reset the view.
             </p>
             <div class="closing-actions">
               <a class="button button-dark" href="?page=explore">Browse all auctions <span>↗</span></a>
@@ -300,59 +242,39 @@
                   #008 / Rangefinder Camera</strong></div>
               <div class="closing-spec-item"><span class="spec-label">ESTIMATE</span><strong class="spec-val">₹3,50,000
                   – ₹5,00,000</strong></div>
-              <div class="closing-spec-item"><span class="spec-label">MATERIALS</span><strong class="spec-val">Brushed
-                  Brass &amp; Steel Body</strong></div>
-              <div class="closing-spec-item"><span class="spec-label">ENGINE</span><strong class="spec-val">Three.js
-                  WebGL (360° Orbit)</strong></div>
+              <div class="closing-spec-item"><span class="spec-label">MATERIALS</span><strong class="spec-val">Brushed Brass &amp; Steel Body</strong></div>
+              <div class="closing-spec-item"><span class="spec-label">ENGINE</span><strong class="spec-val">Three.js WebGL (360° Orbit)</strong></div>
             </div>
-            <div class="closing-note">
-              <span class="asterisk">✳</span>
-              <span>Drag the canvas to inspect angles manually or pause auto-rotation anytime.</span>
-            </div>
+            <div class="closing-note">              <span class="asterisk">✳</span><span>Drag the canvas to inspect angles manually or pause auto-rotation anytime.</span></div>
           </div>
 
           <div class="closing-3d-stage-container" id="closingStageContainer">
             <div class="closing-3d-frame">
-              <div class="stage-hud-top">
-                <span class="stage-hud-badge">LOT #008 / 3D VIEWER</span>
-                <span class="stage-hud-hint">DRAG TO ROTATE · SCROLL TO ZOOM</span>
-              </div>
+              <div class="stage-hud-top">                <span class="stage-hud-badge">LOT #008 / 3D VIEWER</span><span class="stage-hud-hint">DRAG TO ROTATE · SCROLL TO ZOOM</span></div>
               <div class="closing-3d-canvas-wrap" id="closing3dWrap">
                 <div class="stage-specimen-backdrop" id="stageSpecimenBackdrop" aria-hidden="true">
                   <svg class="stage-specimen-svg" viewBox="0 0 400 360" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="200" cy="180" r="135" stroke="rgba(196,166,114,0.22)" stroke-dasharray="4 6" />
                     <circle cx="200" cy="180" r="95" stroke="rgba(196,166,114,0.3)" />
-                    <rect x="105" y="130" width="190" height="115" rx="12" fill="#242622" stroke="#c4a672"
-                      stroke-width="1.5" />
+                    <rect x="105" y="130" width="190" height="115" rx="12" fill="#242622" stroke="#c4a672" stroke-width="1.5" />
                     <rect x="105" y="114" width="190" height="22" rx="6" fill="#c4a672" />
                     <circle cx="200" cy="192" r="46" fill="#141513" stroke="#d9be8c" stroke-width="2" />
                     <circle cx="200" cy="192" r="24" fill="#0b0c09" stroke="#c4a672" stroke-width="1.5" />
                   </svg>
                 </div>
                 <canvas id="vault3dCanvas" aria-label="Interactive 3D model of vintage camera"></canvas>
-                <div class="stage-loading-overlay" id="stageLoadingOverlay">
-                  <div class="stage-loader-spinner">
-                    <div class="spinner-ring"></div>
-                    <span class="spinner-icon">✳</span>
-                  </div>
+                <div class="stage-loading-overlay" id="stageLoadingOverlay">                  <div class="stage-loader-spinner"><div class="spinner-ring"></div><span class="spinner-icon">✳</span></div>
                   <p class="stage-loading-text">LOADING 3D MODEL</p>
                   <span class="stage-loading-progress" id="stageLoadingProgress">0%</span>
                 </div>
               </div>
               <div class="stage-hud-bottom">
-                <div class="stage-hud-status">
-                  <span class="status-pulse-dot"></span>
-                  <span id="rotationStatusLabel">ROTATING (SLOW)</span>
-                </div>
+                <div class="stage-hud-status">                  <span class="status-pulse-dot"></span><span id="rotationStatusLabel">ROTATING (SLOW)</span></div>
                 <div class="stage-controls-group">
-                  <button type="button" class="stage-ctrl-btn" id="btnToggleRotate"><span
-                      class="ctrl-icon">↺</span><span class="ctrl-label">Auto-Rotate</span></button>
-                  <button type="button" class="stage-ctrl-btn" id="btnResetView"><span class="ctrl-icon">⛶</span><span
-                      class="ctrl-label">Reset</span></button>
-                  <button type="button" class="stage-ctrl-btn ctrl-btn-icon" id="btnZoomIn"
-                    aria-label="Zoom in">+</button>
-                  <button type="button" class="stage-ctrl-btn ctrl-btn-icon" id="btnZoomOut"
-                    aria-label="Zoom out">−</button>
+                  <button type="button" class="stage-ctrl-btn" id="btnToggleRotate"><span class="ctrl-icon">↺</span><span class="ctrl-label">Auto-Rotate</span></button>
+                  <button type="button" class="stage-ctrl-btn" id="btnResetView"><span class="ctrl-icon">⛶</span><span class="ctrl-label">Reset</span></button>
+                  <button type="button" class="stage-ctrl-btn ctrl-btn-icon" id="btnZoomIn" aria-label="Zoom in">+</button>
+                  <button type="button" class="stage-ctrl-btn ctrl-btn-icon" id="btnZoomOut" aria-label="Zoom out">−</button>
                 </div>
               </div>
             </div>
@@ -361,27 +283,18 @@
       </section>
     </section>
 
-    <!-- =========================================================
-         2. EXPLORE CATALOGUE VIEW (?page=explore)
+    <!-- ========================================================= 2. EXPLORE CATALOGUE VIEW (?page=explore)
          ========================================================= -->
     <section id="view-explore" class="page-view page-gutter explore-main" hidden>
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="?page=home">HOME</a><span>/</span><span>AUCTIONS</span>
-      </nav>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><span>AUCTIONS</span></nav>
       <section class="explore-heading">
         <div>
           <p class="eyebrow">AUCTION CATALOGUE / 2026</p>
           <h1>All Auction <em>Lots.</em></h1>
-          <p class="section-intro">Filter by category, search by title or lot number, sort by current bid, or view your
-            saved watchlist.</p>
-          <p class="demo-notice">Demo catalogue using sample INR pricing. Published lots from Supabase appear
-            automatically when connected.</p>
+          <p class="section-intro">Filter by category, search by title or lot number, sort by current bid, or view your saved watchlist.</p>
+          <p class="demo-notice">Demo catalogue using sample INR pricing. Published lots from Supabase appear automatically when connected.</p>
         </div>
-        <div class="explore-note">
-          <span>ACTIVE CATALOGUE</span>
-          <strong id="explore-edit-count">08</strong>
-          <span>CURATED LOTS AVAILABLE</span>
-        </div>
+        <div class="explore-note">          <span>ACTIVE CATALOGUE</span><strong id="explore-edit-count">08</strong><span>CURATED LOTS AVAILABLE</span></div>
       </section>
 
       <section class="filter-bar" aria-label="Auction filters">
@@ -391,8 +304,7 @@
           <button class="filter-chip" data-filter="Fine Art" type="button">Fine art</button>
           <button class="filter-chip" data-filter="Jewellery" type="button">Jewellery</button>
           <button class="filter-chip" data-filter="Automotive" type="button">Automotive</button>
-          <button class="filter-chip saved-filter" id="saved-filter" type="button">Saved lots <span
-              id="saved-filter-count">00</span></button>
+          <button class="filter-chip saved-filter" id="saved-filter" type="button">Saved lots <span id="saved-filter-count">00</span></button>
         </div>
         <div class="filter-tools">
           <label class="search-box">
@@ -401,20 +313,12 @@
           </label>
           <label class="sort-select">
             <span>SORT</span>
-            <select id="lot-sort" aria-label="Sort auctions">
-              <option value="curated">Featured order</option>
-              <option value="ending">Ending soonest</option>
-              <option value="bid-low">Bid: low to high</option>
-              <option value="bid-high">Bid: high to low</option>
-            </select>
+            <select id="lot-sort" aria-label="Sort auctions"><option value="curated">Featured order</option><option value="ending">Ending soonest</option><option value="bid-low">Bid: low to high</option><option value="bid-high">Bid: high to low</option></select>
           </label>
         </div>
       </section>
 
-      <div class="results-line">
-        <span id="results-count">SHOWING 08 SELECTED LOTS</span>
-        <span>PRICES SHOWN IN INR (₹)</span>
-      </div>
+      <div class="results-line">        <span id="results-count">SHOWING 08 SELECTED LOTS</span><span>PRICES SHOWN IN INR (₹)</span></div>
       <section class="explore-grid" id="auction-grid" aria-live="polite"></section>
       <div class="empty-state" id="empty-state" hidden>
         <span>✳</span>
@@ -424,26 +328,19 @@
       </div>
       <section class="explore-note-band">
         <span class="eyebrow">CATALOGUE NOTE</span>
-        <p>All lot descriptions and estimates in this student demo are illustrative. Saved favorites persist in browser
-          localStorage.</p>
+        <p>All lot descriptions and estimates in this student demo are illustrative. Saved favorites persist in browser localStorage.</p>
       </section>
     </section>
 
-    <!-- =========================================================
-         3. LOT DETAIL VIEW (?page=lot&lot=...)
+    <!-- ========================================================= 3. LOT DETAIL VIEW (?page=lot&lot=...)
          ========================================================= -->
     <section id="view-lot" class="page-view page-gutter lot-main" hidden>
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="?page=home">HOME</a><span>/</span><a href="?page=explore">AUCTIONS</a><span>/</span><span
-          id="lot-breadcrumb">LOT 024</span>
-      </nav>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><a href="?page=explore">AUCTIONS</a><span>/</span><span id="lot-breadcrumb">LOT 024</span></nav>
       <div class="lot-detail-grid">
         <section class="lot-gallery">
           <div class="lot-main-image" id="lot-main-image">
             <button class="image-expand" id="image-expand" type="button" aria-label="Enlarge lot image">↗</button>
-            <img id="lot-image"
-              src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85"
-              alt="Selected auction lot">
+            <img id="lot-image" src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85" alt="Selected auction lot">
             <span class="gallery-stamp">THE VAULT / LOT 024</span>
           </div>
           <div class="gallery-thumbs" id="gallery-thumbs"><span>SELECT AN IMAGE TO VIEW</span></div>
@@ -459,43 +356,29 @@
         <aside class="lot-sidebar">
           <div class="lot-sidebar-top">
             <span class="eyebrow" id="lot-category">TIMEPIECES / LOT 024</span>
-            <button class="save-detail" id="save-detail" type="button" aria-label="Save this lot">♡ <span>Save
-                lot</span></button>
+            <button class="save-detail" id="save-detail" type="button" aria-label="Save this lot">♡ <span>Save lot</span></button>
           </div>
           <h1 id="lot-title">The Heritage<br><em>Chronograph.</em></h1>
           <p class="lot-subtitle" id="lot-subtitle"></p>
           <div class="lot-estimate"><span>MARKET ESTIMATE</span><strong id="lot-estimate"></strong></div>
 
           <div class="bid-panel">
-            <div class="bid-panel-top">
-              <span><i class="live-dot"></i> <span id="lot-status-label">LIVE AUCTION</span></span>
-              <span id="lot-number">LOT 024</span>
-            </div>
+            <div class="bid-panel-top">              <span><i class="live-dot"></i> <span id="lot-status-label">LIVE AUCTION</span></span><span id="lot-number">LOT 024</span></div>
             <div class="current-bid-label">CURRENT HIGHEST BID</div>
             <div class="current-bid" id="current-bid"></div>
             <div class="bid-stats">
               <div><span>TIME REMAINING</span><strong id="countdown">02:34:18</strong></div>
               <div><span>VALID BIDS</span><strong id="bid-count">07</strong></div>
             </div>
-            <label class="bid-input-label" for="bid-amount">YOUR BID <span>MIN INCREMENT <b
-                  id="bid-increment">₹5,000</b></span></label>
-            <div class="bid-input-wrap">
-              <span>₹</span>
-              <input id="bid-amount" type="number" min="245000" step="5000" value="245000" inputmode="numeric">
-            </div>
+            <label class="bid-input-label" for="bid-amount">YOUR BID <span>MIN INCREMENT <b id="bid-increment">₹5,000</b></span></label>
+            <div class="bid-input-wrap">              <span>₹</span><input id="bid-amount" type="number" min="245000" step="5000" value="245000" inputmode="numeric"></div>
             <button class="button button-brass bid-button" id="place-bid" type="button">Place a bid
               <span>↗</span></button>
-            <p class="bid-feedback" id="bid-feedback" role="status">Demo mode — bids are stored only for your current
-              browser session.</p>
+            <p class="bid-feedback" id="bid-feedback" role="status">Demo mode — bids are stored only for your current browser session.</p>
             <p class="bid-terms">No real payment or binding auction contract is created on this prototype.</p>
           </div>
 
-          <div class="bid-history">
-            <div class="history-heading">
-              <h3>Bid history</h3><span>SIMULATED LOG</span>
-            </div>
-            <div id="bid-history-list"></div>
-          </div>
+          <div class="bid-history">            <div class="history-heading"><h3>Bid history</h3><span>SIMULATED LOG</span></div><div id="bid-history-list"></div></div>
 
           <div class="lot-facts">
             <div><span>ERA / PERIOD</span><strong id="lot-period"></strong></div>
@@ -519,32 +402,13 @@
           <h2>Summary &amp; <em>Specifications.</em></h2>
           <p>Sample specifications shown to demonstrate lot dossier structure.</p>
         </div>
-        <div class="object-details-grid">
-          <div>
-            <h3>Description</h3>
-            <p id="detail-description"></p>
-          </div>
+        <div class="object-details-grid">          <div><h3>Description</h3><p id="detail-description"></p></div>
           <dl>
-            <div>
-              <dt>Category</dt>
-              <dd id="detail-category">Collector Item</dd>
-            </div>
-            <div>
-              <dt>Period / year</dt>
-              <dd id="detail-period"></dd>
-            </div>
-            <div>
-              <dt>Authenticity</dt>
-              <dd>Sample demo entry</dd>
-            </div>
-            <div>
-              <dt>Bidding rule</dt>
-              <dd>₹5,000 minimum step</dd>
-            </div>
-            <div>
-              <dt>Settlement</dt>
-              <dd>Browser demo only</dd>
-            </div>
+            <div>              <dt>Category</dt><dd id="detail-category">Collector Item</dd></div>
+            <div>              <dt>Period / year</dt><dd id="detail-period"></dd></div>
+            <div>              <dt>Authenticity</dt><dd>Sample demo entry</dd></div>
+            <div>              <dt>Bidding rule</dt><dd>₹5,000 minimum step</dd></div>
+            <div>              <dt>Settlement</dt><dd>Browser demo only</dd></div>
           </dl>
         </div>
       </section>
@@ -560,24 +424,19 @@
 
       <div class="image-lightbox" id="image-lightbox" hidden>
         <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close enlarged image">×</button>
-        <img id="lightbox-image"
-          src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85" alt="">
+        <img id="lightbox-image" src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85" alt="">
       </div>
     </section>
 
-    <!-- =========================================================
-         4. LIVE ARENA VIEW (?page=arena)
+    <!-- ========================================================= 4. LIVE ARENA VIEW (?page=arena)
          ========================================================= -->
     <section id="view-arena" class="page-view arena-main page-gutter" hidden>
-      <nav class="arena-breadcrumb" aria-label="Breadcrumb">
-        <a href="?page=home">HOME</a><span>/</span><span>THE ARENA</span>
-      </nav>
+      <nav class="arena-breadcrumb" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><span>THE ARENA</span></nav>
       <section class="arena-entrance">
         <div>
           <p class="arena-kicker"><i class="live-dot"></i> LIVE AUCTION ROOM (DEMO)</p>
           <h1>Live Bidding <em>Room.</em></h1>
-          <p class="arena-intro-copy">Follow lots ending soonest, place simulated bids against the live clock, or switch
-            any floor lot onto the main stage below.</p>
+          <p class="arena-intro-copy">Follow lots ending soonest, place simulated bids against the live clock, or switch any floor lot onto the main stage below.</p>
         </div>
         <div class="arena-session-meta">
           <span>LOTS CLOSING TODAY</span>
@@ -590,13 +449,10 @@
       <section class="arena-featured" aria-labelledby="arena-featured-title">
         <div class="arena-featured-object">
           <a id="arena-featured-link" href="?page=lot&lot=watch">
-            <img id="arena-featured-image"
-              src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85"
-              alt="Featured lot">
+            <img id="arena-featured-image" src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85" alt="Featured lot">
             <span class="arena-object-index" id="arena-featured-number">LOT 024</span>
           </a>
-          <button class="arena-save" id="arena-featured-save" data-save="lot-watch" type="button"
-            aria-label="Save featured lot">♡</button>
+          <button class="arena-save" id="arena-featured-save" data-save="lot-watch" type="button" aria-label="Save featured lot">♡</button>
           <span class="arena-object-caption">NOW ON STAGE / <span id="arena-featured-category">TIMEPIECES</span></span>
         </div>
         <div class="arena-featured-copy">
@@ -618,11 +474,9 @@
           <p class="arena-panel-current">HIGHEST BID<strong id="arena-current-bid">₹2,40,000</strong></p>
           <div class="arena-next-bid"><span>MINIMUM NEXT BID</span><strong id="arena-min-bid">₹2,45,000</strong></div>
           <label for="arena-bid-amount">YOUR BID <span>STEP <b id="arena-increment">₹5,000</b></span></label>
-          <div class="arena-input-wrap"><span>₹</span><input id="arena-bid-amount" type="number" inputmode="numeric"
-              step="5000"></div>
+          <div class="arena-input-wrap"><span>₹</span><input id="arena-bid-amount" type="number" inputmode="numeric" step="5000"></div>
           <button class="button button-brass" id="arena-place-bid" type="button">Place a bid <span>↗</span></button>
-          <p class="arena-feedback" id="arena-feedback" role="status">Simulated auction room — bids stay inside this
-            browser session.</p>
+          <p class="arena-feedback" id="arena-feedback" role="status">Simulated auction room — bids stay inside this browser session.</p>
           <div class="arena-history">
             <div><span>RECENT BIDS</span><span id="arena-history-label">DEMO LOG</span></div>
             <div id="arena-history-list"></div>
@@ -667,18 +521,12 @@
       </section>
     </section>
 
-    <!-- =========================================================
-         5. JOURNAL & COLLECTOR GUIDES (?page=journal)
+    <!-- ========================================================= 5. JOURNAL & COLLECTOR GUIDES (?page=journal)
          ========================================================= -->
     <section id="view-journal" class="page-view journal-main page-gutter" hidden>
-      <nav class="journal-breadcrumb" aria-label="Breadcrumb">
-        <a href="?page=home">HOME</a><span>/</span><span>THE JOURNAL</span>
-      </nav>
+      <nav class="journal-breadcrumb" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><span>THE JOURNAL</span></nav>
       <section class="journal-masthead">
-        <div>
-          <p class="eyebrow">THE JOURNAL / COLLECTOR GUIDES</p>
-          <h1>THE<br><em>JOURNAL.</em></h1>
-        </div>
+        <div><p class="eyebrow">THE JOURNAL / COLLECTOR GUIDES</p><h1>THE<br><em>JOURNAL.</em></h1></div>
         <div>
           <p class="journal-masthead-line">Practical guides on watches, fine art, jewelry, and classic automobiles.</p>
           <span class="journal-demo-note">Editorial guide index for collectors and first-time bidders.</span>
@@ -688,8 +536,7 @@
       <section class="journal-cover" aria-labelledby="journal-cover-title">
         <div class="journal-cover-image">
           <a href="?page=article&story=mechanical-watchmaking">
-            <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1500&q=88"
-              alt="Mechanical wristwatch closeup">
+            <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1500&q=88" alt="Mechanical wristwatch closeup">
             <span>COVER GUIDE</span>
           </a>
         </div>
@@ -697,18 +544,14 @@
           <div class="journal-story-meta"><span>WATCHES / FEATURED GUIDE</span><span>6 MIN READ</span></div>
           <h2 id="journal-cover-title"><a href="?page=article&story=mechanical-watchmaking">The Art of Mechanical
               <em>Watches.</em></a></h2>
-          <p>How mechanical movements work, what collectors check on dials and cases, and why vintage chronographs
-            remain popular.</p>
+          <p>How mechanical movements work, what collectors check on dials and cases, and why vintage chronographs remain popular.</p>
           <a class="button button-dark" href="?page=article&story=mechanical-watchmaking">Read guide <span>↗</span></a>
         </div>
       </section>
 
       <section class="journal-latest">
         <div class="journal-section-heading">
-          <div>
-            <p class="eyebrow">01 / ALL GUIDES</p>
-            <h2>Collector <em>articles.</em></h2>
-          </div>
+          <div><p class="eyebrow">01 / ALL GUIDES</p><h2>Collector <em>articles.</em></h2></div>
           <span id="journal-results">05 STORIES</span>
         </div>
         <div class="journal-filters" aria-label="Filter Journal stories">
@@ -733,32 +576,23 @@
       </section>
     </section>
 
-    <!-- =========================================================
-         6. ARTICLE READER VIEW (?page=article&story=...)
+    <!-- ========================================================= 6. ARTICLE READER VIEW (?page=article&story=...)
          ========================================================= -->
-    <section id="view-article" class="page-view article-main page-gutter" hidden>
-      <div id="article-root"></div>
-    </section>
+    <section id="view-article" class="page-view article-main page-gutter" hidden><div id="article-root"></div></section>
 
-    <!-- =========================================================
-         7. ABOUT PAGE (?page=about) — Pure Semantic HTML5
+    <!-- ========================================================= 7. ABOUT PAGE (?page=about) — Pure Semantic HTML5
          ========================================================= -->
     <section id="view-about" class="page-view about-main" hidden>
-      <nav class="about-breadcrumb page-gutter" aria-label="Breadcrumb">
-        <a href="?page=home">HOME</a><span>/</span><span>ABOUT</span>
-      </nav>
+      <nav class="about-breadcrumb page-gutter" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><span>ABOUT</span></nav>
       <section class="about-introduction page-gutter">
         <div class="about-intro-copy">
           <p class="eyebrow">ABOUT THE VAULT</p>
           <h1>Online auctions for rare <em>collectibles.</em></h1>
-          <p class="about-lead">THE VAULT is a digital auction platform built for discovering, inspecting, and bidding
-            on watches, fine art, jewelry, and classic cars.</p>
-          <p class="about-small-note"><span>✳</span> Built as a first-year B.Tech Computer Science web project with
-            HTML5, CSS3, JavaScript, Three.js, and Supabase.</p>
+          <p class="about-lead">THE VAULT is a digital auction platform built for discovering, inspecting, and bidding on watches, fine art, jewelry, and classic cars.</p>
+          <p class="about-small-note"><span>✳</span> Built as a first-year B.Tech Computer Science web project with HTML5, CSS3, JavaScript, Three.js, and Supabase.</p>
         </div>
         <figure class="about-intro-figure">
-          <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1400&q=88"
-            alt="Mechanical chronograph timepiece">
+          <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1400&q=88" alt="Mechanical chronograph timepiece">
           <figcaption><span>LOT #024 PREVIEW</span><span>THE VAULT · 2026</span></figcaption>
         </figure>
       </section>
@@ -786,28 +620,15 @@
 
       <section class="about-categories page-gutter">
         <div class="about-section-heading">
-          <div>
-            <p class="eyebrow">02 / AUCTION CATEGORIES</p>
-            <h2>What we <em>feature.</em></h2>
-          </div>
+          <div><p class="eyebrow">02 / AUCTION CATEGORIES</p><h2>What we <em>feature.</em></h2></div>
           <p>Select any category card below to filter live items in the catalogue.</p>
         </div>
         <div class="about-category-grid">
-          <a class="about-category about-category-watch" href="?page=explore&category=Timepieces"><img
-              src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=1100&q=86"
-              alt="Fine Watch"><span>01 / TIMEPIECES</span><strong>Fine Watches <b>↗</b></strong></a>
-          <a class="about-category about-category-jewel" href="?page=explore&category=Jewellery"><img
-              src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=900&q=86"
-              alt="Fine Jewelry"><span>02 / JEWELLERY</span><strong>Jewelry <b>↗</b></strong></a>
-          <a class="about-category about-category-art" href="?page=explore&category=Fine%20Art"><img
-              src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1100&q=86"
-              alt="Fine Art Painting"><span>03 / FINE ART</span><strong>Fine Art <b>↗</b></strong></a>
-          <a class="about-category about-category-car" href="?page=explore&category=Automotive"><img
-              src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=86"
-              alt="Classic Car"><span>04 / AUTOMOTIVE</span><strong>Classic Cars <b>↗</b></strong></a>
-          <a class="about-category about-category-collectibles" href="?page=explore"><img
-              src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=86"
-              alt="Vintage Camera"><span>05 / COLLECTIBLES</span><strong>Vintage Cameras <b>↗</b></strong></a>
+          <a class="about-category about-category-watch" href="?page=explore&category=Timepieces"><img src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=1100&q=86" alt="Fine Watch"><span>01 / TIMEPIECES</span><strong>Fine Watches <b>↗</b></strong></a>
+          <a class="about-category about-category-jewel" href="?page=explore&category=Jewellery"><img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=900&q=86" alt="Fine Jewelry"><span>02 / JEWELLERY</span><strong>Jewelry <b>↗</b></strong></a>
+          <a class="about-category about-category-art" href="?page=explore&category=Fine%20Art"><img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1100&q=86" alt="Fine Art Painting"><span>03 / FINE ART</span><strong>Fine Art <b>↗</b></strong></a>
+          <a class="about-category about-category-car" href="?page=explore&category=Automotive"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=86" alt="Classic Car"><span>04 / AUTOMOTIVE</span><strong>Classic Cars <b>↗</b></strong></a>
+          <a class="about-category about-category-collectibles" href="?page=explore"><img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=86" alt="Vintage Camera"><span>05 / COLLECTIBLES</span><strong>Vintage Cameras <b>↗</b></strong></a>
         </div>
       </section>
 
@@ -824,28 +645,16 @@
         </div>
         <div class="about-steps">
           <article><span>01</span>
-            <div>
-              <h3>Browse &amp; Filter</h3>
-              <p>Search by keyword or filter across watches, fine art, jewelry, and classic cars.</p>
-            </div>
+            <div>              <h3>Browse &amp; Filter</h3><p>Search by keyword or filter across watches, fine art, jewelry, and classic cars.</p></div>
           </article>
           <article><span>02</span>
-            <div>
-              <h3>Inspect Details</h3>
-              <p>Check estimates, photos, lightbox zoom, and interactive 3D previews.</p>
-            </div>
+            <div>              <h3>Inspect Details</h3><p>Check estimates, photos, lightbox zoom, and interactive 3D previews.</p></div>
           </article>
           <article><span>03</span>
-            <div>
-              <h3>Save Favorites</h3>
-              <p>Click ♡ on any lot card to store items inside your persistent watchlist.</p>
-            </div>
+            <div>              <h3>Save Favorites</h3><p>Click ♡ on any lot card to store items inside your persistent watchlist.</p></div>
           </article>
           <article><span>04</span>
-            <div>
-              <h3>Test Bidding</h3>
-              <p>Enter valid ₹5,000-step bids inside Lot Detail or Live Arena with no payment required.</p>
-            </div>
+            <div>              <h3>Test Bidding</h3><p>Enter valid ₹5,000-step bids inside Lot Detail or Live Arena with no payment required.</p></div>
           </article>
         </div>
       </section>
@@ -857,18 +666,12 @@
       </section>
     </section>
 
-    <!-- =========================================================
-         8. CONTACT PAGE (?page=contact)
+    <!-- ========================================================= 8. CONTACT PAGE (?page=contact)
          ========================================================= -->
     <section id="view-contact" class="page-view contact-main page-gutter" hidden>
-      <nav class="contact-breadcrumb" aria-label="Breadcrumb">
-        <a href="?page=home">HOME</a><span>/</span><span>CONTACT</span>
-      </nav>
+      <nav class="contact-breadcrumb" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><span>CONTACT</span></nav>
       <section class="contact-introduction">
-        <div>
-          <p class="eyebrow">CONTACT US</p>
-          <h1>Have a question? <em>Write to us.</em></h1>
-        </div>
+        <div><p class="eyebrow">CONTACT US</p><h1>Have a question? <em>Write to us.</em></h1></div>
         <div class="contact-intro-side">
           <p>Ask about lot details, consignment enquiries, or how bidding works on the platform.</p>
           <span>DEMO FORM: ENQUIRIES ARE VALIDATED LOCALLY AND NOT SENT OVER EMAIL.</span>
@@ -903,15 +706,9 @@
         </div>
 
         <div class="contact-form-wrap">
-          <div class="contact-form-heading">
-            <p class="eyebrow">02 / ENQUIRY FORM</p><span>* REQUIRED FIELDS</span>
-          </div>
+          <div class="contact-form-heading"><p class="eyebrow">02 / ENQUIRY FORM</p><span>* REQUIRED FIELDS</span></div>
           <form id="contact-form" novalidate>
-            <div class="contact-field">
-              <label for="contact-name">Full name <b>*</b></label>
-              <input id="contact-name" name="name" type="text" autocomplete="name" aria-describedby="name-error">
-              <small id="name-error" class="contact-error" hidden></small>
-            </div>
+            <div class="contact-field"><label for="contact-name">Full name <b>*</b></label><input id="contact-name" name="name" type="text" autocomplete="name" aria-describedby="name-error"><small id="name-error" class="contact-error" hidden></small></div>
             <div class="contact-field">
               <label for="contact-email">Email address <b>*</b></label>
               <input id="contact-email" name="email" type="email" autocomplete="email" aria-describedby="email-error">
@@ -919,43 +716,25 @@
             </div>
             <div class="contact-field">
               <label for="contact-type">Enquiry type <b>*</b></label>
-              <select id="contact-type" name="type" aria-describedby="type-error">
-                <option value="">Select a topic</option>
-                <option value="Consign an Object">Consign an Object</option>
-                <option value="Bidding Assistance">Bidding Assistance</option>
-                <option value="General Enquiries">General Enquiries</option>
-              </select>
+              <select id="contact-type" name="type" aria-describedby="type-error"><option value="">Select a topic</option><option value="Consign an Object">Consign an Object</option><option value="Bidding Assistance">Bidding Assistance</option><option value="General Enquiries">General Enquiries</option></select>
               <small id="type-error" class="contact-error" hidden></small>
             </div>
-            <div class="contact-field">
-              <label for="contact-subject">Subject <b>*</b></label>
-              <input id="contact-subject" name="subject" type="text" aria-describedby="subject-error">
-              <small id="subject-error" class="contact-error" hidden></small>
-            </div>
-            <div class="contact-field contact-message-field">
-              <label for="contact-message">Message <b>*</b></label>
-              <textarea id="contact-message" name="message" rows="7" aria-describedby="message-error"></textarea>
-              <small id="message-error" class="contact-error" hidden></small>
-            </div>
+            <div class="contact-field"><label for="contact-subject">Subject <b>*</b></label><input id="contact-subject" name="subject" type="text" aria-describedby="subject-error"><small id="subject-error" class="contact-error" hidden></small></div>
+            <div class="contact-field contact-message-field"><label for="contact-message">Message <b>*</b></label><textarea id="contact-message" name="message" rows="7" aria-describedby="message-error"></textarea><small id="message-error" class="contact-error" hidden></small></div>
             <div class="contact-form-actions">
               <button class="button button-dark" type="submit">Record enquiry <span>↗</span></button>
               <button class="contact-reset" type="reset">Clear form</button>
             </div>
-            <p class="contact-confirmation" id="contact-confirmation" role="status" hidden>
-              Your demonstration enquiry has been recorded in this session. No message has been transmitted.
-            </p>
+            <p class="contact-confirmation" id="contact-confirmation" role="status" hidden>Your demonstration enquiry has been recorded in this session. No message has been transmitted.</p>
           </form>
         </div>
       </section>
     </section>
 
-    <!-- =========================================================
-         9. AUTHENTICATION VIEW (?page=auth)
+    <!-- ========================================================= 9. AUTHENTICATION VIEW (?page=auth)
          ========================================================= -->
     <section id="view-auth" class="page-view auth-main page-gutter" hidden>
-      <nav class="auth-breadcrumb" aria-label="Breadcrumb">
-        <a href="?page=home">HOME</a><span>/</span><span>ACCOUNT</span>
-      </nav>
+      <nav class="auth-breadcrumb" aria-label="Breadcrumb"><a href="?page=home">HOME</a><span>/</span><span>ACCOUNT</span></nav>
       <section class="auth-layout">
         <div class="auth-introduction">
           <p class="eyebrow">MEMBER ACCESS</p>
@@ -1024,8 +803,7 @@
       </section>
     </section>
 
-    <!-- =========================================================
-         10. ADMIN DASHBOARD VIEW (?page=admin)
+    <!-- ========================================================= 10. ADMIN DASHBOARD VIEW (?page=admin)
          ========================================================= -->
     <section id="view-admin" class="page-view" hidden>
       <div id="admin-access-state" class="admin-access-state" role="status">
@@ -1037,18 +815,13 @@
 
       <div id="admin-dashboard" class="admin-shell" hidden>
         <aside id="admin-sidebar" class="admin-sidebar">
-          <div>
-            <a class="admin-wordmark" href="?page=home">THE VAULT<span>.</span></a>
-            <p class="admin-sidebar-label">ADMIN DASHBOARD</p>
-          </div>
+          <div>            <a class="admin-wordmark" href="?page=home">THE VAULT<span>.</span></a><p class="admin-sidebar-label">ADMIN DASHBOARD</p></div>
           <nav class="admin-nav">
-            <a class="active" href="#overview" data-admin-section="overview"
-              data-section-label="Overview"><span>01</span>Overview</a>
+            <a class="active" href="#overview" data-admin-section="overview" data-section-label="Overview"><span>01</span>Overview</a>
             <a href="#lots" data-admin-section="lots" data-section-label="Lots"><span>02</span>Manage Lots</a>
             <a href="#bids" data-admin-section="bids" data-section-label="Bids"><span>03</span>Bids</a>
             <a href="#members" data-admin-section="members" data-section-label="Members"><span>04</span>Members</a>
-            <a href="#enquiries" data-admin-section="enquiries"
-              data-section-label="Enquiries"><span>05</span>Enquiries</a>
+            <a href="#enquiries" data-admin-section="enquiries" data-section-label="Enquiries"><span>05</span>Enquiries</a>
           </nav>
           <div class="admin-sidebar-bottom">
             <p class="admin-sidebar-label">SIGNED IN AS</p>
@@ -1059,12 +832,8 @@
 
         <div class="admin-main">
           <header class="admin-topbar">
-            <button id="admin-menu-toggle" class="admin-menu-toggle"
-              type="button"><span>☰</span><span>Menu</span></button>
-            <div class="admin-topbar-title">
-              <p class="admin-kicker">THE VAULT / ADMIN</p>
-              <h1 id="admin-section-title">Overview</h1>
-            </div>
+            <button id="admin-menu-toggle" class="admin-menu-toggle" type="button"><span>☰</span><span>Menu</span></button>
+            <div class="admin-topbar-title">              <p class="admin-kicker">THE VAULT / ADMIN</p><h1 id="admin-section-title">Overview</h1></div>
             <div class="admin-topbar-meta">
               <span id="admin-connection" class="admin-connection is-loading"><i></i>Checking connection</span>
               <span id="admin-account-email" class="admin-account-email">Super-admin</span>
@@ -1075,80 +844,43 @@
           <main class="admin-content">
             <section id="admin-overview" class="admin-section">
               <div class="admin-section-intro">
-                <div>
-                  <p class="admin-kicker">01 / SYSTEM SUMMARY</p>
-                  <h2>Database <em>overview.</em></h2>
-                </div>
+                <div><p class="admin-kicker">01 / SYSTEM SUMMARY</p><h2>Database <em>overview.</em></h2></div>
                 <p class="admin-section-note">Live metrics queried from your connected Supabase PostgreSQL tables.</p>
               </div>
               <div class="admin-stats-grid">
-                <article class="admin-stat-card"><span class="admin-stat-label">Total lots</span><strong
-                    id="stat-total-lots">—</strong><small>All rows in auction_lots</small></article>
-                <article class="admin-stat-card"><span class="admin-stat-label">Published lots</span><strong
-                    id="stat-published-lots">—</strong><small>Publicly visible</small></article>
-                <article class="admin-stat-card"><span class="admin-stat-label">Live auctions</span><strong
-                    id="stat-live-auctions">—</strong><small>Status = live</small></article>
-                <article class="admin-stat-card"><span class="admin-stat-label">Closed auctions</span><strong
-                    id="stat-closed-auctions">—</strong><small>Status = closed</small></article>
-                <article class="admin-stat-card"><span class="admin-stat-label">Total bids</span><strong
-                    id="stat-total-bids">—</strong><small>Recorded in bids</small></article>
-                <article class="admin-stat-card"><span class="admin-stat-label">Members</span><strong
-                    id="stat-members">—</strong><small>User profiles</small></article>
-                <article class="admin-stat-card"><span class="admin-stat-label">Unread enquiries</span><strong
-                    id="stat-unread-enquiries">Unavailable</strong><small>Not tracked in schema</small></article>
+                <article class="admin-stat-card"><span class="admin-stat-label">Total lots</span><strong id="stat-total-lots">—</strong><small>All rows in auction_lots</small></article>
+                <article class="admin-stat-card"><span class="admin-stat-label">Published lots</span><strong id="stat-published-lots">—</strong><small>Publicly visible</small></article>
+                <article class="admin-stat-card"><span class="admin-stat-label">Live auctions</span><strong id="stat-live-auctions">—</strong><small>Status = live</small></article>
+                <article class="admin-stat-card"><span class="admin-stat-label">Closed auctions</span><strong id="stat-closed-auctions">—</strong><small>Status = closed</small></article>
+                <article class="admin-stat-card"><span class="admin-stat-label">Total bids</span><strong id="stat-total-bids">—</strong><small>Recorded in bids</small></article>
+                <article class="admin-stat-card"><span class="admin-stat-label">Members</span><strong id="stat-members">—</strong><small>User profiles</small></article>
+                <article class="admin-stat-card"><span class="admin-stat-label">Unread enquiries</span><strong id="stat-unread-enquiries">Unavailable</strong><small>Not tracked in schema</small></article>
               </div>
               <div class="admin-activity-grid">
                 <section class="admin-activity-panel">
-                  <div class="admin-panel-heading">
-                    <div>
-                      <p class="admin-kicker">RECENT</p>
-                      <h3>Lots</h3>
-                    </div><a href="#lots" data-admin-section="lots" data-section-label="Lots">Manage ↗</a>
-                  </div>
-                  <div id="recent-lots" class="admin-activity-list">
-                    <p class="admin-list-status">Loading…</p>
-                  </div>
+                  <div class="admin-panel-heading">                    <div><p class="admin-kicker">RECENT</p><h3>Lots</h3></div><a href="#lots" data-admin-section="lots" data-section-label="Lots">Manage ↗</a></div>
+                  <div id="recent-lots" class="admin-activity-list"><p class="admin-list-status">Loading…</p></div>
+                </section>
+                <section class="admin-activity-panel">
+                  <div class="admin-panel-heading">                    <div><p class="admin-kicker">RECENT</p><h3>Bids</h3></div><a href="#bids" data-admin-section="bids" data-section-label="Bids">View ↗</a></div>
+                  <div id="recent-bids" class="admin-activity-list"><p class="admin-list-status">Loading…</p></div>
                 </section>
                 <section class="admin-activity-panel">
                   <div class="admin-panel-heading">
-                    <div>
-                      <p class="admin-kicker">RECENT</p>
-                      <h3>Bids</h3>
-                    </div><a href="#bids" data-admin-section="bids" data-section-label="Bids">View ↗</a>
+                    <div><p class="admin-kicker">RECENT</p><h3>Enquiries</h3></div><a href="#enquiries" data-admin-section="enquiries" data-section-label="Enquiries">View ↗</a>
                   </div>
-                  <div id="recent-bids" class="admin-activity-list">
-                    <p class="admin-list-status">Loading…</p>
-                  </div>
-                </section>
-                <section class="admin-activity-panel">
-                  <div class="admin-panel-heading">
-                    <div>
-                      <p class="admin-kicker">RECENT</p>
-                      <h3>Enquiries</h3>
-                    </div><a href="#enquiries" data-admin-section="enquiries" data-section-label="Enquiries">View ↗</a>
-                  </div>
-                  <div id="recent-enquiries" class="admin-activity-list">
-                    <p class="admin-list-status">Loading…</p>
-                  </div>
+                  <div id="recent-enquiries" class="admin-activity-list"><p class="admin-list-status">Loading…</p></div>
                 </section>
               </div>
               <section class="admin-diagnostics" id="admin-diagnostics" hidden>
-                <div class="admin-panel-heading">
-                  <div>
-                    <p class="admin-kicker">DATABASE DIAGNOSTICS</p>
-                    <h3>Query notices</h3>
-                  </div><span>RLS / API LOG</span>
-                </div>
+                <div class="admin-panel-heading"><div><p class="admin-kicker">DATABASE DIAGNOSTICS</p><h3>Query notices</h3></div><span>RLS / API LOG</span></div>
                 <div id="admin-diagnostics-list"></div>
               </section>
             </section>
 
             <section id="admin-lots" class="admin-section" hidden>
               <div class="admin-section-intro">
-                <div>
-                  <p class="admin-kicker">02 / INVENTORY</p>
-                  <h2>Manage <em>auction lots.</em></h2>
-                </div>
+                <div><p class="admin-kicker">02 / INVENTORY</p><h2>Manage <em>auction lots.</em></h2></div>
                 <div class="admin-lots-controls">
                   <button id="admin-add-lot-btn" class="button button-dark admin-btn-action" type="button">Add lot
                     <span>+</span></button>
@@ -1157,39 +889,14 @@
                 </div>
               </div>
               <div class="admin-table-filters">
-                <div class="admin-search-wrap"><span>⌕</span><input id="admin-lots-search" type="search"
-                    placeholder="Search title, lot #, category…"></div>
-                <div class="admin-filter-group"><label for="admin-status-filter">Status:</label><select
-                    id="admin-status-filter">
-                    <option value="all">All</option>
-                    <option value="draft">Draft</option>
-                    <option value="scheduled">Scheduled</option>
-                    <option value="live">Live</option>
-                    <option value="closed">Closed</option>
-                    <option value="withdrawn">Withdrawn</option>
-                  </select></div>
-                <div class="admin-filter-group"><label for="admin-category-filter">Category:</label><select
-                    id="admin-category-filter">
-                    <option value="all">All</option>
-                    <option value="Timepieces">Timepieces</option>
-                    <option value="Fine Art">Fine Art</option>
-                    <option value="Automotive">Automotive</option>
-                    <option value="Jewellery">Jewellery</option>
-                    <option value="Collectibles">Collectibles</option>
-                  </select></div>
+                <div class="admin-search-wrap"><span>⌕</span><input id="admin-lots-search" type="search" placeholder="Search title, lot #, category…"></div>
+                <div class="admin-filter-group"><label for="admin-status-filter">Status:</label><select id="admin-status-filter"><option value="all">All</option><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="live">Live</option><option value="closed">Closed</option><option value="withdrawn">Withdrawn</option></select></div>
+                <div class="admin-filter-group"><label for="admin-category-filter">Category:</label><select id="admin-category-filter"><option value="all">All</option><option value="Timepieces">Timepieces</option><option value="Fine Art">Fine Art</option><option value="Automotive">Automotive</option><option value="Jewellery">Jewellery</option><option value="Collectibles">Collectibles</option></select></div>
               </div>
               <div class="admin-table-wrap">
                 <table class="admin-table" id="admin-lots-table">
                   <thead>
-                    <tr>
-                      <th>LOT #</th>
-                      <th>ITEM</th>
-                      <th>CATEGORY</th>
-                      <th>CURRENT BID</th>
-                      <th>ESTIMATE</th>
-                      <th>STATUS</th>
-                      <th>ACTIONS</th>
-                    </tr>
+                    <tr><th>LOT #</th><th>ITEM</th><th>CATEGORY</th><th>CURRENT BID</th><th>ESTIMATE</th><th>STATUS</th><th>ACTIONS</th></tr>
                   </thead>
                   <tbody id="admin-lots-tbody"></tbody>
                 </table>
@@ -1201,8 +908,7 @@
               <p class="admin-kicker">UPCOMING MODULE</p>
               <h2 id="admin-placeholder-title">Planned module</h2>
               <p id="admin-placeholder-copy"></p>
-              <a class="admin-return-overview" href="#overview" data-admin-section="overview"
-                data-section-label="Overview">Back to Overview ↗</a>
+              <a class="admin-return-overview" href="#overview" data-admin-section="overview" data-section-label="Overview">Back to Overview ↗</a>
             </section>
           </main>
         </div>
@@ -1211,55 +917,26 @@
         <div id="admin-lot-modal" class="admin-modal-backdrop" hidden>
           <div class="admin-modal-dialog" role="dialog" aria-modal="true">
             <div class="admin-modal-header">
-              <div>
-                <p class="admin-kicker">AUCTION LISTING</p>
-                <h3 id="modal-lot-title">Add auction listing</h3>
-              </div>
-              <button id="admin-lot-modal-close" class="admin-modal-close" type="button"
-                aria-label="Close modal">×</button>
+              <div><p class="admin-kicker">AUCTION LISTING</p><h3 id="modal-lot-title">Add auction listing</h3></div>
+              <button id="admin-lot-modal-close" class="admin-modal-close" type="button" aria-label="Close modal">×</button>
             </div>
             <form id="admin-lot-form" class="admin-modal-form" novalidate>
               <input type="hidden" id="lot-form-id">
               <input type="hidden" id="lot-form-mode" value="add">
               <div id="modal-lot-feedback" class="admin-modal-feedback" hidden></div>
               <div class="admin-form-grid">
-                <div class="admin-form-field"><label for="lot-form-title">Item title <b>*</b></label><input
-                    id="lot-form-title" type="text" required></div>
-                <div class="admin-form-field"><label for="lot-form-number">Lot number <b>*</b></label><input
-                    id="lot-form-number" type="text" required></div>
-                <div class="admin-form-field"><label for="lot-form-category">Category <b>*</b></label><select
-                    id="lot-form-category">
-                    <option value="Timepieces">Timepieces</option>
-                    <option value="Fine Art">Fine Art</option>
-                    <option value="Automotive">Automotive</option>
-                    <option value="Jewellery">Jewellery</option>
-                    <option value="Collectibles">Collectibles</option>
-                  </select></div>
-                <div class="admin-form-field"><label for="lot-form-status">Status <b>*</b></label><select
-                    id="lot-form-status">
-                    <option value="draft">Draft</option>
-                    <option value="scheduled">Scheduled</option>
-                    <option value="live" selected>Live</option>
-                    <option value="closed">Closed</option>
-                    <option value="withdrawn">Withdrawn</option>
-                  </select></div>
-                <div class="admin-form-field full-width"><label for="lot-form-subtitle">Short summary</label><input
-                    id="lot-form-subtitle" type="text"></div>
-                <div class="admin-form-field full-width"><label for="lot-form-description">Full
-                    description</label><textarea id="lot-form-description" rows="3"></textarea></div>
-                <div class="admin-form-field"><label for="lot-form-period">Period / year</label><input
-                    id="lot-form-period" type="text"></div>
-                <div class="admin-form-field"><label for="lot-form-price">Current bid (INR) <b>*</b></label><input
-                    id="lot-form-price" type="number" min="0" step="1000" required></div>
-                <div class="admin-form-field"><label for="lot-form-est-low">Estimate low (INR)</label><input
-                    id="lot-form-est-low" type="number" min="0" step="1000"></div>
-                <div class="admin-form-field"><label for="lot-form-est-high">Estimate high (INR)</label><input
-                    id="lot-form-est-high" type="number" min="0" step="1000"></div>
-                <div class="admin-form-field full-width"><label for="lot-form-image">Image URL</label><input
-                    id="lot-form-image" type="url"></div>
-                <div class="admin-form-field full-width"><label class="admin-checkbox-label"><input
-                      id="lot-form-published" type="checkbox" checked><span>Publish publicly in catalogue</span></label>
-                </div>
+                <div class="admin-form-field"><label for="lot-form-title">Item title <b>*</b></label><input id="lot-form-title" type="text" required></div>
+                <div class="admin-form-field"><label for="lot-form-number">Lot number <b>*</b></label><input id="lot-form-number" type="text" required></div>
+                <div class="admin-form-field"><label for="lot-form-category">Category <b>*</b></label><select id="lot-form-category"><option value="Timepieces">Timepieces</option><option value="Fine Art">Fine Art</option><option value="Automotive">Automotive</option><option value="Jewellery">Jewellery</option><option value="Collectibles">Collectibles</option></select></div>
+                <div class="admin-form-field"><label for="lot-form-status">Status <b>*</b></label><select id="lot-form-status"><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="live" selected>Live</option><option value="closed">Closed</option><option value="withdrawn">Withdrawn</option></select></div>
+                <div class="admin-form-field full-width"><label for="lot-form-subtitle">Short summary</label><input id="lot-form-subtitle" type="text"></div>
+                <div class="admin-form-field full-width"><label for="lot-form-description">Full description</label><textarea id="lot-form-description" rows="3"></textarea></div>
+                <div class="admin-form-field"><label for="lot-form-period">Period / year</label><input id="lot-form-period" type="text"></div>
+                <div class="admin-form-field"><label for="lot-form-price">Current bid (INR) <b>*</b></label><input id="lot-form-price" type="number" min="0" step="1000" required></div>
+                <div class="admin-form-field"><label for="lot-form-est-low">Estimate low (INR)</label><input id="lot-form-est-low" type="number" min="0" step="1000"></div>
+                <div class="admin-form-field"><label for="lot-form-est-high">Estimate high (INR)</label><input id="lot-form-est-high" type="number" min="0" step="1000"></div>
+                <div class="admin-form-field full-width"><label for="lot-form-image">Image URL</label><input id="lot-form-image" type="url"></div>
+                <div class="admin-form-field full-width"><label class="admin-checkbox-label"><input id="lot-form-published" type="checkbox" checked><span>Publish publicly in catalogue</span></label></div>
               </div>
               <div class="admin-modal-actions">
                 <button id="lot-form-submit" class="button button-dark" type="submit">Save lot <span>↗</span></button>
@@ -1273,12 +950,8 @@
         <div id="admin-delete-modal" class="admin-modal-backdrop" hidden>
           <div class="admin-modal-dialog admin-dialog-sm" role="dialog" aria-modal="true">
             <div class="admin-modal-header">
-              <div>
-                <p class="admin-kicker">CONFIRM REMOVAL</p>
-                <h3>Delete auction lot?</h3>
-              </div>
-              <button id="admin-delete-modal-close" class="admin-modal-close" type="button"
-                aria-label="Close modal">×</button>
+              <div><p class="admin-kicker">CONFIRM REMOVAL</p><h3>Delete auction lot?</h3></div>
+              <button id="admin-delete-modal-close" class="admin-modal-close" type="button" aria-label="Close modal">×</button>
             </div>
             <div class="admin-modal-body">
               <p id="delete-modal-copy"></p>
@@ -1286,8 +959,7 @@
             </div>
             <div class="admin-modal-actions">
               <button id="confirm-delete-btn" class="button admin-btn-danger" type="button">Delete permanently</button>
-              <button id="withdraw-instead-btn" class="button button-dark" type="button" hidden>Mark as withdrawn
-                ↗</button>
+              <button id="withdraw-instead-btn" class="button button-dark" type="button" hidden>Mark as withdrawn ↗</button>
               <button id="cancel-delete-btn" class="admin-btn-outline" type="button">Cancel</button>
             </div>
           </div>
@@ -1315,8 +987,7 @@
     <div class="footer-bottom">
       <span>© 2026 THE VAULT — STUDENT PROJECT DEMO</span>
       <span id="footer-status">PRICES &amp; BIDS ARE ILLUSTRATIVE</span>
-      <span id="footer-nav-note"><a href="?page=about">ABOUT</a> · <a href="?page=contact">CONTACT</a> · <a
-          href="?page=home">HOME</a></span>
+      <span id="footer-nav-note"><a href="?page=about">ABOUT</a> · <a href="?page=contact">CONTACT</a> · <a href="?page=home">HOME</a></span>
     </div>
   </footer>
 
